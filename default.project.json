@@ -1,0 +1,12 @@
+{
+  "name": "ReviveEngine",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerStorage": {
+      "AlmdesDataModel": {
+        "$path": "almdes"
+      }
+    }
+  }
+}

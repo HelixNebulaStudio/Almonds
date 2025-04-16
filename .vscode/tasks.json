@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Rojo Serve",
+            "type": "shell",
+            "command": "Y:/Applications/Rojo7.4.4/rojo.exe",
+            "args": [
+                "serve"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
