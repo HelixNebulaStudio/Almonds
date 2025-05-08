@@ -6,10 +6,8 @@
     "luau-lsp.sourcemap.autogenerate": true,
     "luau-lsp.sourcemap.enabled": true,
     "luau-lsp.sourcemap.rojoProjectFile": "sourcemap.project.json",
-    "luau-lsp.hover.strictDatamodelTypes": true,
-    "luau-lsp.diagnostics.strictDatamodelTypes": true,
     "luau-lsp.types.definitionFiles": [
-        "engine/TypeDef.d.lua",
+        "src/TypeDef.d.lua",
         "almdes/TypeDefAlmdes.d.lua"
     ]
 }
