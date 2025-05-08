@@ -7,7 +7,8 @@ local CollectionService = game:GetService("CollectionService");
 local SoundService = game:GetService("SoundService");
 
 local localPlayer = game.Players.LocalPlayer;
-local rootInterface = script:WaitForChild("RootInterface");
+local rootInterface = game.ReplicatedStorage.PlayerGui.RootInterface;
+script:WaitForChild("RootInterface");
 
 local modData = require(localPlayer:WaitForChild("DataModule") :: ModuleScript);
 
