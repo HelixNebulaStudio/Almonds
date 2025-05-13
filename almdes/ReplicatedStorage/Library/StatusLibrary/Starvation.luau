@@ -1,8 +1,8 @@
-local modStatusClass = require(game.ReplicatedStorage.Library.StatusLibrary.StatusClass);
+local modStatusClass = shared.require(game.ReplicatedStorage.Library.StatusLibrary.StatusClass);
 --==
 local RunService = game:GetService("RunService");
 
-local DamageData: DamageData = require(game.ReplicatedStorage.Data.DamageData);
+local DamageData: DamageData = shared.require(game.ReplicatedStorage.Data.DamageData);
 
 --==
 local statusPackage = {

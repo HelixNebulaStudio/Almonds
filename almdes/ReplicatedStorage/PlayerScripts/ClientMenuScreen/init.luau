@@ -1,58 +1,84 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
-local GameMenu = {};
-GameMenu.__index = GameMenu;
+local localPlayer = game.Players.LocalPlayer;
 
 local CollectionService = game:GetService("CollectionService");
 local SoundService = game:GetService("SoundService");
 
-local localPlayer = game.Players.LocalPlayer;
-local rootInterface = game.ReplicatedStorage.PlayerGui.RootInterface;
-script:WaitForChild("RootInterface");
+local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
+local modInterfaceBase = shared.require(game.ReplicatedStorage.Library.InterfaceBase);
+local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 
-local modData = require(localPlayer:WaitForChild("DataModule") :: ModuleScript);
+local modUIElements = shared.require(game.ReplicatedStorage.Library.UI.UIElements);
 
-local modGlobalVars = require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
-local modInterfaceBase = require(game.ReplicatedStorage.Library.InterfaceBase);
-local modRemotesManager = require(game.ReplicatedStorage.Library.RemotesManager);
-local modItemsLibrary = require(game.ReplicatedStorage.Library.ItemsLibrary);
-local modAudio = require(game.ReplicatedStorage.Library.Audio);
+local rootInterface, modData, neonLogo;
+local menuInterface;
 
-local modUIElements = require(game.ReplicatedStorage.Library.UI.UIElements);
+local ClientMenuScreen = {};
+ClientMenuScreen.__index = ClientMenuScreen;
+--==
 
-local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
+function ClientMenuScreen.onRequire()
+	rootInterface = game.ReplicatedStorage.PlayerGui.RootInterface;
+	modData = shared.require(localPlayer:WaitForChild("DataModule") :: ModuleScript);
 
-local neonLogo = script:WaitForChild("neonSign");
+	local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
+	neonLogo = game.ReplicatedStorage.Prefabs.Misc:WaitForChild("neonSign");
 
--- MenuInterface;
-local MenuInterface = modInterfaceBase.new();
-MenuInterface.ScreenGui = rootInterface;
+	menuInterface = modInterfaceBase.new();
+	menuInterface.ScreenGui = rootInterface;
 
-MenuInterface.Dir.MenuMusic = rootInterface:WaitForChild("MenuMusic");
-MenuInterface.Dir.MenuButton = script:WaitForChild("MenuButton");
-MenuInterface.Dir.MenuNavBar = rootInterface:WaitForChild("TopBar"):WaitForChild("Content");
+	menuInterface.Dir.MenuMusic = rootInterface:WaitForChild("MenuMusic");
+	menuInterface.Dir.MenuButton = script:WaitForChild("MenuButton");
+	menuInterface.Dir.MenuNavBar = rootInterface:WaitForChild("TopBar"):WaitForChild("Content");
 
-function MenuInterface:PlayButtonClick(pitch)
-	modAudio.Play("ButtonClick", nil, nil, false).PlaybackSpeed = pitch or 2;
+	function menuInterface:PlayButtonClick(pitch)
+		modAudio.Play("ButtonClick", nil, nil, false).PlaybackSpeed = pitch or 2;
+	end
+
+	menuInterface.OnWindowToggle:Connect(function()
+		local currentScreen = nil;
+		
+		for name, window in pairs(menuInterface.Windows) do
+			if window.Visible == true then
+				currentScreen = name;
+				break;
+			end
+		end
+		
+		local menuEqualizer: EqualizerSoundEffect =	menuInterface.Dir.MenuMusic.EqualizerSoundEffect;
+		menuEqualizer.Enabled = currentScreen == "Menu";
+		
+	end)
+
+
+	function remoteMainMenu.OnClientInvoke(action, paramPacket)
+		local replyPacket = {};
+
+		if action == "extraction" then
+			--camera.CameraType = Enum.CameraType.Scriptable;
+			--camera.CFrame = CFrame.new(Vector3.new(0, 1024, 0)) * CFrame.Angles(math.rad(-90), 0, math.rad(180));
+			--camera.Focus = CFrame.new();
+			game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
+
+			ClientMenuScreen:Load();
+		end
+		return replyPacket;
+	end
+
+	rootInterface.Parent = localPlayer:WaitForChild("PlayerGui");
+	
+	ClientMenuScreen:Load();
+	
+	menuInterface:Load(script);
 end
 
-MenuInterface.OnWindowToggle:Connect(function()
-	local currentScreen = nil;
-	
-	for name, window in pairs(MenuInterface.Windows) do
-		if window.Visible == true then
-			currentScreen = name;
-			break;
-		end
-	end
-	
-	local menuEqualizer: EqualizerSoundEffect =	MenuInterface.Dir.MenuMusic.EqualizerSoundEffect;
-	menuEqualizer.Enabled = currentScreen == "Menu";
-	
-end)
+-- MenuInterface;
 
 --== Script;
-function GameMenu:Load()
+function ClientMenuScreen:Load()
 	Debugger:Log("GameMenu:Load");
     local modInterface = modData:GetInterfaceModule();
 
@@ -123,46 +149,23 @@ function GameMenu:Load()
 	
 end
 
-function GameMenu:OnCharacterAdded(character)
+function ClientMenuScreen:OnCharacterAdded(character)
 	Debugger:Log("Player spawned");
 	modData.CameraHandler:Unbind("menucamera");
 
 end
 
-function GameMenu:OnCharacterDied(character)
+function ClientMenuScreen:OnCharacterDied(character)
 	task.wait(6);
 	
-	GameMenu:Load();
+	ClientMenuScreen:Load();
 	
-	MenuInterface.ScreenGui.Enabled = true;
+	menuInterface.ScreenGui.Enabled = true;
 	
-	MenuInterface.Dir.MenuMusic.Volume = 0.5;
-	MenuInterface.Dir.MenuMusic:Play();
+	menuInterface.Dir.MenuMusic.Volume = 0.5;
+	menuInterface.Dir.MenuMusic:Play();
 	
-	MenuInterface.Windows.Menu:Open();
+	menuInterface.Windows.Menu:Open();
 end
 
-function GameMenu:Init()
-	rootInterface.Parent = localPlayer:WaitForChild("PlayerGui");
-	
-	GameMenu:Load();
-	
-	MenuInterface:Load(script);
-	Debugger:Log("Initialized");
-end
-
-function remoteMainMenu.OnClientInvoke(action, paramPacket)
-	local replyPacket = {};
-
-	if action == "extraction" then
-		--camera.CameraType = Enum.CameraType.Scriptable;
-		--camera.CFrame = CFrame.new(Vector3.new(0, 1024, 0)) * CFrame.Angles(math.rad(-90), 0, math.rad(180));
-		--camera.Focus = CFrame.new();
-		game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
-
-		GameMenu:Load();
-	end
-	return replyPacket;
-end
-
-return GameMenu;
+return ClientMenuScreen;

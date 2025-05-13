@@ -9,14 +9,14 @@ local TweenService = game:GetService("TweenService");
 local HttpService = game:GetService("HttpService");
 
 local localplayer = game.Players.LocalPlayer;
-local modData = require(localplayer:WaitForChild("DataModule"));
+local modData = shared.require(localplayer:WaitForChild("DataModule"));
 
-local modSyncTime = require(game.ReplicatedStorage.Library.SyncTime);
-local modBranchConfigs = require(game.ReplicatedStorage.Library.BranchConfigurations);
-local modRemotesManager = require(game.ReplicatedStorage.Library:WaitForChild("RemotesManager"));
-local modGlobalVars = require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
+local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
+local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modRemotesManager = shared.require(game.ReplicatedStorage.Library:WaitForChild("RemotesManager"));
+local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
-local modScreenRelativeTextSize = require(game.ReplicatedStorage.Library.UI.ScreenRelativeTextSize);
+local modScreenRelativeTextSize = shared.require(game.ReplicatedStorage.Library.UI.ScreenRelativeTextSize);
 
 local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
 

@@ -1,16 +1,16 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
-local ClientHandler = {};
-ClientHandler.__index = ClientHandler;
-
 local TweenService = game:GetService("TweenService");
 local Lighting = game.Lighting;
 
 local fadeInTweenInfo = TweenInfo.new(5);
-local lightingAtmosphere = script:WaitForChild("Atmosphere");
 
+local lightingAtmosphere;
+
+local ClientLighting = {};
+ClientLighting.__index = ClientLighting;
 --==
-function ClientHandler:SetAtmosphere(aType)
+function ClientLighting:SetAtmosphere(aType)
 	if aType == "Death" then
 		TweenService:Create(lightingAtmosphere, fadeInTweenInfo, {
 			Density = 1; 
@@ -44,18 +44,19 @@ function ClientHandler:SetAtmosphere(aType)
 	end
 end
 
-function ClientHandler:OnCharacterAdded(character)
-	ClientHandler:SetAtmosphere("Spawn");
+function ClientLighting:OnCharacterAdded(character)
+	ClientLighting:SetAtmosphere("Spawn");
 end
 
-function ClientHandler:OnCharacterDied(character)
-	ClientHandler:SetAtmosphere("Death");
+function ClientLighting:OnCharacterDied(character)
+	ClientLighting:SetAtmosphere("Death");
 end
 
-function ClientHandler:Init()
+function ClientLighting.onRequire()
+	lightingAtmosphere = script:WaitForChild("Atmosphere");
 	lightingAtmosphere.Parent = Lighting;
-
+	
 	Debugger:Log("Initialized");
 end
 
-return ClientHandler;
+return ClientLighting;

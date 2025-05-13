@@ -1,4 +1,4 @@
-local modStatusClass = require(game.ReplicatedStorage.Library.StatusLibrary.StatusClass);
+local modStatusClass = shared.require(game.ReplicatedStorage.Library.StatusLibrary.StatusClass);
 --==
 local statusPackage = {
     Id="Comfort";
