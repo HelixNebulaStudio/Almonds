@@ -11,6 +11,11 @@ local ClientLighting = {};
 ClientLighting.__index = ClientLighting;
 --==
 function ClientLighting:SetAtmosphere(aType)
+	if lightingAtmosphere == nil then
+		lightingAtmosphere = script:WaitForChild("Atmosphere");
+		lightingAtmosphere.Parent = Lighting;
+	end
+	
 	if aType == "Death" then
 		TweenService:Create(lightingAtmosphere, fadeInTweenInfo, {
 			Density = 1; 
@@ -53,10 +58,6 @@ function ClientLighting:OnCharacterDied(character)
 end
 
 function ClientLighting.onRequire()
-	lightingAtmosphere = script:WaitForChild("Atmosphere");
-	lightingAtmosphere.Parent = Lighting;
-	
-	Debugger:Log("Initialized");
 end
 
 return ClientLighting;

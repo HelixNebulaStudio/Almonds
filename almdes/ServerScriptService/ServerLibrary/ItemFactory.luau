@@ -9,4 +9,13 @@ function ItemFactory.onRequire()
 
 end
 
+function ItemFactory.new()
+    local self = {
+        
+    };
+
+    setmetatable(self, ItemFactory);
+    return self;
+end
+
 return ItemFactory;

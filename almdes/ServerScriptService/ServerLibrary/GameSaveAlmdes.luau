@@ -16,8 +16,8 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 
 	local saveMeta = getmetatable(gameSave :: any);
 	saveMeta.ItemFactory = modItemFactory.new();
-	saveMeta.ItemFactory:GetMeta()["Player"] = player;
-	saveMeta.ItemFactory:GetMeta()["Storage"] = gameSave.Inventory;
+	-- saveMeta.ItemFactory:GetMeta()["Player"] = player;
+	-- saveMeta.ItemFactory:GetMeta()["Storage"] = gameSave.Inventory;
 	
 	gameSave.Inventory.MaxSize = 12;
 	gameSave.Inventory.Size = gameSave.Inventory.MaxSize;

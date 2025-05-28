@@ -1,5 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
+local CollectionService = game:GetService("CollectionService");
+
 local modProfile = shared.require(game.ServerScriptService.ServerLibrary.Profile);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 
@@ -29,12 +31,14 @@ local function OnPlayerAdded(player: Player)
 	profile:InitMessaging();
 	profile:Sync();
 	
-	player.ReplicationFocus = workspace.Root;
+	local spawnLocations = CollectionService:GetTagged("SpawnLocations");
+	player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
+
 	
 	playerClass.Died:Connect(function(character, dieReason)
 		Debugger:Warn("Died:Connect>> Fired", character, dieReason);
 
-		playerClass:SetProperties("Ragdoll", 1);
+		playerClass.Properties.Ragdoll = 1;
 		playerClass.Humanoid.PlatformStand = true;
 		
 		ModEngine.OnPlayerDied(player, dieReason);
