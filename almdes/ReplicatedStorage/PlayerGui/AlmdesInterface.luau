@@ -20,7 +20,7 @@ local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.Ca
 
 local AlmdesInterface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClass).new(script.Parent);
 --==
-function AlmdesInterface.onRequire()
+function AlmdesInterface.clientGuisLoad()
     local self: Interface = AlmdesInterface;
 
     self:Init();

@@ -32,6 +32,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local frame = script:WaitForChild("MainMenuFrame");
     frame.Parent = interface.ScreenGui;
+    local bodyFrame = frame:WaitForChild("PageBody");
 
     local menuMusic: Sound = frame:WaitForChild("MenuMusic");
 
@@ -115,14 +116,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local loadPlayPageFunc;
     local function updatePages()
-        frame.PlayPage.Visible = false;
+        bodyFrame.PlayPage.Visible = false;
 
         if curPage == "PlayPage" then
             loadPlayPageFunc();
 
             activePlayPage = "OptionsFrame";
 
-            local playPage: Frame = frame.PlayPage;
+            local playPage: Frame = bodyFrame.PlayPage;
             if playPage.Visible == false then
                 playPage.Position = UDim2.new(0.5, 0, -1, 0);
                 playPage.Visible = true;
@@ -159,6 +160,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end)
 
+    local function updateBodySize(k, v, ov)
+        if k ~= "TopBarInset" then return end;
+        bodyFrame.Size = UDim2.new(1, 0, 0.9, -interface.Properties.TopbarInset.Height);
+    end
+    interface.Properties.OnChanged:Connect(updateBodySize)
+    updateBodySize("TopBarInset");
 
 
     --== MARK: Play Page
@@ -172,7 +179,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         local isMenuWorld = modBranchConfigs.IsWorld("AlmondsMainMenu");
         local isTutorialFinished = modData:GetEvent("tutorialFinished");
 
-        local playPageFrame = frame:WaitForChild("PlayPage");
+        local playPageFrame = bodyFrame:WaitForChild("PlayPage");
+
         
         local PlayPages = {
             Options = playPageFrame:WaitForChild("OptionsFrame");
@@ -279,10 +287,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
             
             if activePlayPage == "ServerBrowserFrame" then
+                playPageFrame.TitleFrame.Title.Text = "SERVERS";
                 playPageFrame.TitleFrame.ServerBrowserHeader.Visible = true;
                 updateServerBrowser();
                 
             else
+                playPageFrame.TitleFrame.Title.Text = "PLAY";
                 playPageFrame.TitleFrame.ServerBrowserHeader.Visible = false;
             end
         end
