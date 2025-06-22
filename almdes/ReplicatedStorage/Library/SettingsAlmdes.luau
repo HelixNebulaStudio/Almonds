@@ -9,12 +9,14 @@ function modSettings.onRequire()
     
 	local uiKeyCheck = modSettings.Checks.IgnoreMouseKeys(modSettings.Checks.KeyCheck);
 
-    modSettings.Add("KeyWindowMapWindow", uiKeyCheck);
+	modSettings.Add("KeyWindowInventory", uiKeyCheck);
+    modSettings.Add("KeyWindowMap", uiKeyCheck);
 
 	modSettings.SettingsKeybindControlsTable = {
 		{Order=1; Type="Border"; Text="Almonds"};
 
-        {Order=115; Type="Option"; Id="KeyWindowMapWindow"; Text="Map Menu"; };
+        {Order=114; Type="Option"; Id="KeyWindowInventory"; Text="Inventory"; };
+        {Order=115; Type="Option"; Id="KeyWindowMap"; Text="Map Menu"; };
 	};
 end
 
