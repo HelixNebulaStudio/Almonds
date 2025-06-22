@@ -17,6 +17,7 @@ local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configur
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
+local modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
 
 local AlmdesInterface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClass).new(script.Parent);
 --==
@@ -36,7 +37,13 @@ function AlmdesInterface.clientGuisLoad()
 
     end
 
+    local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
     self.Garbage:Tag(function()
+        playerClass.HealthComp.OnIsDeadChanged:Connect(function()
+            if playerClass.HealthComp.IsDead == false then return end;
+
+            modClientLighting:SetAtmosphere("Death");
+        end)
     end)
 end
 

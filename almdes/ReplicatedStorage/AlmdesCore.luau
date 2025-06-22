@@ -16,7 +16,9 @@ if game.GameId == 1971060599 then
 elseif game.GameId == 5119363835 then
 	modBranchConfigs.CurrentBranch = modBranchConfigs.DevBranch;
 end
-modBranchConfigs.BranchColor = modBranchConfigs.CurrentBranch.Color;
+modBranchConfigs.BranchColor = Color3.fromRGB(92, 16, 255);
+
+---==
 
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.InteractablesAlmdes);
@@ -27,6 +29,24 @@ if RunService:IsServer() then
     local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSaveAlmdes);
     local modApiRequestLibrary = shared.require(game.ServerScriptService.ServerLibrary.ApiRequestLibraryAlmdes);
 
+end
+
+function AlmdesCore.OnPlayerAdded(player)
+    if RunService:IsServer() then
+    elseif RunService:IsClient() then
+    end
+end
+
+function AlmdesCore.OnCharacterAdded(player, character)
+    if RunService:IsServer() then
+    elseif RunService:IsClient() then
+    end
+end
+
+function AlmdesCore.OnPlayerRemoving(player)
+    if RunService:IsServer() then
+    elseif RunService:IsClient() then
+    end
 end
 
 Debugger:Warn("Init AlmdesCore.");

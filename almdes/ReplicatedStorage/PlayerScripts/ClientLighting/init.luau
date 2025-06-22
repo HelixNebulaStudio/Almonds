@@ -49,14 +49,6 @@ function ClientLighting:SetAtmosphere(aType)
 	end
 end
 
-function ClientLighting:OnCharacterAdded(character)
-	ClientLighting:SetAtmosphere("Spawn");
-end
-
-function ClientLighting:OnCharacterDied(character)
-	ClientLighting:SetAtmosphere("Death");
-end
-
 function ClientLighting.onRequire()
 end
 

@@ -62,17 +62,21 @@ function modProfile.onRequire()
     shared.modEngineCore:ConnectOnPlayerAdded(script, OnPlayerAdded);
 
     local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
-    function remoteMainMenu.OnServerInvoke(player, action, paramPacket)
+    function remoteMainMenu.OnServerInvoke(player: Player, action, paramPacket)
         if remoteMainMenu:Debounce(player) then return end;
 
-        local classPlayer = shared.modPlayers.get(player);
+        local playerClass: PlayerClass = shared.modPlayers.get(player);
         
         local replyPacket = {};
         
-        if action == "deploy" then
-            classPlayer:Spawn();
+        if action == "playtutorial" then
+            playerClass:Spawn();
             replyPacket.Success = true;
             
+			
+        elseif action == "quickplay" then
+            playerClass:Spawn();
+            replyPacket.Success = true;
         end
         return replyPacket;
     end
