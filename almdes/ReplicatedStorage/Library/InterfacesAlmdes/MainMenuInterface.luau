@@ -30,7 +30,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
 
-    local frame = script:WaitForChild("MainMenuFrame");
+    local frame = script:WaitForChild("MainMenuFrame"):Clone();
     frame.Parent = interface.ScreenGui;
     local bodyFrame = frame:WaitForChild("PageBody");
 
@@ -41,10 +41,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.IgnoreHideAll = true;
     window.UseMenuBlur = true;
     window.UseTween = false;
+    window.DisableHotKeysHint = true;
 
     window.OnToggle:Connect(function(visible)
         if visible then
             curPage = "Root";
+            frame.Position = UDim2.new(0,0,0,0);
             if localPlayer.Character == nil then
                 game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
                 
@@ -74,6 +76,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             frame.Visible = true;
 
         else
+            modClientLighting:SetAtmosphere("Spawn");
+
             modCameraGraphics:Unbind("menucamera");
             frame.Visible = false;
             if menuMusic.IsPlaying then
@@ -87,6 +91,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end)
 
+    interface.Garbage:Tag(function()
+        modClientLighting:SetAtmosphere("Spawn");
+        modCameraGraphics:Unbind("menucamera");
+        menuMusic:Stop();
+        game.Debris:AddItem(menuMusic, 0);
+    end)
 
     local navBar = frame:WaitForChild("NavBar"):WaitForChild("Content");
     local navButtons = navBar:GetChildren();
@@ -103,28 +113,66 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             window:Update();
         end)
 
-        if button:FindFirstChild("ButtonIcon") then
-            local buttonIcon: ImageLabel = button.ButtonIcon;
+        if button:FindFirstChild("SelectedHighlight") then
+            local selectedHighlight = button.SelectedHighlight;
             button.MouseEnter:Connect(function()
-                buttonIcon:TweenSize(UDim2.new(1.1, 0, 1.1, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.3, true);
+                selectedHighlight.Visible = true;
             end)
             button.MouseLeave:Connect(function()
-                buttonIcon:TweenSize(UDim2.new(1, 0, 1, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Quad, 0.3, true);
+                selectedHighlight.Visible = false;
             end)
         end
     end
 
-    local loadPlayPageFunc;
-    local function updatePages()
-        bodyFrame.PlayPage.Visible = false;
 
+    local menuButton = frame:WaitForChild("NavBar"):WaitForChild("MenuButton");
+    local function menuButtonOnClick()
+        if tick()-navCooldown <= 0.1 then return end;
+        navCooldown = tick();
+        interface:PlayButtonClick();
+        curPage = "Root";
+        window:Update();
+    end
+    menuButton.MouseButton1Click:Connect(menuButtonOnClick);
+
+    local menuButtonImage = menuButton:WaitForChild("ButtonIcon");
+    local menuButtonTitle = menuButton:WaitForChild("GameTitle");
+    local function toggleMenuButtonMouseEvent(isOn)
+        local objects = {menuButtonImage, menuButtonTitle};
+        for a=1, #objects do
+            local guiObj = objects[a];
+            if not guiObj:IsA("GuiObject") then continue end;
+
+            if guiObj:IsA("ImageLabel") then
+                TweenService:Create(guiObj, BASIC_TWEENINFO, {
+                    Size = isOn and UDim2.new(1.7, 0, 1.7, 0) or UDim2.new(1.6, 0, 1.6, 0);
+                    ImageColor3 = isOn and interface.Colors.Branch or Color3.fromRGB(255, 255, 255);
+                }):Play();
+
+            elseif guiObj:IsA("TextLabel") then
+                TweenService:Create(guiObj, BASIC_TWEENINFO, {
+                    Size = isOn and UDim2.new(0, 0, 1.1, 0) or UDim2.new(0, 0, 1, 0);
+                    TextColor3 = isOn and interface.Colors.Branch or Color3.fromRGB(255, 255, 255);
+                }):Play();
+
+            end
+        end
+    end
+    menuButton.MouseEnter:Connect(function() toggleMenuButtonMouseEvent(true); end);
+    menuButton.MouseLeave:Connect(function() toggleMenuButtonMouseEvent(false); end);
+
+
+    local loadPlayPageFunc;
+    local updatePlayPages;
+
+    local function updatePages()
         if curPage == "PlayPage" then
             loadPlayPageFunc();
 
-            activePlayPage = "OptionsFrame";
-
             local playPage: Frame = bodyFrame.PlayPage;
-            if playPage.Visible == false then
+            if playPage.Visible == false or activePlayPage ~= "OptionsFrame" then
+                activePlayPage = "OptionsFrame";
+
                 playPage.Position = UDim2.new(0.5, 0, -1, 0);
                 playPage.Visible = true;
                 local tween = TweenService:Create(playPage, BASIC_TWEENINFO, {
@@ -132,16 +180,19 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 });
                 tween:Play();
             end
+
+        else
+            bodyFrame.PlayPage.Visible = false;
+
         end
     end
 
-    local updatePlayPages;
     window.OnUpdate:Connect(function()
         if window.Visible then
             interface.VersionLabel.ZIndex = 2;
         else
             interface.VersionLabel.ZIndex = 0;
-            interface:GetWindow("UpdateWindow"):Close();
+            interface:ToggleWindow("UpdateWindow", false);
             return;
         end
 
@@ -149,11 +200,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         menuEqualizer.Enabled = curPage == "Root";
 
         if curPage == "Root" then
-            interface:GetWindow("UpdateWindow"):Open();
+            interface:ToggleWindow("UpdateWindow", true);
             updatePages();
 
         elseif curPage == "PlayPage" then
-            interface:GetWindow("UpdateWindow"):Close();
+            interface:ToggleWindow("UpdateWindow", false);
             updatePages()
             updatePlayPages();
 
@@ -185,6 +236,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         local PlayPages = {
             Options = playPageFrame:WaitForChild("OptionsFrame");
             ServerBrowser = playPageFrame:WaitForChild("ServerBrowserFrame");
+            SpawningFrame = playPageFrame:WaitForChild("SpawningFrame");
         }
         
         local optionsScrollFrame = PlayPages.Options:WaitForChild("OptionsScrollFrame");
@@ -280,23 +332,43 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
         workspace:GetAttributeChangedSignal("ServersMeta"):Connect(updateServerBrowser);
 
-        
+        interface.Properties.OnChanged:Connect(function(k, v, ov)
+            if k == "TopBarInset" then
+                playPageFrame.TitleFrame.Size = UDim2.new(1, 0, 0, interface.Properties.TopbarInset.Height);
+            end
+        end)
+
         updatePlayPages = function()
             for _, pageFrame in pairs(PlayPages) do
                 pageFrame.Visible = pageFrame.Name == activePlayPage;
             end
             
-            if activePlayPage == "ServerBrowserFrame" then
+            if activePlayPage == "SpawningFrame" then
+
+            elseif activePlayPage == "ServerBrowserFrame" then
                 playPageFrame.TitleFrame.Title.Text = "SERVERS";
-                playPageFrame.TitleFrame.ServerBrowserHeader.Visible = true;
                 updateServerBrowser();
                 
             else
                 playPageFrame.TitleFrame.Title.Text = "PLAY";
-                playPageFrame.TitleFrame.ServerBrowserHeader.Visible = false;
             end
         end
 
+
+        local function deploy(action)
+            TweenService:Create(frame, BASIC_TWEENINFO, {Position=UDim2.new(0,0,0.2,0)}):Play();
+
+            if remoteMainMenu:Debounce() then return end;
+
+            local replyPacket = remoteMainMenu:InvokeServer(action) or {};
+            if replyPacket.Success then
+
+            else
+                curPage = "Root";
+                TweenService:Create(frame, BASIC_TWEENINFO, {Position=UDim2.new(0,0,0,0)}):Play();
+                window:Open();
+            end
+        end
 
         for key, optionsButton: TextButton in pairs(PlayOptions) do
             optionsButton.MouseEnter:Connect(function()
@@ -322,18 +394,17 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 
                 if key == "Tutorial" then
                     Debugger:Warn(`Clicked Tutorial`);
-                    if remoteMainMenu:Debounce() then return end;
 
-                    curPage = "Loading";
-                    window:Update();
-                    local replyPacket = remoteMainMenu:InvokeServer("deploy") or {};
-
-                    if replyPacket.Success then
-                        window:Close();
-                    end
+                    activePlayPage = "SpawningFrame";
+                    updatePlayPages();
+                    deploy("playtutorial");
                     
                 elseif key == "Play" then
                     Debugger:Warn(`Clicked Quick play`);
+                    
+                    activePlayPage = "SpawningFrame";
+                    updatePlayPages();
+                    deploy("quickplay");
 
                 elseif key == "Servers" then
                     Debugger:Warn(`Clicked Server`);
@@ -352,6 +423,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end
 
+    function remoteMainMenu.OnClientInvoke()
+        
+    end
 end
 
 return interfacePackage;
