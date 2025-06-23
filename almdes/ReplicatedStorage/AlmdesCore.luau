@@ -21,8 +21,12 @@ modBranchConfigs.BranchColor = Color3.fromRGB(92, 16, 255);
 ---==
 
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
-local modInteractables = shared.require(game.ReplicatedStorage.Library.InteractablesAlmdes);
-local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
+local modRemotesManager = shared.require(game.ReplicatedStorage.Library:WaitForChild("RemotesManagerAlmdes"));
+local modInteractables = shared.require(game.ReplicatedStorage.Library:WaitForChild("InteractablesAlmdes"));
+local modConfigurations = shared.require(game.ReplicatedStorage.Library:WaitForChild("ConfigurationsAlmdes"));
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("ItemsLibraryAlmdes"));
+local modWeaponsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("WeaponsLibraryAlmdes"));
+local modClothingLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("ClothingLibraryAlmdes"));
 
 if RunService:IsServer() then
     local modProfile = shared.require(game.ServerScriptService.ServerLibrary.ProfileAlmdes);

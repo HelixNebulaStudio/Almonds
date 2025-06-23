@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService");
 local UserInputService = game:GetService("UserInputService");
 local HttpService = game:GetService("HttpService");
 local CollectionService = game:GetService("CollectionService");
-local StarterGui = game:GetService("StarterGui");
 
 local localPlayer = game.Players.LocalPlayer;
 
@@ -40,25 +39,24 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 	local mapImageLabel = windowFrame:WaitForChild("mapImage");
 	
-	local window: InterfaceWindow = interface:NewWindow("MapWindow", windowFrame);
+	local window: InterfaceWindow = interface:NewWindow("Map", windowFrame);
     window.UseMenuBlur = true;
     window.UseTween = false;
     window.DisableInteractables = true;
 
     local binds = window.Binds;
 
-	local keyId = "KeyWindowMapWindow";
+	local keyId = "KeyWindowMap";
 	modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.M);
 	
-	local mapQuickButton = interface:NewQuickButton(window.Name, "MapWindow", "rbxassetid://4615489625");
+	local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
 	mapQuickButton.LayoutOrder = 3;
 	interface:ConnectQuickButton(mapQuickButton, keyId);
 
     --MARK: OnToggle
 	window.OnToggle:Connect(function(visible)
 		if visible then
-			--StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false);
-			
+			windowFrame.Visible = true;
 			interface:HideAll{[window.Name]=true};
 			
 			binds.UpdateEvents();
@@ -66,6 +64,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             window:Update();
 			
 		else
+			windowFrame.Visible = false;
 			isDraggingMap = false;
 			
 		end
