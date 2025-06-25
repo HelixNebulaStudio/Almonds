@@ -152,7 +152,7 @@ library:Add{
 }
 
 library:Add{
-	Id="tier1workbench";
+	Id="workbench";
 	Category=categories.Buildings;
 	Recipe={
 		{Type="Item"; ItemId="wood"; Amount=200};

@@ -191,7 +191,7 @@ function modItemsLibrary.onRequire()
 	
 	new(structureBase, {Id="cellwall"; Name="Cell Wall"; Icon="rbxassetid://11450927716"; Description="Cell walls used to build a jail cell.";});
 
-	new(structureBase, {Id="tier1workbench"; Name="Workbench"; Icon="rbxassetid://12122151861"; Description="Used for unlocking new crafting recipes and craft higher tier items.";});
+	new(structureBase, {Id="workbench"; Name="Workbench"; Icon="rbxassetid://12122151861"; Description="Used for unlocking new crafting recipes and craft higher tier items.";});
 	new(structureBase, {Id="planter"; Name="Planter"; Icon="rbxassetid://12335379052"; Description="Used for growing basic crops.";});
 	
 	new(structureBase, {Id="barbedwooden"; Name="Barbed Wooden Fence"; Icon="rbxassetid://5803776520"; Description="Placable barbed wooden fence that does 1% damage per second when touched.";});
@@ -218,7 +218,7 @@ function modItemsLibrary.onRequire()
 	}
 	
 	new(toolBase, {Id="buildingplan"; Name="Building Plan"; Icon="rbxassetid://8894342011"; Description="Used to build wall plans on foundations. When on top of a foundation, left click to place/unplace wall plans.";});
-	new(toolBase, {Id="hammer"; Name="Hammer"; Icon="rbxassetid://11497379398"; Description="Used to inspect and modify buildings.";});
+	new(toolBase, {Id="hammer"; Name="Hammer"; Icon="rbxassetid://11497379398"; Description="Used to inspect, modify and upgrade.";});
 	
 	new(toolBase, {Id="torch"; Name="Torch"; Icon="rbxassetid://12278042615"; Description="It is used to light up the dark.";});
 	new(toolBase, {Id="lantern"; Name="Lantern"; Icon="rbxassetid://3681206568"; Description="It is used to light up the dark.";});
