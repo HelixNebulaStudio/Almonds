@@ -28,6 +28,7 @@ local modItemsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChi
 local modWeaponsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("WeaponsLibraryAlmdes"));
 local modClothingLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("ClothingLibraryAlmdes"));
 local modToolsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("ToolsLibraryAlmdes"));
+local modRewardsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("RewardsLibraryAlmdes"));
 
 if RunService:IsServer() then
     local modProfile = shared.require(game.ServerScriptService.ServerLibrary.ProfileAlmdes);
