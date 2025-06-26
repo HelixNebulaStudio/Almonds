@@ -1,6 +1,6 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
-local modStatusLibrary = shared.require(game.ReplicateStorage.Library.StatusLibrary);
+local modStatusLibrary = shared.require(game.ReplicatedStorage.Library.StatusLibrary);
 
 local function loadModule(module: Instance) 
 	if not module:IsA("ModuleScript") then return end;
