@@ -227,7 +227,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         local modData = shared.require(localPlayer:WaitForChild("DataModule"));
         
-        local isMenuWorld = modBranchConfigs.IsWorld("AlmondsMainMenu");
+        local isMenuWorld = modBranchConfigs.IsWorld("Genesis");
         local isTutorialFinished = modData:GetEvent("tutorialFinished");
 
         local playPageFrame = bodyFrame:WaitForChild("PlayPage");
