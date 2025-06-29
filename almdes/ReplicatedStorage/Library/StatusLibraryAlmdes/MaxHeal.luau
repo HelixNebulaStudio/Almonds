@@ -12,7 +12,7 @@ local statusPackage = {
     Buff=true;
 };
 
-function statusPackage.OnTick(statusClass: StatusClassInstance, tickData: TickData)
+function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData: TickData)
     if RunService:IsClient() then return end;
     if tickData.ms500 == false then return end;
 

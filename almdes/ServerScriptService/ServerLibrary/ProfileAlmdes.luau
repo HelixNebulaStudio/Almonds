@@ -9,7 +9,6 @@ local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesM
 local function OnPlayerAdded(player: Player)
 	Debugger:Log("Initializing player (",player,")");
 
-	local playerClass: PlayerClass = shared.modPlayers.get(player);
 	local profile: ProfileAlmdes = modProfile.new(player);
 	
 	if #profile.Saves <= 0 then
@@ -34,14 +33,11 @@ local function OnPlayerAdded(player: Player)
 	local spawnLocations = CollectionService:GetTagged("SpawnLocations");
 	player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
 
-	
-	playerClass.Died:Connect(function(character, dieReason)
-		Debugger:Warn("Died:Connect>> Fired", character, dieReason);
-
-		playerClass.Properties.Ragdoll = 1;
-		playerClass.Humanoid.PlatformStand = true;
+	local playerClass: PlayerClass = shared.modPlayers.get(player);
+	playerClass.OnIsDeadChanged:Connect(function(isDead, dieReason)
+		if not isDead then return end;
+		Debugger:Warn("Player died: ", dieReason);
 		
-		ModEngine.OnPlayerDied(player, dieReason);
 	end)
 end
 

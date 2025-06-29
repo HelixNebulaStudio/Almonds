@@ -17,6 +17,7 @@ local BAR_TWEENINFO = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirec
 
 local BUFF_COLOR = Color3.fromRGB(16, 107, 66);
 local DEBUFF_COLOR = Color3.fromRGB(110, 44, 44);
+local NEUTRAL_COLOR = Color3.fromRGB(52, 52, 176);
 
 local interfacePackage = {
     Type = "Character";
@@ -116,6 +117,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			isInCharWindow = false;
 
 		end
+
+		statusEffectsWindow:Update();
 	end)
 
 
@@ -230,7 +233,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			
 			statusGuiObj.Icon.Image = lib.Icon or `rbxassetid://484211948`;
 			statusGuiObj.Title.Text = lib.Name or libId;
-			radialBar.ImageColor3 = lib.Buff and BUFF_COLOR or DEBUFF_COLOR;
 		end
 		
 		
@@ -253,9 +255,31 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		elseif statusClass.Duration and statusClass.Expires then
 			alpha = (statusClass.Expires-smoothTime)/statusClass.Duration;
 			
+		else
+			if lib.MetaStatus then
+				local curV = statusClass.Values.CurValue;
+				local maxV = statusClass.Values.MaxValue;
+
+				if curV <= 0 then
+					alpha = 1;
+				else
+					alpha = math.clamp((curV/maxV), 0, 1);
+				end
+			end
 		end
 		alpha = math.clamp(alpha, 0, 1);
 		
+		local radialBar = statusGuiObj.Button:WaitForChild("radialBar");
+		if lib.MetaStatus then
+			local curV = statusClass.Values.CurValue;
+			if curV <= 0 then
+				radialBar.ImageColor3 = DEBUFF_COLOR;
+			else
+				radialBar.ImageColor3 = NEUTRAL_COLOR;
+			end
+		else
+			radialBar.ImageColor3 = lib.Buff and BUFF_COLOR or DEBUFF_COLOR;
+		end
 		statusGuiObj.Radial:UpdateLabel(alpha);
 		
 		local statusVisible = true;
@@ -264,13 +288,29 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			statusVisible = false;
 		end
 		
-		statusGuiObj.Button.Visible = statusVisible;
-
 		if isInCharWindow then
 			statusGuiObj.Button.Size = UDim2.new(0, 90, 0, 90);
+
 		else
 			statusGuiObj.Button.Size = UDim2.new(0, 40, 0, 40);
+
+			if lib.HudVisibleBelow then
+				if lib.MetaStatus then
+					local curV = statusClass.Values.CurValue;
+					if curV <= lib.HudVisibleBelow then
+						statusVisible = true;
+					else
+						statusVisible = false;
+					end
+				end
+			end
+
+			if statusClass.Values.LastSet and lastOsTime-statusClass.Values.LastSet <= 3 then
+				statusVisible = true;
+			end
 		end
+
+		statusGuiObj.Button.Visible = statusVisible;
 		
 		if lib.QuantityLabel then
 			local stat = statusClass[lib.QuantityLabel];
@@ -311,7 +351,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end
 
-	interface.Scheduler.OnStepped:Connect(function(tickData: TickData)
+	--MARK: OnUpdate
+	statusEffectsWindow.OnUpdate:Connect(function()
 		local newTime = workspace:GetServerTimeNow();
 		if lastOsTime ~= newTime then
 			lastOsTime = newTime;
@@ -331,6 +372,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			local showStatus = lib.ShowOnHud ~= false or localPlayer:GetAttribute("ShowHiddenStatus") == true;
 			if showStatus ~= true then continue end;
 			toDestroyList[statusId] = false;
+
 			updateStatusObj(lib, statusId, statusClass);
 		end
 
@@ -342,6 +384,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end)
 
+	interface.Scheduler.OnStepped:Connect(function(tickData: TickData)
+		statusEffectsWindow:Update();
+	end)
 
 end
 
