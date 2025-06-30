@@ -35,6 +35,7 @@ local interfacePackage = {
 
 function interfacePackage.newInstance(interface: InterfaceInstance)
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
+	local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
 
     local remoteUseStorageItem = modRemotesManager:Get("UseStorageItem");
     local remoteItemFactory = modRemotesManager:Get("ItemFactory");
@@ -149,8 +150,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 	interface.Properties.ActiveHotbarKeys = 5;
 	interface.Properties.HotEquip = function(index)
-	    local modCharacter = modData:GetModCharacter();
-		if not modCharacter.CharacterProperties.IsAlive then return end;
+		if playerClass.HealthComp.IsDead then return end;
 		if modData.GetStorage("Inventory") == nil then Debugger:Warn(`No inventory storage.`); return end;
 		
 		local slot = defaultStorageInterface.Slots[index];

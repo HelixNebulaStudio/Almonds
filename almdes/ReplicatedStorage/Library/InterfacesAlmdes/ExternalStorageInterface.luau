@@ -72,6 +72,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
 
         else
+            modStorageInterface.SetQuickTarget();
             interface:ToggleWindow("Inventory", false);
             storageFrame.Visible = false;
 
@@ -82,6 +83,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	window.OnUpdate:Connect(function(forceReload)
         local storageId = binds.StorageId;
         if forceReload ~= true and activeStorageId == storageId and activeStorageInterface then
+            modStorageInterface.SetQuickTarget(activeStorageInterface);
             activeStorageInterface:Update();
             Debugger:Warn(`Refresh storage: {activeStorageId}/{storageId}`);
             return;
@@ -124,6 +126,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         activeStorageInterface = modStorageInterface.new(activeStorageId, storageFrame, slotFrames);
         activeStorageInterface:Update();
+        modStorageInterface.SetQuickTarget(activeStorageInterface);
     end)
 
 end
