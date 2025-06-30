@@ -373,9 +373,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end
 
-	-- task.spawn(function()
-	-- 	modStorageInterface.StorageRequest("RequestStorageSync", true);
-    -- end)
 end
 
 return interfacePackage;

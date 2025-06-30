@@ -27,6 +27,11 @@ end)
 shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClass, character: Model)
     if RunService:IsClient() then return end;
 
+    local player = playerClass:GetInstance();
+    player.ReplicationFocus = character.PrimaryPart;
+
+
+    --MARK: Meta Status
     local statusComp: StatusComp = playerClass.StatusComp;
 
     --Hunger

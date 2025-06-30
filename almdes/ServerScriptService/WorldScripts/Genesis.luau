@@ -3,6 +3,11 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local CollectionService = game:GetService("CollectionService");
 
+if RunService:IsServer() then
+    modWorldLoot = shared.require(game.ServerScriptService.ServerLibrary.WorldLoot);
+end
+
+
 local WorldCore = shared.require(game.ReplicatedStorage.Library.WorldCoreClassAlmdes).new();
 --==
 
@@ -15,6 +20,8 @@ function WorldCore.onRequire()
             Debugger:Warn(`{player.Name} has joined the world!`);
 
         end, 999);
+
+        modWorldLoot.init();
     end
 
 	shared.modCommandsLibrary.bind{

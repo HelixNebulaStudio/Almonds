@@ -73,7 +73,7 @@ function library.onRequire()
 
 
 	library:Add{
-		Id="supplycrate";
+		Id="envlootcrate";
 		Rewards={
 			{Index=1; ItemId="metal"; Quantity={Min=35; Max=70}; Chance=1;};
 			{Index=1; ItemId="wood"; Quantity={Min=35; Max=70}; Chance=1;};
