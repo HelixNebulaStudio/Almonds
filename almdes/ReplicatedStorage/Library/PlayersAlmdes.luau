@@ -69,7 +69,7 @@ end);
 
 function modPlayers.onRequire()
 	shared.modCommandsLibrary.bind{
-		["playeralmdes"]={
+		["playeralmdes"] = {
 			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
 			Description = [[Player commands for Almonds.
             
@@ -84,12 +84,12 @@ function modPlayers.onRequire()
 				local actionId = args[1];
 
                 if actionId == "sethunger" then
-                    local hungerStatusComp = playerClass.StatusComp:GetOrDefault("Hunger");
-                    hungerStatusComp:SetValue(tonumber(args[2]) or 100);
+                    local hungerStatus = playerClass.StatusComp:GetOrDefault("Hunger");
+					hungerStatus:Func("SetValue", tonumber(args[2]) or 100);
 
                 elseif actionId == "setthirst" then
-                    local thirstStatusComp = playerClass.StatusComp:GetOrDefault("Thirst");
-                    thirstStatusComp:SetValue(tonumber(args[2]) or 100);
+                    local thirstStatus = playerClass.StatusComp:GetOrDefault("Thirst");
+					thirstStatus:Func("SetValue", tonumber(args[2]) or 100);
                 end
 
 				return true;

@@ -154,15 +154,15 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		if modData.GetStorage("Inventory") == nil then Debugger:Warn(`No inventory storage.`); return end;
 		
 		local slot = defaultStorageInterface.Slots[index];
-		if slot and slot.Table then
-			defaultStorageInterface:UseItem(slot.Table);
+		if slot and slot.ItemSlot then
+			defaultStorageInterface:UseItem(slot.ItemSlot);
 			
 		end
 	end
 
     function clothingStorageInterface:DecorateSlot(index, slotData)
 		local slotFrame = slotData.Frame;
-		local itemSlot = slotData.Table;
+		local itemSlot = slotData.ItemSlot;
 		
 		if itemSlot and itemSlot.Library.SlotColor then
 			slotFrame.ImageColor3 = itemSlot.Library.SlotColor;

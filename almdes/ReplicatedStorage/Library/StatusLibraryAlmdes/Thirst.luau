@@ -16,6 +16,12 @@ local statusPackage = {
 };
 --==
 
+function statusPackage.SetValue(statusClass: StatusClassInstance, value: number)
+    statusClass.Values.CurValue = value;
+    statusClass.Values.LastSet = workspace:GetServerTimeNow();
+    statusClass:Sync();
+end
+
 function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData: TickData)
     if RunService:IsClient() then return end;
 
