@@ -21,6 +21,7 @@ modBranchConfigs.BranchColor = Color3.fromRGB(92, 16, 255);
 ---==
 
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
+local modOnEventsHandlers = shared.require(game.ReplicatedStorage.Library:WaitForChild("OnEventHandlersAlmdes"));
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library:WaitForChild("RemotesManagerAlmdes"));
 local modPlayers = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayersAlmdes"));
 local modInteractables = shared.require(game.ReplicatedStorage.Library:WaitForChild("InteractablesAlmdes"));

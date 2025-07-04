@@ -12,6 +12,13 @@ local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
 local modUIElements = shared.require(game.ReplicatedStorage.Library.UI.UIElements);
 
+local MAP_LEGEND_LIBRARY = {
+	["loot"] = {
+		Text = "Loot";
+		Color = Color3.fromRGB(234, 255, 98);
+	};
+}
+
 local interfacePackage = {
     Type = "Character";
 };
@@ -22,9 +29,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
 
-    local templatePointer = script:WaitForChild("templatePointer");
+    local templateMapPointer = script:WaitForChild("templatePointer");
     local templateAxisLine = script:WaitForChild("axisLine");
     local templateGridLabel = script:WaitForChild("gridLabel");
+	local templateLegendListing = script:WaitForChild("legendListing");
 
     local mapCenterVec = Vector2.new(-500, -1000);
     local mapScaleVec = -Vector2.new(5000, 5000);
@@ -36,6 +44,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local windowFrame = script:WaitForChild("MapMenu"):Clone()
     windowFrame.Parent = interface.ScreenGui;
+
+	local lpanel = windowFrame:WaitForChild("LPanel");
+	local legendFrame = lpanel:WaitForChild("LegendFrame");
 
 	local mapImageLabel = windowFrame:WaitForChild("mapImage");
 	
@@ -150,13 +161,15 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	end));
 	
 	interface.Garbage:Tag(windowFrame.InputBegan:Connect(function(inputObject, gameProcessed)
-		if inputObject.UserInputType == Enum.UserInputType.MouseButton1 or inputObject.UserInputType == Enum.UserInputType.Touch then
+		if inputObject.UserInputType == Enum.UserInputType.MouseButton1 
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
 			isDraggingMap = true;
 		end
 	end));
 
 	interface.Garbage:Tag(windowFrame.InputEnded:Connect(function(inputObject, gameProcessed)
-		if inputObject.UserInputType == Enum.UserInputType.MouseButton1 or inputObject.UserInputType == Enum.UserInputType.Touch then
+		if inputObject.UserInputType == Enum.UserInputType.MouseButton1 
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
 			isDraggingMap = false;
 		end
 	end));
@@ -174,15 +187,15 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 		
 		
-		local localPlayerPointer = mapPointInfo.Icon or templatePointer:Clone();
+		local localPlayerPointer = mapPointInfo.Pointer or templateMapPointer:Clone();
 		localPlayerPointer.Parent = mapImageLabel;
-		mapPointInfo.Icon=localPlayerPointer;
+		mapPointInfo.Pointer = localPlayerPointer;
 		
 		local textLabel = localPlayerPointer:WaitForChild("TextLabel");
+		local pointCircle = localPlayerPointer:WaitForChild("PointCircle");
 		
 		if label then
-			localPlayerPointer.BackgroundTransparency = 1;
-			
+			pointCircle.Visible = false;
 			textLabel.Text = label;
 		end
 		
@@ -202,8 +215,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		
 		local eventLib = modEventsLibrary:Find(id);
 		if eventLib then
-			localPlayerPointer.BackgroundTransparency = 1;
-			
 			local radialElement = modUIElements.newRadialButton();
 			radialElement.ImageButton.Parent = localPlayerPointer;
 			
@@ -257,8 +268,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 						local lootSpawn = mapCore and mapCore:FindFirstChild("LootSpawn");
 						
 						binds.AddPointVector({
-							Id=eventId;
-							Target=lootSpawn;
+							Id = eventId;
+							Target = lootSpawn;
 						});
 					end
 				end
@@ -291,18 +302,20 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		for a=1, #lootList do
 			local lootPrefab = lootList[a];
 			local mapPoint = binds.AddPointVector({
-				Id=lootPrefab.Name;
-				Target=lootPrefab;
-				ToolTip="Loot";
+				Id = lootPrefab.Name;
+				Target = lootPrefab;
+				ToolTip = "Loot";
+				LegendId = "loot";
 			});
 			
 			if mapPoint then
-				local iconLabel = mapPoint.Icon;
-				iconLabel.BackgroundColor3 = Color3.fromRGB(234, 255, 98);
-				iconLabel.Size = UDim2.new(0, 6, 0, 6);
+				local pointerFrame = mapPoint.Pointer;
+
+				local pointCircle = pointerFrame:WaitForChild("PointCircle");
+				pointCircle.BackgroundColor3 = Color3.fromRGB(234, 255, 98);
+				pointCircle.Size = UDim2.new(0, 6, 0, 6);
 			end
 		end
-		
 	end
 	
 	interface.Garbage:Tag(CollectionService:GetInstanceAddedSignal("LootCrates"):Connect(function()
@@ -312,17 +325,26 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		binds.UpdateLoots()
 	end));
 	
+
 	--MARK: OnUpdate
 	window.OnUpdate:Connect(function()
+		local serverTime = workspace:GetServerTimeNow();
+
+		local showLegends = {};
+
 		for a=#binds.MapPoints, 1, -1 do
 			local mapPoint = binds.MapPoints[a];
 			if mapPoint == nil then continue end;
 			
+			if mapPoint.LegendId then
+				showLegends[mapPoint.LegendId] = (0 or showLegends[mapPoint.LegendId]) + 1;
+			end
+
 			if mapPoint.Id == "localplayer" then
 				mapPoint.Target = playerClass.RootPart;
 			end
 			
-			local iconLabel = mapPoint.Icon;
+			local pointerFrame = mapPoint.Pointer;
 			local targetObject = mapPoint.Target;
 			
 			local pos = Vector3.new();
@@ -341,14 +363,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 				end
 				
 				if not targetObject:IsDescendantOf(workspace) and not targetObject:IsDescendantOf(game.ReplicatedFirst) then
-					local mapPoint = table.remove(binds.MapPoints, a);
-					game.Debris:AddItem(mapPoint.Icon, 0);
+					local remPoint = table.remove(binds.MapPoints, a);
+					game.Debris:AddItem(remPoint.Pointer, 0);
 				end
 				
 			end
 			
 			local projectPos = projectWorldPos(Vector2.new(pos.X, pos.Z));
-			iconLabel.Position = UDim2.new(0.5, projectPos.X, 0.5, projectPos.Y);
+			pointerFrame.Position = UDim2.new(0.5, projectPos.X, 0.5, projectPos.Y);
 			
 			local radialObject = mapPoint.Radial;
 			if radialObject then
@@ -358,10 +380,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 					local eventPacket = binds.EventPacket[mapPoint.Id];
 					
 					local duration = mapPoint.EventLib.CycleTimer;
-					local loadTime = eventPacket.LoadTime or modSyncTime.GetTime();
-					local activeTime = eventPacket.ActiveTime or modSyncTime.GetTime();
+					local loadTime = eventPacket.LoadTime or serverTime;
+					local activeTime = eventPacket.ActiveTime or serverTime;
 					
-					local alpha = 1-math.clamp((activeTime-modSyncTime.GetTime())/duration, 0, 1);
+					local alpha = 1-math.clamp((activeTime-serverTime)/duration, 0, 1);
 					
 					radialObject:UpdateLabel(alpha);
 					imageLabel.ImageColor3 = alpha >= 1 and interface.Colors.Branch or Color3.fromRGB(255, 255, 255);
@@ -371,6 +393,31 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		
 		mapImageLabel.Size = UDim2.new(zoomScale, 0, zoomScale, 0);
 		centerButton.BackgroundColor3 = mapFollowPlayer and Color3.fromRGB(50, 50, 100) or Color3.fromRGB(50, 50, 50);
+
+
+		local legendExist = {};
+		for legendId, legendCount in pairs(showLegends) do
+			local legendLib = MAP_LEGEND_LIBRARY[legendId];
+			legendExist[legendId] = true;
+
+			local newLegend = legendFrame:FindFirstChild(legendId) or templateLegendListing:Clone();
+			local textLabel = newLegend:WaitForChild("TextLabel");
+			local pointCircle = newLegend:WaitForChild("PointCircle");
+
+			newLegend.Name = legendId;
+			newLegend.LayoutOrder = legendCount;
+			
+			textLabel.Text = legendLib.Text;
+			pointCircle.BackgroundColor3 = legendLib.Color;
+
+			newLegend.Parent = legendFrame;
+		end
+		for _, obj in pairs(legendFrame:GetChildren()) do
+			if not obj:IsA("GuiObject") then continue end;
+			if legendExist[obj.Name] then continue end;
+			obj:Destroy();
+		end
+
 	end)
 	
 	task.spawn(function()
@@ -442,6 +489,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			});
 		end
 	end
+
+
 
 end
 
