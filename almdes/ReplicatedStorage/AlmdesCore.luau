@@ -40,7 +40,7 @@ if RunService:IsServer() then
     local modProfile = shared.require(game.ServerScriptService.ServerLibrary.ProfileAlmdes);
     local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSaveAlmdes);
     local modApiRequestLibrary = shared.require(game.ServerScriptService.ServerLibrary.ApiRequestLibraryAlmdes);
-
+    local modBaseBuildingSystem = shared.require(game.ServerScriptService.ServerLibrary.BaseBuildingSystem);
 end
 
 function AlmdesCore.OnPlayerAdded(player)

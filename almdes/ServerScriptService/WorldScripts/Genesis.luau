@@ -30,11 +30,12 @@ function WorldCore.onRequire()
         for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
             local interactable: InteractableInstance = modInteractables.getOrNew(interactConfig);
             if interactable.Name ~= "DeployableSocket" then continue end;
+            if interactConfig:GetAttribute("SkipPrebuild") then continue end;
             
             local placeCf = interactable.Values.AttachmentPoint.WorldCFrame;
             local itemId;
 
-            if interactable.Variant == "Window" then
+            if interactable.Variant == "WindowFrame" then
                 local windowItemIds = {
                     "woodwindowbarricade";
                 };

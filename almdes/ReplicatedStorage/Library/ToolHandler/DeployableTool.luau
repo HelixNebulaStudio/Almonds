@@ -17,8 +17,8 @@ local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructib
 
 
 local PLACEMENT_COLORS = {
-	Placable = Color3.fromRGB(98, 177, 128);
-	Invalid = Color3.fromRGB(177, 98, 98);
+	Placable = Color3.fromRGB(124, 161, 200);
+	Invalid = Color3.fromRGB(200, 124, 124);
 }
 
 local deployablePrefabs;
@@ -120,7 +120,7 @@ if RunService:IsClient() then -- MARK: Client
 				if not obj:IsA("BasePart") then continue end;
 				obj.CanCollide = false;
 				obj.CanQuery = false;
-				obj.Transparency = 0.9;
+				obj.Transparency = 0.8;
 				obj.Material = Enum.Material.Neon;
 				obj.Color = color;
 			end
@@ -129,124 +129,124 @@ if RunService:IsClient() then -- MARK: Client
 		local interactProxy: InteractableInstance = nil;
 		local isCfLocked = false;
 		RunService:BindToRenderStep("ToolRender", Enum.RenderPriority.Character.Value, function()
-			if characterProperties.CanAction then
-				local aimRayHit = characterProperties.InteractRayHit;
-				local aimPoint = characterProperties.InteractAimPoint;
-				local aimNormal = characterProperties.InteractAimNormal;
+			if not characterProperties.CanAction then
+				activeHightlightModel.Parent = script;
+				characterProperties.ProxyInteractable = nil;
+				return;
+			end
+			local aimRayHit = characterProperties.InteractRayHit;
+			local aimPoint = characterProperties.InteractAimPoint;
+			local aimNormal = characterProperties.InteractAimNormal;
 
-				if activeHightlightModel == nil then
-					activeHightlightModel = templatePlacementPrefab:Clone();
-					setHighlightColor(PLACEMENT_COLORS.Invalid);
+			if activeHightlightModel == nil then
+				activeHightlightModel = templatePlacementPrefab:Clone();
+				setHighlightColor(PLACEMENT_COLORS.Invalid);
 
-					interactProxy = modInteractables.newProxy("Deployable");
-					interactProxy.Part = activeHightlightModel:WaitForChild("Base");
-					interactProxy.CanInteract = false;
-					interactProxy.InteractDuration = 1;
+				interactProxy = modInteractables.newProxy("Deployable");
+				interactProxy.Part = activeHightlightModel:WaitForChild("Base");
+				interactProxy.CanInteract = false;
+				interactProxy.InteractDuration = 1;
 
-					function interactProxy.BindInteract(interactable: InteractableInstance, info: InteractInfo)
-						Debugger:Warn(`Build {itemId}`);
-						remoteToolInputHandler:FireServer(modRemotesManager.Compress({
-							Action = "action";
-							ActionIndex = 1;
-							Siid = storageItem.ID;
-							ProxyValues = interactProxy.Values;
-						}));
-					end
-
-					function interactProxy.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
-						isCfLocked = characterProperties.InteractAlpha > 0;
-					end
-
-					handler.Garbage:Tag(function()
-						(interactProxy::any).Part = nil;
-						characterProperties.ProxyInteractable = nil;
-					end)
+				function interactProxy.BindInteract(interactable: InteractableInstance, info: InteractInfo)
+					Debugger:Warn(`Build {itemId}`);
+					remoteToolInputHandler:FireServer(modRemotesManager.Compress({
+						Action = "action";
+						ActionIndex = 1;
+						Siid = storageItem.ID;
+						ProxyValues = interactProxy.Values;
+					}));
 				end
 
-				local aimInteractConfig: Configuration = playerClass.Properties.RayHitInteractable;
-				if aimInteractConfig and aimInteractConfig:GetAttribute("_Name") == "DeployableSocket" then
-					activeHightlightModel.Parent = camera;
-					characterProperties.ProxyInteractable = interactProxy;
+				function interactProxy.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
+					isCfLocked = characterProperties.InteractAlpha > 0;
+				end
 
-					local interactable = modInteractables.getOrNew(aimInteractConfig);
-					local attachPoint: Attachment = interactable.Values.AttachmentPoint;
-	
-					local interactPart = interactable.Part;
-					if configurations.ResizeToFit and interactPart then
-						local newSize = interactPart.Size;
-						activeHightlightModel.PrimaryPart.Size = Vector3.new(
-							math.abs(newSize.X), 
-							math.abs(newSize.Y), 
-							math.abs(newSize.Z)
-						);
-					end
-
-					local placeCf: CFrame = attachPoint.WorldCFrame;
-					activeHightlightModel:PivotTo(placeCf);
-
-					local isPlaceable = true;
-					if interactable.Variant ~= configurations.StructureType then
-						isPlaceable = false;
-					elseif interactable.Values.ActiveDeployable.Value ~= nil then
-						isPlaceable = false;
-					end
-
-					if isPlaceable then
-						interactProxy.Values = {
-							PrefabName = activeHightlightModel.Name;
-							SocketConfig = aimInteractConfig;
-						};
-						setHighlightColor(PLACEMENT_COLORS.Placable);
-						interactProxy.CanInteract = true;
-						interactProxy.Label = `Attach`;
-				
-					else
-						setHighlightColor(PLACEMENT_COLORS.Invalid);
-						interactProxy.CanInteract = false;
-						interactProxy.Label = `Can't Attach Here`;
-					end
-
-
-				elseif aimRayHit then
-					activeHightlightModel.Parent = camera;
-					characterProperties.ProxyInteractable = interactProxy;
-
-					local lookVector = camera.CFrame.LookVector:Cross(aimNormal);
-					local placeCf: CFrame = CFrame.lookAlong(aimPoint, lookVector, aimNormal)
-											* CFrame.Angles(0, math.pi/2, 0);
-					
-					if configurations.PlacementOffset then
-						placeCf = placeCf * configurations.PlacementOffset;
-					end
-					
-					local isPlaceable = true;
-					if localPlayer:DistanceFromCharacter(placeCf.Position) > 15 then
-						isPlaceable = false;
-					end
-
-					if isCfLocked == false or isPlaceable == false then
-						activeHightlightModel:PivotTo(placeCf);
-					end
-
-					if isPlaceable then
-						interactProxy.Values = {
-							PrefabName = activeHightlightModel.Name;
-							PlaceCFrame = activeHightlightModel:GetPivot();
-						};
-						setHighlightColor(PLACEMENT_COLORS.Placable);
-						interactProxy.CanInteract = true;
-						interactProxy.Label = `Build`;
-				
-					else
-						setHighlightColor(PLACEMENT_COLORS.Invalid);
-						interactProxy.CanInteract = false;
-						interactProxy.Label = `Can't Place Here`;
-					end
-
-				else
-					activeHightlightModel.Parent = script;
+				handler.Garbage:Tag(function()
+					(interactProxy::any).Part = nil;
 					characterProperties.ProxyInteractable = nil;
+				end)
+			end
+
+			local aimInteractConfig: Configuration = playerClass.Properties.RayHitInteractable;
+			if aimInteractConfig and aimInteractConfig:GetAttribute("_Name") == "DeployableSocket" then
+				activeHightlightModel.Parent = camera;
+				characterProperties.ProxyInteractable = interactProxy;
+
+				local interactable = modInteractables.getOrNew(aimInteractConfig);
+				local attachPoint: Attachment = interactable.Values.AttachmentPoint;
+
+				local interactPart = interactable.Part;
+				if configurations.ResizeToFit and interactPart then
+					local newSize = interactPart.Size;
+					activeHightlightModel.PrimaryPart.Size = Vector3.new(
+						math.abs(newSize.X), 
+						math.abs(newSize.Y), 
+						math.abs(newSize.Z)
+					);
 				end
+
+				local placeCf: CFrame = attachPoint.WorldCFrame;
+				activeHightlightModel:PivotTo(placeCf);
+
+				local isPlaceable = true;
+				if interactable.Variant ~= configurations.StructureType then
+					isPlaceable = false;
+				elseif interactable.Values.ActiveDeployable.Value ~= nil then
+					isPlaceable = false;
+				end
+
+				if isPlaceable then
+					interactProxy.Values = {
+						PrefabName = activeHightlightModel.Name;
+						SocketConfig = aimInteractConfig;
+					};
+					setHighlightColor(PLACEMENT_COLORS.Placable);
+					interactProxy.CanInteract = true;
+					interactProxy.Label = `Attach`;
+			
+				else
+					setHighlightColor(PLACEMENT_COLORS.Invalid);
+					interactProxy.CanInteract = false;
+					interactProxy.Label = `Can't Attach Here`;
+				end
+
+
+			elseif aimRayHit then
+				activeHightlightModel.Parent = camera;
+				characterProperties.ProxyInteractable = interactProxy;
+
+				local lookVector = camera.CFrame.LookVector:Cross(aimNormal);
+				local placeCf: CFrame = CFrame.lookAlong(aimPoint, lookVector, aimNormal)
+										* CFrame.Angles(0, math.pi/2, 0);
+				
+				if configurations.PlacementOffset then
+					placeCf = placeCf * configurations.PlacementOffset;
+				end
+				
+				local isPlaceable = true;
+				if localPlayer:DistanceFromCharacter(placeCf.Position) > 15 then
+					isPlaceable = false;
+				end
+
+				if isCfLocked == false or isPlaceable == false then
+					activeHightlightModel:PivotTo(placeCf);
+				end
+
+				if isPlaceable then
+					interactProxy.Values = {
+						PrefabName = activeHightlightModel.Name;
+						PlaceCFrame = activeHightlightModel:GetPivot();
+					};
+					setHighlightColor(PLACEMENT_COLORS.Placable);
+					interactProxy.CanInteract = true;
+					interactProxy.Label = `Build`;
+			
+				else
+					setHighlightColor(PLACEMENT_COLORS.Invalid);
+					interactProxy.CanInteract = false;
+					interactProxy.Label = `Can't Place Here`;
+				end
+
 			else
 				activeHightlightModel.Parent = script;
 				characterProperties.ProxyInteractable = nil;
@@ -301,7 +301,7 @@ elseif RunService:IsServer() then -- MARK: Server
 		end
 
 		if configurations.IsDoorEntity then
-			local doorConfig = modDoors.newDoor();
+			local doorConfig = modDoors.createDoor();
 			doorConfig.Parent = new;
 
 		end

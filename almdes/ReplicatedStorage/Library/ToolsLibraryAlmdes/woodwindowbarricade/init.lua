@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Window Barricade";
-		StructureType = "Window";
+		StructureType = "WindowFrame";
 		
 		BuildDuration = 2;
 		PlacementOffset = CFrame.new(0, 4, 0) * CFrame.Angles(0, 0, 0);

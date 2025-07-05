@@ -14,7 +14,7 @@ function modRemotesManager.onRequire()
 
         --== Systmes;
         modRemotesManager:NewFunctionRemote("PortableStorage", 0.1).Secure = true;
-        modRemotesManager:NewFunctionRemote("BaseSystem", 0.1).Secure = true;
+        modRemotesManager:NewFunctionRemote("BuildingPlan", 0.1).Secure = true;
 
         --== Structures;
         modRemotesManager:NewEventRemote("StructureAttachmentBuild");

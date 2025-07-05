@@ -8,19 +8,14 @@ local toolPackage = {
 	Class="Tool";
 	HandlerType="BuildingPlan";
 
+	ToolWindow = "BuildingPlan";
+
 	Animations={
 		Core={Id=8388875136;};
 		Use={Id=8388988860};
 	};
 	Audio={};
-	Configurations={
-		ComponentCost = {
-			Wall={ItemId="wood"; Amount=5;};
-			Doorway={ItemId="wood"; Amount=5;};
-			WallFrame={ItemId="wood"; Amount=5;};
-			WindowFrame={ItemId="wood"; Amount=5;};
-		};
-	};
+	Configurations={};
 	Properties={};
 };
 
