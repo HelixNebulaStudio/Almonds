@@ -18,7 +18,7 @@ local toolPackage = {
 		StructureType = "WallFrame";
 		
 		BuildDuration = 5;
-		BuildOffset=CFrame.new(0, 0, 0);
+		PlacementOffset=CFrame.new(0, 0, 0);
 
 		StructureHealth = 250;
 	};

@@ -16,6 +16,9 @@ local toolPackage = {
 	Configurations={
 		DisplayName = "Door";
 		StructureType = "Doorway";
+
+		IsDoorEntity = true;
+		InteractableName = "Door";
 	};
 	Properties={};
 };

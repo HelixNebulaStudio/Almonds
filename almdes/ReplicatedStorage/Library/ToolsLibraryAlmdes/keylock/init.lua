@@ -17,7 +17,7 @@ local toolPackage = {
 		DisplayName = "DoorLock";
 		StructureType = "Utility";
 
-		BuildOffset = CFrame.new(0, 0, 0);
+		PlacementOffset = CFrame.new(0, 0, 0);
 	};
 	Properties={};
 };

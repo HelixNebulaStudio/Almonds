@@ -3,6 +3,10 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local CollectionService = game:GetService("CollectionService");
 
+local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
+local modDeployableTool = shared.require(game.ReplicatedStorage.Library.ToolHandler.DeployableTool);
+local modToolsLibrary = shared.require(game.ReplicatedStorage.Library.ToolsLibrary);
+
 if RunService:IsServer() then
     modWorldLoot = shared.require(game.ServerScriptService.ServerLibrary.WorldLoot);
 end
@@ -22,6 +26,44 @@ function WorldCore.onRequire()
         end, 999);
 
         modWorldLoot.init();
+
+        for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
+            local interactable: InteractableInstance = modInteractables.getOrNew(interactConfig);
+            if interactable.Name ~= "DeployableSocket" then continue end;
+            
+            local placeCf = interactable.Values.AttachmentPoint.WorldCFrame;
+            local itemId;
+
+            if interactable.Variant == "Window" then
+                local windowItemIds = {
+                    "woodwindowbarricade";
+                };
+                itemId = windowItemIds[math.random(1, #windowItemIds)];
+
+            elseif interactable.Variant == "WallFrame" then
+                local windowItemIds = {
+                    "wooddoubledoors";
+                    "cellwall";
+                };
+                itemId = windowItemIds[math.random(1, #windowItemIds)];
+
+            elseif interactable.Variant == "Doorway" then
+                local windowItemIds = {
+                    "wooddoor";
+                };
+                itemId = windowItemIds[math.random(1, #windowItemIds)];
+
+            end
+
+            if itemId == nil then continue end;
+
+            local toolPackage = modToolsLibrary.get(itemId);
+            modDeployableTool.spawnDeployable(itemId, nil, placeCf, {
+                Configurations = toolPackage.Configurations;
+                Interactable = interactable;
+            });
+
+        end;
     end
 
 	shared.modCommandsLibrary.bind{

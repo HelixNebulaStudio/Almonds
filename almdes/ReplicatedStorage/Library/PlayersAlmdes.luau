@@ -14,17 +14,26 @@ end
 --==
 
 
-shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClass)
-    if RunService:IsClient() then return end;
-    
+shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmdes)
     local player = playerClass:GetInstance();
-    local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
 
-    local statusComp: StatusComp = playerClass.StatusComp;
+    if RunService:IsServer() then
+        local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+
+        local statusComp: StatusComp = playerClass.StatusComp;
+
+    elseif RunService:IsClient() then
+
+    end
+    
+    playerClass.OnIsDeadChanged:Once(function(isDead)
+        if not isDead then return end;
+        Debugger:Warn(`Dead`);
+    end)
 end)
 
 
-shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClass, character: Model)
+shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClassAlmdes, character: Model)
     if RunService:IsClient() then return end;
 
     local player = playerClass:GetInstance();
@@ -62,8 +71,7 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     statusComp:Apply("Comfort", comfortStatusCompApplyParam);
 end);
 
-
-shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: PlayerClass, tickData: TickData)
+shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: PlayerClassAlmdes, tickData: TickData)
 
 end);
 

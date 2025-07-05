@@ -373,6 +373,16 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end
 
+	task.spawn(function()
+		modData.RequestStorage{
+			Action = "GetStorage";
+			StorageId = "Inventory";
+		};
+		modData.RequestStorage{
+			Action = "GetStorage";
+			StorageId = "Clothing";
+		};
+	end)
 end
 
 return interfacePackage;

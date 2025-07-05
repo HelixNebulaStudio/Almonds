@@ -16,6 +16,9 @@ local toolPackage = {
 	Configurations={
 		DisplayName = "Double Doors";
 		StructureType = "WallFrame";
+
+		IsDoorEntity = true;
+		InteractableName = "Door";
 	};
 	Properties={};
 };

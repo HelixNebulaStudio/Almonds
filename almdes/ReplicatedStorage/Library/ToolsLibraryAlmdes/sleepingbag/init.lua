@@ -17,7 +17,7 @@ local toolPackage = {
 		DisplayName = "Sleepingbag";
 		StructureType = "SpawnPoint";
 		
-		BuildOffset=CFrame.new(0, 0, 0);
+		PlacementOffset=CFrame.new(0, 0, 0);
 		
 		GenericInteractable = "SleepingBag";
 	};

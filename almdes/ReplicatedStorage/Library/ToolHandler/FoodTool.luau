@@ -45,7 +45,6 @@ if RunService:IsClient() then -- MARK: Client
 		local humanoid: Humanoid = playerClass.Humanoid;
 
 		local modCharacter = modData:GetModCharacter();
-		local modInterface = modData:GetInterfaceModule();
 		
 		local mouseProperties = modCharacter.MouseProperties;
 		local characterProperties = modCharacter.CharacterProperties;

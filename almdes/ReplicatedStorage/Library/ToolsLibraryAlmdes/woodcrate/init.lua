@@ -14,7 +14,10 @@ local toolPackage = {
 	};
 	Audio={};
 	Configurations={
-		GenericInteractable = "Crate";
+		StructureType = "Crate";
+		StoragePresetId = "crate";
+
+		InteractableName = "Storage";
 	};
 	Properties={};
 };

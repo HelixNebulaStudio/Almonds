@@ -18,7 +18,7 @@ local toolPackage = {
 		StructureType = "Window";
 		
 		BuildDuration = 2;
-		BuildOffset = CFrame.Angles(0, 0, 0);
+		PlacementOffset = CFrame.new(0, 4, 0) * CFrame.Angles(0, 0, 0);
 		
 		ResizeToFit = true;
 		StructureHealth = 250;

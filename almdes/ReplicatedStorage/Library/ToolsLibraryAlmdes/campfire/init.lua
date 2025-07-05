@@ -17,7 +17,7 @@ local toolPackage = {
 		DisplayName = "Campfire";
 		StructureType = "Utility";
 
-		BuildOffset=CFrame.new(0, 0, 0);
+		PlacementOffset = CFrame.new(0, 0, 0);
 
 		GenericInteractable = "Campfire";
 	};

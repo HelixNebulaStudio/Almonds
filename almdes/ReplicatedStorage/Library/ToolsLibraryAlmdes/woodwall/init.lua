@@ -18,7 +18,7 @@ local toolPackage = {
 		StructureType = "Wall";
 		
 		BuildDuration = 2;
-		BuildOffset = CFrame.Angles(0, 0, 0);
+		PlacementOffset = CFrame.Angles(0, 0, 0);
 		
 		ResizeToFit = true;
 		StructureHealth = 500;
