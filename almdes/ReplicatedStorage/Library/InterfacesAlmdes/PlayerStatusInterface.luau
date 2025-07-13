@@ -13,6 +13,7 @@ local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemIn
 local modRadialImage = shared.require(game.ReplicatedStorage.Library.UI.RadialImage);
 
 local RADIAL_CONFIG = '{"version":1,"size":128,"count":128,"columns":8,"rows":8,"images":["rbxassetid://4467212179","rbxassetid://4467212459"]}';
+local POPIN_TWEENINFO = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out);
 local BAR_TWEENINFO = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
 
 local BUFF_COLOR = Color3.fromRGB(16, 107, 66);
@@ -233,6 +234,15 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			
 			statusGuiObj.Icon.Image = lib.Icon or `rbxassetid://484211948`;
 			statusGuiObj.Title.Text = lib.Name or libId;
+
+			local alphaValue = Instance.new("NumberValue");
+			alphaValue.Value = 0;
+			alphaValue.Parent = radialBar;
+
+			statusGuiObj.AlphaValue = alphaValue;
+			alphaValue:GetPropertyChangedSignal("Value"):Connect(function()
+				statusGuiObj.Radial:UpdateLabel(alphaValue.Value);
+			end)
 		end
 		
 		
@@ -280,7 +290,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		else
 			radialBar.ImageColor3 = lib.Buff and BUFF_COLOR or DEBUFF_COLOR;
 		end
-		statusGuiObj.Radial:UpdateLabel(alpha);
 		
 		local statusVisible = true;
 		
@@ -310,7 +319,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 
-		statusGuiObj.Button.Visible = statusVisible;
+		local previousVisible = statusGuiObj.Button.Visible;
+		if previousVisible ~= statusVisible then
+			statusGuiObj.Button.Visible = statusVisible;
+			TweenService:Create(statusGuiObj.AlphaValue, POPIN_TWEENINFO, {Value = alpha}):Play();
+		else
+			TweenService:Create(statusGuiObj.AlphaValue, POPIN_TWEENINFO, {Value = alpha}):Play();
+		end
 		
 		if lib.QuantityLabel then
 			local stat = statusClass[lib.QuantityLabel];

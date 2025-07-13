@@ -1,6 +1,7 @@
 {
     "search.exclude": {
-        "**/*.meta.json": true
+        "**/*.meta.json": true,
+        "docs/**": true
     },
     "luau.trace.server": "verbose",
     "luau-lsp.sourcemap.autogenerate": true,

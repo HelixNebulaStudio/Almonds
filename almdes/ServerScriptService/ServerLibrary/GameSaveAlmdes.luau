@@ -6,7 +6,7 @@ local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 
 local modStorage = shared.require(game.ServerScriptService.ServerLibrary.Storage);
-local modItemFactory = shared.require(game.ServerScriptService.ServerLibrary.ItemFactory);
+local modItemProcessor = shared.require(game.ServerScriptService.ServerLibrary.ItemProcessor);
 local modPortableStorages = shared.require(game.ServerScriptService.ServerLibrary.PortableStorages);
 
 --==
@@ -15,9 +15,13 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 	Debugger:Warn("OnNewSave", player);
 
 	local saveMeta = getmetatable(gameSave :: any);
-	saveMeta.ItemFactory = modItemFactory.new();
-	-- saveMeta.ItemFactory:GetMeta()["Player"] = player;
-	-- saveMeta.ItemFactory:GetMeta()["Storage"] = gameSave.Inventory;
+
+	--ItemProcessor
+	local itemProcessor = modItemProcessor.new();
+	itemProcessor:Setup(player, gameSave.Inventory);
+	profile.Garbage:Tag(itemProcessor);
+	saveMeta.ItemProcessor = itemProcessor;
+	
 	
 	gameSave.Inventory.MaxSize = 12;
 	gameSave.Inventory.Size = gameSave.Inventory.MaxSize;

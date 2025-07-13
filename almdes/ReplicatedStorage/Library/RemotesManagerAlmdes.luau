@@ -24,7 +24,7 @@ function modRemotesManager.onRequire()
         modRemotesManager:NewEventRemote("AttachableLock");
 
         --== Factory Handlers
-        modRemotesManager:NewFunctionRemote("ItemFactory", 0.1);
+        modRemotesManager:NewFunctionRemote("ItemProcessor", 0.1);
     end
 end
 

@@ -63,8 +63,8 @@ library:Add(setmetatable({Id="gastank";}, metalLight));
 
 
 library:Add(setmetatable({Id="woodwindowbarricade";}, woodLight));
-library:Add(setmetatable({Id="wooddoubledoors";}, woodLight));
-library:Add(setmetatable({Id="wooddoor";}, woodLight));
+library:Add(setmetatable({Id="wooddoor"; Duration=25;}, woodLight));
+library:Add(setmetatable({Id="wooddoubledoors"; Duration=40;}, woodMed));
 library:Add(setmetatable({Id="woodcrate";}, woodMed));
 library:Add(setmetatable({Id="barbedwooden";}, woodMed));
 

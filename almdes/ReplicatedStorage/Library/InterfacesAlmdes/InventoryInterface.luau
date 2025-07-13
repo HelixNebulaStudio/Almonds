@@ -13,10 +13,8 @@ local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchCon
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library:WaitForChild("RemotesManager"));
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
-local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modFormatNumber = shared.require(game.ReplicatedStorage.Library.FormatNumber);
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
-local modConfigurations = shared.require(game.ReplicatedStorage.Library:WaitForChild("Configurations"));
 local modTableManager = shared.require(game.ReplicatedStorage.Library.TableManager);
 
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
@@ -38,9 +36,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
 
     local remoteUseStorageItem = modRemotesManager:Get("UseStorageItem");
-    local remoteItemFactory = modRemotesManager:Get("ItemFactory");
+    local remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
 
     local templateItemSlot = script:WaitForChild("ItemSlot");
+	local templateProgressBar = script:WaitForChild("progressBar");
 
 
     local defaultStorageInterface: StorageInterface, clothingStorageInterface: StorageInterface;
@@ -59,6 +58,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local invWindow: InterfaceWindow = interface:NewWindow("Inventory", invFrame);
 	invWindow.UseTween = false;
+
+	local binds = invWindow.Binds;
 
     local invFrameUILayout = invFrame:WaitForChild("UIListLayout");
     invFrameUILayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
@@ -221,7 +222,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			
 			modStorageInterface.CloseOptionMenus();
 			
-			local returnPacket = remoteItemFactory:InvokeServer("dropitemrequest", {
+			local returnPacket = remoteItemProcessor:InvokeServer("dropitemrequest", {
 				StorageItemId = itemSlot.ID;
 				StorageId = interface.StorageId;
 			});
@@ -242,14 +243,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end;
 		Click=function(slotItem)
 			modStorageInterface.CloseOptionMenus();
-			local returnPacket = remoteItemFactory:InvokeServer("deconstructrequest", {
-				StorageItemId = slotItem.ID;
+			local returnPacket = remoteItemProcessor:InvokeServer("deconstructrequest", {
+				Siid = slotItem.ID;
 			});
 
-			if returnPacket.Success then
+			if returnPacket and returnPacket.Success then
 				Debugger:Log("Deconstructing ", slotItem, returnPacket);
-                --MARK: TODO: ItemFactory
-				--Interface.UpdateItemFactoryData(returnPacket);
+				binds.UpdateItemProcessorData(returnPacket)
+				interface:FireEvent("DataItemProcessorUpdate");
 			end
 		end;
 		Order=3;
@@ -276,7 +277,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		Click=function(slotItem)
 			modStorageInterface.CloseOptionMenus();
 			
-			local returnPacket = remoteItemFactory:InvokeServer("unloadammorequest", {
+			local returnPacket = remoteItemProcessor:InvokeServer("unloadammorequest", {
 				StorageItemId = slotItem.ID;
 				StorageId = slotItem.Interface.StorageId;
 			});
@@ -383,6 +384,95 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			StorageId = "Clothing";
 		};
 	end)
+
+	--MARK: Deconstruction
+	interface:BindEvent("DataItemProcessorUpdate", function()
+		local itemProcessor = modData.ItemProcessor;
+		if itemProcessor == nil then return end;
+
+		local deconstructProcesses = itemProcessor.Queues["ID"];
+		if deconstructProcesses == nil then return end;
+		
+		local curServerTime = workspace:GetServerTimeNow();
+
+		for a=1, #deconstructProcesses do
+			local processData = deconstructProcesses[a];
+			local siid = processData.Id; 
+
+			local itemSlots = modStorageInterface:GetItemSlotsOfSiid(siid);
+			for a=1, #itemSlots do
+				local itemslot = itemSlots[a];
+
+				local itemButton = itemslot.ItemButtonObject;
+				local progressFrame = itemButton.ProgressBar;
+				
+				if progressFrame == nil then
+					progressFrame = templateProgressBar:Clone();
+					progressFrame.Parent = itemButton.ImageButton;
+					itemButton.ProgressBar = progressFrame;
+				end
+
+				Debugger:Warn(`processData`, processData);
+				local queueIndex = processData.QueueIndex;
+				local endTick = processData.EndTick;
+
+				local bar = progressFrame.Bar;
+				bar.BackgroundColor3 = Color3.fromRGB(166, 87, 87);
+
+				progressFrame.Visible = true;
+				if endTick then
+					bar.Size = UDim2.new(1, 0, 1, 0);
+
+					local activeTween = bar:GetAttribute("ActiveTween");
+					if activeTween == nil or activeTween ~= endTick then
+						bar:SetAttribute("ActiveTween", endTick);
+
+						local timeRemaining = processData.EndTick-curServerTime;
+						local tween = TweenService:Create(bar, TweenInfo.new(timeRemaining), {
+							Size = UDim2.new(0, 0, 1, 0);
+						});
+						tween.Completed:Connect(function(state)
+							if state ~= Enum.PlaybackState.Completed then 
+								return;
+							end;
+							progressFrame.Visible = false;
+							progressFrame.Size = UDim2.new(0, 0, 1, 0);
+						end)
+						tween:Play();
+					end
+
+				else
+					bar:SetAttribute("ActiveTween", nil);
+					TweenService:Create(bar, TweenInfo.new(0.1), {
+						Size = UDim2.new(1, 0, 1, 0);
+					}):Play();
+					progressFrame.Visible = true;
+				end
+
+				local label = progressFrame.Label;
+				label.Text = queueIndex or ``;
+			end
+		end
+	end)
+
+	--==MARK: ItemProcessor
+	function binds.UpdateItemProcessorData(returnPacket)
+		if returnPacket == nil or returnPacket.Data == nil then return end;
+		Debugger:Log("ItemProcessor returnPacket ", returnPacket);
+		
+		modData.ItemProcessor = returnPacket.Data;
+
+		interface:FireEvent("DataItemProcessorUpdate");
+	end
+	function remoteItemProcessor.OnClientInvoke(action, packet)
+		if action == "sync" then
+			binds.UpdateItemProcessorData(packet);
+		end
+	end
+	task.spawn(function()
+		binds.UpdateItemProcessorData(remoteItemProcessor:InvokeServer("sync"));
+	end);
+	
 end
 
 return interfacePackage;
