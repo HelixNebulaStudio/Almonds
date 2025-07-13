@@ -28,6 +28,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	charWindow.UseTween = false;
 	charWindow.UseMenuBlur = true;
     charWindow.DisableInteractables = true;
+    charWindow.DisableHotKeysHint = true;
     charWindow.BoolStringWhenActive = {String="!CharacterHud"; Priority=5;};
     charWindow:SetClosePosition(charFrame.Position, charFrame.Position);
 
@@ -45,6 +46,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             TweenService:Create(charFrame, FRAME_TWEENINFO, {
                 BackgroundTransparency = 0.75;
             }):Play();
+
         else
             local tween: Tween = TweenService:Create(charFrame, FRAME_TWEENINFO, {
                 BackgroundTransparency = 1;
@@ -56,6 +58,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             charFrame.Visible = false;
             interface:HideAll();
             tween:Play();
+
         end
     end)
     

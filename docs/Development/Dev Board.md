@@ -7,10 +7,14 @@ kanban-plugin: list
 ## Priority
 
 - [ ] [[ItemProcessor]]
+- [ ] [[Crafting Recipe Menu & System]]
+
+
+***
+
+## Archive
+
 - [ ] [[Crafting System & Interface]]
-
-
-
 
 %% kanban:settings
 ```

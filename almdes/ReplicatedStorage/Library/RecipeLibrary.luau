@@ -331,6 +331,8 @@ library:Add{
 	Category=categories.Clothing;
 	Recipe={
 		{Type="Item"; ItemId="cloth"; Amount=160};
+		{Type="Item"; ItemId="tarp"; Amount=40};
+		{Type="Item"; ItemId="rope"; Amount=20};
 	};
 	Duration=10;
 

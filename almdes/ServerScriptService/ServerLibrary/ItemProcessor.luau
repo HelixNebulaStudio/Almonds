@@ -52,11 +52,11 @@ function Queue:Add(processData)
 end
 
 function Queue:Process()
-    local list = self;
-    if #list == 0 then return end;
-
     local concur = self.Concurrency;
     if concur <= 0 then return end;
+
+    local list = self;
+    if #list == 0 then return end;
 
     local curServerTick = workspace:GetServerTimeNow();
     for a=1, #list do
@@ -70,8 +70,10 @@ function Queue:Process()
         processData.QueueIndex = nil;
         if processData.EndTick == nil then
             processData.EndTick = curServerTick + processData.Duration;
-        elseif curServerTick > processData.EndTick then
+
+        elseif curServerTick >= processData.EndTick then
             processData.Complete = true;
+
         end
     end
 end
@@ -81,12 +83,11 @@ function ItemProcessor.onRequire()
     remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
 
     for _, module in pairs(game.ServerScriptService.ServerLibrary.ItemProcessHandlers:GetChildren()) do
-        local handler = shared.require(module);
-        
         local processKey = module.Name;
         local processType = modStrings.ExtractUppercase(processKey);
         ItemProcessor.ProcessTypes[processKey] = processType;
 
+        local handler = shared.require(module);
         for _, k in pairs(handler.RequestActions) do
             ItemProcessor.RequestActionHandlers[k] = processType;
         end
@@ -167,40 +168,6 @@ function ItemProcessor.onRequire()
 
         --     return rPacket;
             
-        -- elseif action == "craftrequest" then
-        --     local recipeId = packet.RecipeId;
-            
-        --     local recipeLib = modRecipeLibrary:Find(recipeId);
-        --     if recipeLib == nil then return rPacket end;
-            
-        --     local unlockedRecipes = profile.GameSave.RecipesUnlocked;
-        --     if recipeLib.Workbench ~= nil and unlockedRecipes[recipeId] == nil then return rPacket end;
-
-        --     local fulfill, resultList = modStorage.FulfillList(player, recipeLib.Recipe);
-        --     if not fulfill then Debugger:Log("NeedList", resultList) end;
-
-        --     if not fulfill then
-        --         shared.Notify(player, "Insufficient Resources.", "Negative");
-        --         return rPacket;
-        --     end;
-            
-        --     if itemProcessor.Queue.CraftRecipe and #itemProcessor.Queue.CraftRecipe > 5 then
-        --         shared.Notify(player, "Crafting queue is full.", "Negative");
-        --         return rPacket;
-        --     end;
-            
-        --     modStorage.ConsumeList(resultList);
-            
-        --     itemProcessor:NewProcess("Queue", {
-        --         Type=tostring(ProcessTypes.CraftRecipe);
-        --         Id=recipeId;
-        --         Duration=recipeLib.Duration or 1;
-        --     })
-            
-        --     rPacket.Success = true;
-        --     rPacket.Data = itemProcessor;
-            
-  
         -- elseif action == "unlockreciperequest" then
         --     local index = packet.Index;
         --     local recipeId = packet.RecipeId;
@@ -354,51 +321,56 @@ function ItemProcessor:AddProcess(processData)
     self:ProcessQueues();
 end
 
-function ItemProcessor:ProcessQueues()
+function ItemProcessor:ProcessQueues(shouldSync)
     local nextClosestTick = math.huge;
-    local nextClosestProcessData = nil;
-
+    
     for _, queue in pairs(self.Queues) do
         queue:Process();
 
         local concur = queue.Concurrency;
-        local a = 1;
+        local index = 1;
         for _=1, #queue do
-            local processData = queue[a];
-            if a > concur then
+            local processData = queue[index];
+            if index > concur then
                 continue;
             end
             if processData.Complete ~= true then 
-                a = a+1;
+                index = index+1;
                 continue;
             end;
 
-            processData = table.remove(queue, a);
+            Debugger:Warn(`Id({processData.Id})`, processData);
+            processData = table.remove(queue, index);
 
-            task.spawn(function()
-                local handler = self.Handlers[processData.Type];
-                if handler.BindProcessComplete then
-                    handler:BindProcessComplete(processData);
-                end
-            end)
+            local handler = self.Handlers[processData.Type];
+            if handler.BindProcessComplete then
+                handler:BindProcessComplete(processData);
+            end
+            
+            queue:Process();
+            shouldSync = true;
         end
         for a=1, #queue do
             local processData = queue[a];
             if processData.EndTick == nil then continue end;
             nextClosestTick = math.min(nextClosestTick, processData.EndTick);
-            nextClosestProcessData = processData;
         end
     end
+    if nextClosestTick == math.huge then
+        self:Sync();
+        return;
+    end;
 
-    if nextClosestProcessData == nil then return end;
-    local processData = nextClosestProcessData;
-
-    local duration = processData.Duration;
+    local curServerTick = workspace:GetServerTimeNow();
+    local duration = nextClosestTick - curServerTick+0.1;
+    
     self.Scheduler:ScheduleFunction(function()
-        self:ProcessQueues();
+        self:ProcessQueues(false);
     end, tick() + duration);
 
-    self:Sync();
+    if shouldSync ~= false then
+        self:Sync();
+    end
 end
 
 function ItemProcessor:Sync()

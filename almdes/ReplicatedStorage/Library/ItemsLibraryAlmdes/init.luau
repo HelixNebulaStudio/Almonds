@@ -27,6 +27,7 @@ function modItemsLibrary.onRequire()
 	new(resourceBase, {Id="jerrycan"; Name="Jerrycan"; Icon="rbxassetid://5886813198"; Stackable=false; BaseValues={Fuel=25}; Description="Steel-pressed container that holds highly flammable fuel. Ignited fuel will deal 1% of max health as damage (Min: 10).";});
 	
 	new(resourceBase, {Id="tarp"; Name="Tarp"; Icon="rbxassetid://12369050152"; Description="Useful resource to contain elements of liquid.";});
+	new(resourceBase, {Id="rope"; Name="Rope"; Icon="rbxassetid://13265271329"; Description="Useful for tying things together.";});
 	
 	--=========================================================[[ AMMO ]]==========================================================--
 	local ammoBase = {
@@ -127,10 +128,10 @@ function modItemsLibrary.onRequire()
 		};
 	};
 	
-	new(storageBase, {Id="survivorsbackpack"; Name="Survivor's Backpack"; Icon="rbxassetid://8948320931"; SlotColor=Color3.fromRGB(75, 50, 50);});
-	new(storageBase, {Id="dufflebag"; Name="Duffle Bag"; Icon="rbxassetid://8827967921"; SlotColor=Color3.fromRGB(75, 75, 50);});
-	new(storageBase, {Id="ammopouch"; Name="Ammo Pouch"; Icon="rbxassetid://7335420098"; SlotColor=Color3.fromRGB(50, 75, 50);});
-	new(storageBase, {Id="tacticalvest"; Name="Tactical Vest"; Icon="rbxassetid://12060781576"; SlotColor=Color3.fromRGB(50, 75, 75);});
+	new(storageBase, {Id="survivorsbackpack"; Name="Survivor's Backpack"; Description="Equip it in clothing to access an additional 12 slots."; Icon="rbxassetid://8948320931"; SlotColor=Color3.fromRGB(75, 50, 50);});
+	new(storageBase, {Id="dufflebag"; Name="Duffle Bag"; Description="Equip it in clothing to access an additional 6 slots."; Icon="rbxassetid://8827967921"; SlotColor=Color3.fromRGB(75, 75, 50);});
+	new(storageBase, {Id="ammopouch"; Name="Ammo Pouch"; Description="Equip it in clothing to access an additional 3 slots."; Icon="rbxassetid://7335420098"; SlotColor=Color3.fromRGB(50, 75, 50);});
+	new(storageBase, {Id="tacticalvest"; Name="Tactical Vest"; Description="Equip it in clothing to access an additional 3 slots."; Icon="rbxassetid://12060781576"; SlotColor=Color3.fromRGB(50, 75, 75);});
 
 	--==========================================================[[ CRATES ]]==========================================================--
 	local crateBase = {

@@ -14,6 +14,7 @@ export type PlayerClassAlmdes = PlayerClass & {
 
 -- MARK: GameSaveAlmdes
 export type GameSaveAlmdes = GameSave & {
-    ItemProcessor: anydict;
     WorkbenchSeed: number;
+    ItemProcessor: anydict;
+    RecipesUnlocked: anydict;
 };

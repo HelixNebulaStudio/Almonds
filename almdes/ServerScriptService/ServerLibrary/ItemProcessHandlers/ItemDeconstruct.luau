@@ -5,6 +5,7 @@ local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibra
 local modDeconstructLibrary = require(game.ReplicatedStorage.Library.DeconstructLibrary);
 local modDropRateCalculator = shared.require(game.ReplicatedStorage.Library.DropRateCalculator);
 
+local PROCESSTYPE = script.Name;
 
 local Handler = {};
 Handler.__index = Handler;
@@ -64,12 +65,17 @@ function Handler:ClientRequest(action, packet, rPacket)
             rPacket.FailMsg = `{itemId} is not deconstructable.`;
             return rPacket;
         end;
+
+        if #self.Queue > 10 then
+            rPacket.FailMsg = "Queue is full.";
+            return rPacket;
+        end
         
         local processData = itemProcessor.newProcessData();
         processData.meta.StorageItem = storageItem;
         processData.meta.Storage = storage;
 
-        processData.Type = itemProcessor.ProcessTypes.ItemDeconstruct;
+        processData.Type = itemProcessor.ProcessTypes[PROCESSTYPE];
         processData.Id = siid;
         processData.Duration = deconstructLib.Duration or 5;
 

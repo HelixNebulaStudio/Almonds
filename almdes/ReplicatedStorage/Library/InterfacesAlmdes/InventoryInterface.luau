@@ -10,7 +10,7 @@ local localPlayer = game.Players.localPlayer;
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
-local modRemotesManager = shared.require(game.ReplicatedStorage.Library:WaitForChild("RemotesManager"));
+local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
 local modFormatNumber = shared.require(game.ReplicatedStorage.Library.FormatNumber);
@@ -91,6 +91,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             invFrame.Visible = true;
             
             modStorageInterface.QueueRefreshStorage({"Inventory", "Clothing"});
+            interface:ToggleWindow("CraftingMenu", true);
 
         else
 			newHotbarFrame.Parent = interface.ScreenGui;
@@ -103,6 +104,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			defaultStorageInterface.OnItemButton1Click = defaultStorageInterface.UseItem;
 
             interface:ToggleWindow("ExternalStorage", false);
+            interface:ToggleWindow("CraftingMenu", false);
             modStorageInterface.CloseOptionMenus();
         end
     end)
@@ -412,10 +414,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 					itemButton.ProgressBar = progressFrame;
 				end
 
-				Debugger:Warn(`processData`, processData);
 				local queueIndex = processData.QueueIndex;
 				local endTick = processData.EndTick;
 
+				local uistroke = progressFrame.UIStroke;
+				uistroke.Color = Color3.fromRGB(136, 67, 67);
 				local bar = progressFrame.Bar;
 				bar.BackgroundColor3 = Color3.fromRGB(166, 87, 87);
 
@@ -454,25 +457,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 	end)
-
-	--==MARK: ItemProcessor
-	function binds.UpdateItemProcessorData(returnPacket)
-		if returnPacket == nil or returnPacket.Data == nil then return end;
-		Debugger:Log("ItemProcessor returnPacket ", returnPacket);
 		
-		modData.ItemProcessor = returnPacket.Data;
-
-		interface:FireEvent("DataItemProcessorUpdate");
-	end
-	function remoteItemProcessor.OnClientInvoke(action, packet)
-		if action == "sync" then
-			binds.UpdateItemProcessorData(packet);
-		end
-	end
-	task.spawn(function()
-		binds.UpdateItemProcessorData(remoteItemProcessor:InvokeServer("sync"));
-	end);
-	
 end
 
 return interfacePackage;
