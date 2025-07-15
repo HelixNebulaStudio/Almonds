@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Double Doors";
-		StructureType = "WallFrame";
+		DeployableType = "WallFrame";
 
 		IsDoorEntity = true;
 		InteractableName = "Door";

@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Door";
-		StructureType = "Doorway";
+		DeployableType = "Doorway";
 
 		IsDoorEntity = true;
 		InteractableName = "Door";

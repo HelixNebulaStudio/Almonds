@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Management Cupboard";
-		StructureType = "Utility";
+		DeployableType = "Utility";
 
 		PlacementOffset=CFrame.new(0, 0, 0);
 		

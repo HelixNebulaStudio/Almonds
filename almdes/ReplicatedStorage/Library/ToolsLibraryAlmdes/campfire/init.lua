@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Campfire";
-		StructureType = "Utility";
+		DeployableType = "Utility";
 
 		PlacementOffset = CFrame.new(0, 0, 0);
 

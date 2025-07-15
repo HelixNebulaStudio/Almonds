@@ -29,7 +29,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	charWindow.UseMenuBlur = true;
     charWindow.DisableInteractables = true;
     charWindow.DisableHotKeysHint = true;
-    charWindow.BoolStringWhenActive = {String="!CharacterHud"; Priority=5;};
+    charWindow.BoolStringWhenActive = {String="!CharacterHud|CharacterInterface"; Priority=5;};
     charWindow:SetClosePosition(charFrame.Position, charFrame.Position);
 
     local binds = charWindow.Binds;

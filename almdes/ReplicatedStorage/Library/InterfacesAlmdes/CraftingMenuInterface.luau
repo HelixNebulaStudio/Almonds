@@ -425,12 +425,22 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 craftButtonObject:Update();
                 craftingProcessItemButtons[processNum] = craftButtonObject;
 
+                craftButtonObject.ImageButton.BackgroundTransparency = 0.5;
                 craftButtonObject.ImageButton.Size = UDim2.new(0, 45, 0, 45);
                 craftButtonObject.ImageButton.Parent = queueList:WaitForChild("ContentList");
 
                 local progressBar = templateProgressBar:Clone();
                 progressBar.Parent = craftButtonObject.ImageButton;
                 craftButtonObject.ProgressBar = progressBar;
+
+                craftButtonObject.ImageButton.MouseButton1Click:Connect(function()
+                    interface:PlayButtonClick();
+                    interface:FireEvent("DataItemProcessorUpdate",
+                        remoteItemProcessor:InvokeServer("cancelcraft", {
+                            AddTick = processData.AddTick;
+                        })
+                    );
+                end)
             end
 
             local progressFrame = craftButtonObject.ProgressBar;

@@ -34,6 +34,7 @@ function WorldCore.onRequire()
             
             local placeCf = interactable.Values.AttachmentPoint.WorldCFrame;
             local itemId;
+            local blockadeName;
 
             if interactable.Variant == "WindowFrame" then
                 local windowItemIds = {
@@ -48,12 +49,19 @@ function WorldCore.onRequire()
                 };
                 itemId = windowItemIds[math.random(1, #windowItemIds)];
 
+                if itemId:match("door") then
+                    blockadeName = "BlockadeDouble";
+                end
+
             elseif interactable.Variant == "Doorway" then
                 local windowItemIds = {
                     "wooddoor";
                 };
                 itemId = windowItemIds[math.random(1, #windowItemIds)];
-
+                
+                if itemId:match("door") then
+                    blockadeName = "BlockadeSingle";
+                end
             end
 
             if itemId == nil then continue end;
@@ -62,6 +70,7 @@ function WorldCore.onRequire()
             modDeployableTool.spawnDeployable(itemId, nil, placeCf, {
                 Configurations = toolPackage.Configurations;
                 Interactable = interactable;
+                AddBlockade = blockadeName;
             });
 
         end;

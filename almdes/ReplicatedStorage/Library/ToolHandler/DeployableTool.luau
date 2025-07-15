@@ -11,9 +11,9 @@ local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibra
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
-local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 local modDoors = shared.require(game.ReplicatedStorage.Entity.Doors);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 
 local PLACEMENT_COLORS = {
@@ -21,7 +21,8 @@ local PLACEMENT_COLORS = {
 	Invalid = Color3.fromRGB(200, 124, 124);
 }
 
-local deployablePrefabs;
+local DEPLOYABLE_PREFABS;
+local DEPLOYABLE_HANDLER_MODULES;
 local deployableCounter = 0;
 
 local toolHandler = modToolHandler.new();
@@ -30,10 +31,12 @@ local toolHandler = modToolHandler.new();
 function toolHandler.onRequire()
     remoteToolInputHandler = modRemotesManager:Get("ToolInputHandler");
 
-	deployablePrefabs = game.ReplicatedStorage.Prefabs:WaitForChild("Deployables");
+	DEPLOYABLE_PREFABS = game.ReplicatedStorage.Prefabs:WaitForChild("Deployables");
+	DEPLOYABLE_HANDLER_MODULES = game.ReplicatedStorage.Library:WaitForChild("DeployableHandlers");
 
 	if RunService:IsServer() then
-		
+    	serverPrefabs = game.ServerStorage:WaitForChild("Prefabs"):WaitForChild("Objects");
+
 	elseif RunService:IsClient() then
 		modData = shared.require(game.Players.LocalPlayer:WaitForChild("DataModule"));
 
@@ -69,7 +72,8 @@ if RunService:IsClient() then -- MARK: Client
 
 		local configurations: ConfigVariable = equipmentClass.Configurations;
 		local properties: PropertiesVariable<{}> = equipmentClass.Properties;
-	
+		local binds = handler.Binds;
+
 		characterProperties.HideCrosshair = true;
 		characterProperties.UseViewModel = false;
 
@@ -78,17 +82,22 @@ if RunService:IsClient() then -- MARK: Client
 		local mainToolModel = handler.MainToolModel;
 		local handle = mainToolModel and mainToolModel:WaitForChild("Handle") or nil;
 		
-		
+		local deployableHandler = nil;
+		local deployableHandlerModule = DEPLOYABLE_HANDLER_MODULES:FindFirstChild(configurations.DeployableType);
+		if deployableHandlerModule then
+			deployableHandler = shared.require(deployableHandlerModule);
+		end
+
 		local templatePlacementPrefab: Model;
-		if deployablePrefabs:FindFirstChild(itemId) and deployablePrefabs[itemId] then
+		if DEPLOYABLE_PREFABS:FindFirstChild(itemId) and DEPLOYABLE_PREFABS[itemId] then
 			local skinId = "Default";
 			local matchingSkins = {};
-			for _, obj in pairs(deployablePrefabs[itemId]:GetChildren()) do
+			for _, obj in pairs(DEPLOYABLE_PREFABS[itemId]:GetChildren()) do
 				if obj.Name:sub(1, #skinId) == skinId then
 					table.insert(matchingSkins, obj.Name);
 				end
 			end
-			templatePlacementPrefab = deployablePrefabs[itemId]:FindFirstChild(matchingSkins[math.random(1, 2)] or skinId);
+			templatePlacementPrefab = DEPLOYABLE_PREFABS[itemId]:FindFirstChild(matchingSkins[math.random(1, 2)] or skinId);
 		end
 
 		toolAnimator:LoadAnimations(animations, toolPackage.DefaultAnimatorState, handler.Prefabs);
@@ -118,11 +127,22 @@ if RunService:IsClient() then -- MARK: Client
 
 			for _, obj in pairs(activeHightlightModel:GetDescendants()) do
 				if not obj:IsA("BasePart") then continue end;
+				if obj.CanQuery == false and obj.Transparency == 1 then continue end;
+				obj.Anchored = true;
 				obj.CanCollide = false;
 				obj.CanQuery = false;
 				obj.Transparency = 0.8;
 				obj.Material = Enum.Material.Neon;
 				obj.Color = color;
+			end
+		end
+
+		properties.RotY = 0;
+		binds["KeyRotate"] = function()
+			if properties.RotY + 1 >= 4 then
+				properties.RotY = 0;
+			else
+				properties.RotY = properties.RotY + 1;
 			end
 		end
 
@@ -143,7 +163,7 @@ if RunService:IsClient() then -- MARK: Client
 				setHighlightColor(PLACEMENT_COLORS.Invalid);
 
 				interactProxy = modInteractables.newProxy("Deployable");
-				interactProxy.Part = activeHightlightModel:WaitForChild("Base");
+				interactProxy.Part = activeHightlightModel:WaitForChild("PrimaryPart");
 				interactProxy.CanInteract = false;
 				interactProxy.InteractDuration = 1;
 
@@ -186,10 +206,12 @@ if RunService:IsClient() then -- MARK: Client
 				end
 
 				local placeCf: CFrame = attachPoint.WorldCFrame;
+				placeCf = placeCf * CFrame.Angles(0, properties.RotY* math.pi/2, 0);
+
 				activeHightlightModel:PivotTo(placeCf);
 
 				local isPlaceable = true;
-				if interactable.Variant ~= configurations.StructureType then
+				if interactable.Variant ~= configurations.DeployableType then
 					isPlaceable = false;
 				elseif interactable.Values.ActiveDeployable.Value ~= nil then
 					isPlaceable = false;
@@ -199,6 +221,7 @@ if RunService:IsClient() then -- MARK: Client
 					interactProxy.Values = {
 						PrefabName = activeHightlightModel.Name;
 						SocketConfig = aimInteractConfig;
+						RotationY = properties.RotY;
 					};
 					setHighlightColor(PLACEMENT_COLORS.Placable);
 					interactProxy.CanInteract = true;
@@ -212,6 +235,16 @@ if RunService:IsClient() then -- MARK: Client
 
 
 			elseif aimRayHit then
+
+				local deployableModel = aimRayHit.Parent;
+				while deployableModel:IsDescendantOf(workspace.Environment.Game) do
+					if deployableModel:HasTag("Deployable") then break; end;
+					deployableModel = deployableModel.Parent;
+				end
+				if deployableModel and not deployableModel:HasTag("Deployable") then
+					deployableModel = nil;
+				end
+
 				activeHightlightModel.Parent = camera;
 				characterProperties.ProxyInteractable = interactProxy;
 
@@ -222,7 +255,18 @@ if RunService:IsClient() then -- MARK: Client
 				if configurations.PlacementOffset then
 					placeCf = placeCf * configurations.PlacementOffset;
 				end
-				
+
+				if deployableHandler and deployableHandler.BindDeployablePlacement then
+					local packet = {
+						DeployableModel = deployableModel;
+						PlaceCFrame = placeCf;
+					};
+					deployableHandler.BindDeployablePlacement(handler, packet);
+					placeCf = packet.PlaceCFrame;
+				end
+
+				placeCf = placeCf * CFrame.Angles(0, properties.RotY* math.pi/2, 0);
+
 				local isPlaceable = true;
 				if localPlayer:DistanceFromCharacter(placeCf.Position) > 15 then
 					isPlaceable = false;
@@ -236,6 +280,8 @@ if RunService:IsClient() then -- MARK: Client
 					interactProxy.Values = {
 						PrefabName = activeHightlightModel.Name;
 						PlaceCFrame = activeHightlightModel:GetPivot();
+						DeployableModel = deployableModel;
+						RotationY = properties.RotY;
 					};
 					setHighlightColor(PLACEMENT_COLORS.Placable);
 					interactProxy.CanInteract = true;
@@ -257,15 +303,15 @@ if RunService:IsClient() then -- MARK: Client
 	function toolHandler.ClientUnequip(handler: ToolHandlerInstance)
 	end
 
-
 elseif RunService:IsServer() then -- MARK: Server
 
+	--MARK: spawnDeployable
 	function toolHandler.spawnDeployable(itemId, prefabName, placeCf, params)
 		local itemLib = modItemsLibrary:Find(itemId);
 		local configurations = params.Configurations or {};
 		local interactable = params.Interactable;
 
-		local prefabsList = deployablePrefabs:FindFirstChild(itemId);
+		local prefabsList = DEPLOYABLE_PREFABS:FindFirstChild(itemId);
 		if prefabsList == nil then
 			Debugger:Warn("Missing deployablePrefab:", itemId);
 			return;
@@ -289,11 +335,14 @@ elseif RunService:IsServer() then -- MARK: Server
 		end
 
 		local new = templatePlacementPrefab:Clone();
+		new.Name = `{itemId}$u{deployableCounter}`;
 		new:PivotTo(placeCf);
+		new:AddTag("Deployable");
 		new.Parent = workspace.Environment.Game;
 
 		local destructibleConfig: Configuration = modDestructibles.createDestructible();
 		destructibleConfig.Parent = new;
+		local doorDestructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
 
 		if configurations.ResizeToFit and interactable and interactable.Part then
 			local newSize = interactable.Part.Size;
@@ -332,6 +381,28 @@ elseif RunService:IsServer() then -- MARK: Server
 			end)
 		end
 
+		if params.AddBlockade then
+			local blockadeId = params.AddBlockade;
+
+			local blockadeFolder = serverPrefabs:FindFirstChild("DefaultBlockades");
+			if blockadeFolder then
+				local newBlockade: Model = blockadeFolder[blockadeId]:Clone();
+				newBlockade.Name = "Blockade";
+				newBlockade:PivotTo(new:GetPivot() * CFrame.new(0, (interactable and interactable.Part.Size.Y/2) or 0, 0));
+				newBlockade.Parent = new;
+				
+				local blkDestructibleModule = newBlockade:WaitForChild("Destructible");
+				local blkDestructible: DestructibleInstance = modDestructibles.getOrNew(blkDestructibleModule);
+				blkDestructible.HealthComp:SetMaxHealth(200);
+				blkDestructible.HealthComp:SetHealth(200);
+
+				doorDestructible.OnDestroy:Connect(function()
+					doorDestructible.HealthComp:SetIsDead(true);
+				end)
+			end
+		end
+
+
 		return new;
 	end
 
@@ -353,23 +424,46 @@ elseif RunService:IsServer() then -- MARK: Server
 		local itemId = storageItem.ItemId;
 		local itemLib = storageItem.Library;
 
+		local deployableHandler = nil;
+		local deployableHandlerModule = DEPLOYABLE_HANDLER_MODULES:FindFirstChild(configurations.DeployableType);
+		if deployableHandlerModule then
+			deployableHandler = shared.require(deployableHandlerModule);
+		end
+
 		if actionIndex == 1 then
 			local proxyValues = packet.ProxyValues;
 			local placeCf;
 
 			local interactable: InteractableInstance;
 			local aimInteractConfig = proxyValues.SocketConfig;
+			local deployableModel = proxyValues.DeployableModel;
+			local rotationY = proxyValues.RotationY or 0;
+
+			Debugger:Warn(`rotationY: {rotationY}`);
+
+			local placementPacket = {
+				DeployableModel = deployableModel;
+				PlaceCFrame = placeCf;
+			};
 
 			if aimInteractConfig
 			and aimInteractConfig:IsA("Configuration")
 			and aimInteractConfig:GetAttribute("_Name") == "DeployableSocket" then
 				interactable = modInteractables.getOrNew(aimInteractConfig);
 				local attachPoint: Attachment = interactable.Values.AttachmentPoint;
-				placeCf = attachPoint.WorldCFrame;
+				placeCf = attachPoint.WorldCFrame *  CFrame.Angles(0, rotationY * math.pi/2, 0);
+				placementPacket.AttachPoint = attachPoint;
+
+			elseif deployableModel then
+				if deployableHandler and deployableHandler.BindDeployablePlacement then
+					deployableHandler.BindDeployablePlacement(handler, placementPacket);
+					placeCf = placementPacket.PlaceCFrame;
+				end
 
 			else
 				placeCf = proxyValues.PlaceCFrame;
 			end
+
 
 			if placeCf == nil then
 				Debugger:Warn("Missing PlaceCFrame.", proxyValues);
@@ -384,6 +478,13 @@ elseif RunService:IsServer() then -- MARK: Server
 				Configurations = configurations;
 				Interactable = interactable;
 			});
+			if deployableHandler and deployableHandler.BindSpawnDeployable then
+				deployableHandler.BindSpawnDeployable(handler, {
+					PlacementData = placementPacket;
+					DeployableModel = new;
+				});
+			end
+
 			if new == nil then
 				Debugger:Warn(`Fail to spawn deployable {itemId}:{prefabName}.`);
 				return;

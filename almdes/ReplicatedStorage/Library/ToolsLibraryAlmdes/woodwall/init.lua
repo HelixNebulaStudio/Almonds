@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Wall";
-		StructureType = "Wall";
+		DeployableType = "Wall";
 		
 		BuildDuration = 2;
 		PlacementOffset = CFrame.Angles(0, 0, 0);

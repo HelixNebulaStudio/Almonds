@@ -51,6 +51,15 @@ function Queue:Add(processData)
     table.insert(self, processData);
 end
 
+function Queue:Remove(addTick)
+    for a=#self, 1, -1 do
+        if self[a].AddTick == addTick then
+            return table.remove(self, a);
+        end
+    end
+    return;
+end
+
 function Queue:Process()
     local concur = self.Concurrency;
     if concur <= 0 then return end;
@@ -263,6 +272,7 @@ function ItemProcessor.new()
 
     local self = {
         Queues = {};
+        NextJob = nil;
     };
 
     setmetatable(self, meta);
@@ -321,6 +331,18 @@ function ItemProcessor:AddProcess(processData)
     self:ProcessQueues();
 end
 
+function ItemProcessor:RemoveProcess(processKey, addTick)
+    local processType = ItemProcessor.ProcessTypes[processKey];
+
+    local handler = self.Handlers[processType];
+    local processQueue = handler.Queue;
+    local processData = processQueue:Remove(addTick);
+    if processData == nil then return end;
+
+    self:ProcessQueues();
+    return processData;
+end
+
 function ItemProcessor:ProcessQueues(shouldSync)
     local nextClosestTick = math.huge;
     
@@ -346,7 +368,7 @@ function ItemProcessor:ProcessQueues(shouldSync)
             if handler.BindProcessComplete then
                 handler:BindProcessComplete(processData);
             end
-            
+
             queue:Process();
             shouldSync = true;
         end
@@ -364,7 +386,10 @@ function ItemProcessor:ProcessQueues(shouldSync)
     local curServerTick = workspace:GetServerTimeNow();
     local duration = nextClosestTick - curServerTick+0.1;
     
-    self.Scheduler:ScheduleFunction(function()
+    if self.NextJob then
+        self.Scheduler:Unschedule(self.NextJob);
+    end
+    self.NextJob = self.Scheduler:ScheduleFunction(function()
         self:ProcessQueues(false);
     end, tick() + duration);
 

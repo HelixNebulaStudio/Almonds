@@ -76,6 +76,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	newHotbarFrame.Parent = interface.ScreenGui;
     
 	local hotbarWindow: InterfaceWindow = interface:NewWindow("Hotbar", newHotbarFrame);
+	hotbarWindow.Layers = {"CharacterHud"; "CharacterInterface"};
 	hotbarWindow.IgnoreHideAll = true;
 	hotbarWindow.ReleaseMouse = false;
 	hotbarWindow:Open();

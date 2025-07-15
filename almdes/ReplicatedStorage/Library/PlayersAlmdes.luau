@@ -15,6 +15,9 @@ end
 
 
 shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmdes)
+    local healthComp: HealthComp = playerClass.HealthComp;
+    healthComp:SetCanBeHurtBy();
+    
     local player = playerClass:GetInstance();
 
     if RunService:IsServer() then
@@ -37,9 +40,7 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     if RunService:IsClient() then return end;
 
     local player = playerClass:GetInstance();
-    player.ReplicationFocus = character.PrimaryPart;
-
-
+    
     --MARK: Meta Status
     local statusComp: StatusComp = playerClass.StatusComp;
 

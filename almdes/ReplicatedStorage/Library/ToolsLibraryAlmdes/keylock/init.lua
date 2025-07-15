@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "DoorLock";
-		StructureType = "Utility";
+		DeployableType = "Lock";
 
 		PlacementOffset = CFrame.new(0, 0, 0);
 	};

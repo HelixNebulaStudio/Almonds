@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Sleepingbag";
-		StructureType = "SpawnPoint";
+		DeployableType = "SpawnPoint";
 		
 		PlacementOffset=CFrame.new(0, 0, 0);
 		

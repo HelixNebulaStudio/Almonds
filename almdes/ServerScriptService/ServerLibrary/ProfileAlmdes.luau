@@ -39,6 +39,11 @@ local function OnPlayerAdded(player: Player)
 		Debugger:Warn("Player died: ", dieReason);
 		
 	end)
+
+    player.CharacterRemoving:Connect(function()
+        Debugger:Warn(`Player ({player.Name}) returned to menu.`);
+	    player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
+    end)
 end
 
 shared.coreBind(modProfile, "_new", function(profile: ProfileAlmdes, player: Player)
@@ -46,10 +51,10 @@ shared.coreBind(modProfile, "_new", function(profile: ProfileAlmdes, player: Pla
 end)
 
 shared.coreBind(modProfile, "_key_load", function(profile: ProfileAlmdes, key: string, data: any, loadOverwrite: anydict?)
-    if key == "" then
-        profile[key]:Load(data);
-        return true;
-    end
+    -- if key == "" then
+    --     profile[key]:Load(data);
+    --     return true;
+    -- end
 
     return false;
 end)
@@ -72,6 +77,10 @@ function modProfile.onRequire()
 			
         elseif action == "quickplay" then
             playerClass:Spawn();
+            replyPacket.Success = true;
+
+        elseif action == "returnmenu" then
+            playerClass:Despawn();
             replyPacket.Success = true;
         end
         return replyPacket;

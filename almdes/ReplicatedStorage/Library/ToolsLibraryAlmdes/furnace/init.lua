@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Furnace";
-		StructureType = "Utility";
+		DeployableType = "Utility";
 
 		PlacementOffset = CFrame.new(0, 0, 0);
 

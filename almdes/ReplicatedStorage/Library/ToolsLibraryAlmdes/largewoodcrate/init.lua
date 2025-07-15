@@ -14,7 +14,7 @@ local toolPackage = {
 	};
 	Audio={};
 	Configurations={
-		StructureType = "Crate";
+		DeployableType = "Crate";
 		StoragePresetId = "largecrate";
 		
 		InteractableName = "Storage";

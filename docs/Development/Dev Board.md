@@ -7,7 +7,8 @@ kanban-plugin: list
 ## Priority
 
 - [ ] [[ItemProcessor]]
-- [ ] [[Crafting Recipe Menu & System]]
+- [ ] [[Death and Revive screen]]
+- [ ] [[Red Crow Storm]]
 
 
 ***

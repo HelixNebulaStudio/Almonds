@@ -15,7 +15,7 @@ local toolPackage = {
 	Audio={};
 	Configurations={
 		DisplayName = "Cell Wall";
-		StructureType = "WallFrame";
+		DeployableType = "WallFrame";
 		
 		BuildDuration = 5;
 		PlacementOffset=CFrame.new(0, 0, 0);

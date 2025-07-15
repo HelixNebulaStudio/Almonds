@@ -29,7 +29,7 @@ function Handler.new(itemProccessor)
 	return self;
 end
 
-Handler.RequestActions = {"craftrequest"}
+Handler.RequestActions = {"craftrequest"; "cancelcraft"};
 function Handler:ClientRequest(action, packet, rPacket)
     local itemProcessor = self.ItemProcessor;
     local player = self.Player;
@@ -49,6 +49,7 @@ function Handler:ClientRequest(action, packet, rPacket)
         
         if #self.Queue > 5 then
             rPacket.FailMsg = "Queue is full.";
+            shared.Notify(player, "Crafting queue is full!", "Negative");
             return rPacket;
         end
 
@@ -79,13 +80,38 @@ function Handler:ClientRequest(action, packet, rPacket)
         
         rPacket.Success = true;
         rPacket.Data = itemProcessor;
+
+    elseif action == "cancelcraft" then
+        Debugger:Log("Cancel", action, packet, rPacket);
+        local addTick = packet.AddTick;
+
+        local processData = itemProcessor:RemoveProcess(PROCESSTYPE, addTick);
+        if processData == nil or processData.Complete then
+            rPacket.FailMsg = `Process not found or completed.`;
+            return rPacket;
+        end
+
+        local storage: Storage = itemProcessor.Storage;
+        local recipeLib = modRecipeLibrary:Find(processData.Id);
+
+        for a=1, #recipeLib.Recipe do
+            local rInfo = recipeLib.Recipe[a];
+            if rInfo.Type ~= "Item" then continue end;
+            
+            local rItemId = rInfo.ItemId;
+            local quantity = (rInfo.Amount or 1);
+            local storageItem = {ItemId=rItemId; Quantity=quantity;} :: StorageItem;
+            local _insertRPacket = storage:InsertRequest(storageItem);
+        end
+
+        rPacket.Success = true;
+        rPacket.Data = itemProcessor;
     end
 
     return rPacket;
 end
 
 function Handler:BindProcessComplete(processData)
-	local itemProcessor = self.ItemProcessor;
 	local storage = processData.meta.Storage;
 
     local itemId = processData.Id;
