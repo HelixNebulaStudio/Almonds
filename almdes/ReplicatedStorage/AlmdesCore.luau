@@ -42,6 +42,7 @@ if RunService:IsServer() then
     local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSaveAlmdes);
     local modApiRequestLibrary = shared.require(game.ServerScriptService.ServerLibrary.ApiRequestLibraryAlmdes);
     local modBaseBuildingSystem = shared.require(game.ServerScriptService.ServerLibrary.BaseBuildingSystem);
+    local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
 end
 
 local stormCycleTick = nil;

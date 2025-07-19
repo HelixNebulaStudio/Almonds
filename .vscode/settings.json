@@ -3,6 +3,7 @@
         "**/*.meta.json": true,
         "docs/**": true
     },
+    "search.useIgnoreFiles": false,
     "luau.trace.server": "verbose",
     "luau-lsp.sourcemap.autogenerate": true,
     "luau-lsp.sourcemap.enabled": true,

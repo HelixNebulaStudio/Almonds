@@ -5,6 +5,7 @@ local CollectionService = game:GetService("CollectionService");
 
 local modCrates = shared.require(game.ReplicatedStorage.Library.Crates);
 local modScheduler = shared.require(game.ReplicatedStorage.Library.Scheduler);
+local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
 
 local modItemDrops = shared.require(game.ServerScriptService.ServerLibrary.ItemDrops);
 
@@ -35,7 +36,7 @@ function WorldLoot:RequestSpawn()
         local curTick = tick();
 
         -- Pick Spawn
-        local pickedSpawn;
+        local pickedSpawnAtt;
         repeat
             if #lootSpawnAttList <= 0 then break; end;
 
@@ -52,11 +53,11 @@ function WorldLoot:RequestSpawn()
             };
             WorldLoot.LootSpawnMetaData[spawnAtt] = lootSpawnMetaData;
 
-            pickedSpawn = spawnAtt;
+            pickedSpawnAtt = spawnAtt;
             
             break;
         until not true;
-        if pickedSpawn == nil then continue end;
+        if pickedSpawnAtt == nil then continue end;
 
         local crateModel: Model;
         local interactable: InteractableInstance;
@@ -64,7 +65,7 @@ function WorldLoot:RequestSpawn()
 
         crateModel, interactable, storage = modCrates.Create(
             "envlootcrate", 
-            pickedSpawn.WorldCFrame * CFrame.Angles(0, math.rad(180), 0)
+            pickedSpawnAtt.WorldCFrame * CFrame.Angles(0, math.rad(180), 0)
         );
 
         for b=1, #rewards do
@@ -81,40 +82,72 @@ function WorldLoot:RequestSpawn()
             storage:Add(itemId, {Quantity=quantity;});
         end
         
-        local looted = false;
-        storage.OnChanged:Connect(function()
-            if #rewards > storage:Loop() and not looted then
-                looted = true;
-                
-                task.delay(60, function()
-                    Debugger:Log("Despawn storage ", storage.Id);
-                    storage:Destroy();
+        local isLooted = false;
+        local isEmpty = false;
+        local isDestroying = false;
 
-                    storage:Loop(function(storageItem: StorageItem)
-                        modItemDrops.Spawn(
-                            {
-                                Type = "Custom";
-                                ItemId = storageItem.ItemId;
-                                StorageItem = storageItem;
-                            }, 
-                            pickedSpawn.WorldCFrame + Vector3.new(0, 1, 0), nil, 
-                            60
-                        );
-                    end)
+        --MARK: Destructible
+		local destructibleConfig: Configuration = modDestructibles.createDestructible();
+		destructibleConfig.Parent = crateModel;
+		local destructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
+        destructible.HealthComp:SetMaxHealth(200);
+        destructible.HealthComp:SetHealth(200);
+
+        destructible.OnDestroy:Connect(function()
+            storage:Destroy();
+            storage:Loop(function(storageItem: StorageItem)
+                modItemDrops.Spawn(
+                    {
+                        Type = "Custom";
+                        ItemId = storageItem.ItemId;
+                        StorageItem = storageItem;
+                    }, 
+                    pickedSpawnAtt.WorldCFrame + Vector3.new(0, 1, 0), nil, 
+                    60
+                );
+            end);
+        end)
+
+        local parentDestructibleModule = pickedSpawnAtt.Parent and pickedSpawnAtt.Parent.Parent and pickedSpawnAtt.Parent.Parent:FindFirstChild("Destructible");
+        if parentDestructibleModule then
+            local parDestructible: DestructibleInstance = modDestructibles.getOrNew(parentDestructibleModule);
+            parDestructible.OnDestroy:Connect(function()
+                destructible.HealthComp:SetIsDead(true);
+            end)
+        end
+        --==
+
+        storage.OnChanged:Connect(function()
+            local storeItemCount = storage:Loop();
+            if storeItemCount <= 0 then
+                isEmpty = true;
+            end
+
+            if isEmpty and not isDestroying then
+                isDestroying = true;
+                task.delay(2, function()
+                    destructible.HealthComp:SetIsDead(true);
+                end)
+
+            elseif #rewards > storeItemCount and not isLooted then
+                isLooted = true;
+                
+                task.delay(30, function()
+                    if isDestroying then return end;
+                    destructible.HealthComp:SetIsDead(true);
                 end)
             end
         end)
         
-        WorldLoot.LootSpawnMetaData[pickedSpawn].LootCrate = crateModel;
+        WorldLoot.LootSpawnMetaData[pickedSpawnAtt].LootCrate = crateModel;
         crateModel.Destroying:Connect(function()
-            WorldLoot.LootSpawnMetaData[pickedSpawn].LootCrate = nil;
+            WorldLoot.LootSpawnMetaData[pickedSpawnAtt].LootCrate = nil;
         end)
 
         WorldLoot.LootCounter = WorldLoot.LootCounter + 1;
-        crateModel.Name = `loot{WorldLoot.LootCounter}`
-        
+        crateModel.Name = `loot$n{WorldLoot.LootCounter}`
+
         CollectionService:AddTag(crateModel, "LootCrates");
-        Debugger:Log("Spawnned loot", storage.Id);
     end
 end
 

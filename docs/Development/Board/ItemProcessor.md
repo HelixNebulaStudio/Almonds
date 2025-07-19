@@ -10,7 +10,7 @@ These process all have a time and resource cost. The process consumes items and 
 **ProcessTypes**:
 - CraftRecipe
 - Deconstruct
-- UnlockRecipe
+- ~~UnlockRecipe~~
 
 A concurrent queue will be used for each process types. It is a queue that process 1 or more items in front of the list at a time.
 
