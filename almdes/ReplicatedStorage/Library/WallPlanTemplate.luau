@@ -100,7 +100,7 @@ function WallPlanTemplate:Build(baseId)
 			obj.Color = baseColor;
 			
 			if obj.Transparency == 1 then
-				if obj.Name == "Base" then
+				if obj.Name == "PrimaryPart" then
 					obj.CollisionGroup = "RaycastIgnore";
 					
 				else
@@ -176,7 +176,7 @@ function WallPlanTemplate:Clone(n)
 
 	newWallClass.Model = self.Model:Clone();
 	newWallClass.Model.Name = n;
-	newWallClass.Base = newWallClass.Model:WaitForChild("Base");
+	newWallClass.Base = newWallClass.Model:WaitForChild("PrimaryPart");
 	
 	newWallClass:SetTransparency(0.8);
 
@@ -332,7 +332,7 @@ function WallPlanTemplate.new(data)
 
 	else
 		self.Model = wallTemplate:Clone();
-		self.Base = self.Model:WaitForChild("Base");
+		self.Base = self.Model:WaitForChild("PrimaryPart");
 
 	end
 
