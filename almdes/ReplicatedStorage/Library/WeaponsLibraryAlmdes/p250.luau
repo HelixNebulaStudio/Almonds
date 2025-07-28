@@ -43,7 +43,7 @@ local toolPackage = {
 		BulletEjectOffset=CFrame.Angles(math.rad(-90), 0, 0);
 		
 		-- Stats
-		Damage=25;
+		Damage=20;
 		PotentialDamage=365;
 		
 		MagazineSize=15;

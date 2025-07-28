@@ -18,3 +18,22 @@ export type GameSaveAlmdes = GameSave & {
     ItemProcessor: anydict;
     RecipesUnlocked: anydict;
 };
+
+-- MARK: WorldEvents
+export type WorldEvents = {
+    Instances: {[string]: WorldEventInstance};
+};
+
+-- MARK: WorldEventInstance
+export type WorldEventInstance = {
+   Id: string;
+   Name: string;
+   Type: string;
+
+   Scheduler: Scheduler;
+   WorldEvents: WorldEvents;
+
+   Properties: PropertiesVariable<anydict>;
+   TemplateEventMap: Folder;
+   Public: anydict;
+};
