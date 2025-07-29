@@ -33,6 +33,8 @@ export type WorldEventInstance = {
    Scheduler: Scheduler;
    WorldEvents: WorldEvents;
 
+   Garbage: GarbageHandler;
+   
    Properties: PropertiesVariable<anydict>;
    TemplateEventMap: Folder;
    Public: anydict;

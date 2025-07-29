@@ -1,5 +1,6 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
+local modCrates = shared.require(game.ReplicatedStorage.Library.Crates);
 local modRegion = shared.require(game.ReplicatedStorage.Library.Region);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
 
@@ -28,6 +29,8 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 
 	local scheduler: Scheduler = worldEventHandler.Scheduler;
 	local properties: PropertiesVariable<{}> = worldEventHandler.Properties;
+	local garbageHandler: GarbageHandler = worldEventHandler.Garbage;
+	local publicData = worldEventHandler.Public;
 
 	local function OnStateUpdate(state, oldState)
 		Debugger:Warn(`{eventPackage.Id} State Update: {state}`);
@@ -37,8 +40,9 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 			properties.ActiveJob = nil;
 		end
 
+		publicData.State = state;
 		if state == "Cooldown" then
-			local cooldownDuration = 30;
+			local cooldownDuration = 60;
 			if oldState == nil then
 				cooldownDuration = 1;
 			end
@@ -58,12 +62,18 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 			end
 			properties.ActiveJob = scheduler:ScheduleFunction(setIdle, properties.CooldownEndTick);
 
+			publicData.RadialDuration = cooldownDuration;
+			publicData.RadialTick = workspace:GetServerTimeNow() + cooldownDuration;
+
 		elseif state == "Idle" then
 			voidClips.Parent = workspace.Clips;
+
+			garbageHandler:Destruct();
 
 			local newMap = templateEventMap:Clone();
 			newMap.Parent = workspace.Environment.Game.Events;
 			properties.ActiveMap = newMap;
+			garbageHandler:Tag(newMap);
 
 			for _, obj in pairs(newMap:GetDescendants()) do
 				if not obj:IsA("Configuration") or obj.Name ~= "Destructible" then continue end;
@@ -80,8 +90,7 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 
 		elseif state == "Active" then
 			voidClips.Parent = script;
-			properties.ActiveTick = tick();
-
+			
 			local activeMap = properties.ActiveMap;
 
 			properties.BanditNpcClasses = {};
@@ -109,10 +118,45 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 				end)
 
 				table.insert(properties.BanditNpcClasses, banditNpcClass);
+				garbageHandler:Tag(banditNpcClass.Character);
 			end
 
 		elseif state == "Complete" then
 
+			local activeMap = properties.ActiveMap;
+			local corePart = activeMap:WaitForChild("Core");
+			local crateSpawnAtt: Attachment = corePart:WaitForChild("CrateSpawn");
+
+			local rewardsId = eventPackage.RewardsId;
+
+			local rewardsTable = modCrates.GenerateRewards(rewardsId);
+			
+			local crateModel: Model;
+			local interactable: InteractableInstance;
+			local storage: Storage;
+
+			crateModel, interactable, storage = modCrates.Create(rewardsId, crateSpawnAtt.WorldCFrame);
+
+			if crateModel then
+				crateModel.Parent = activeMap;
+				garbageHandler:Tag(crateModel);
+			end
+			
+			for b=1, #rewardsTable do
+				local item = rewardsTable[b];
+				local itemId = item.ItemId;
+				local quantity = item.Quantity or 1;
+
+				if type(item.Quantity) == "table" then
+					quantity = math.random(item.Quantity.Min, item.Quantity.Max);
+				end
+
+				storage:Add(itemId, {Quantity=quantity;});
+			end
+
+			task.delay(60, function()
+				properties.State = "Cooldown";
+			end)
 		end
 	end
 

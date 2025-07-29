@@ -24,6 +24,15 @@ function modCrateLibrary.onRequire()
         };
 		StoragePresetId = "envlootcrate";
 	};
+
+	modCrateLibrary.New{
+		Id = "carparkraid";
+		Name = "Loot";
+		Prefab = {
+			script:WaitForChild("CratePalletT3");
+        };
+		StoragePresetId = "rewardcrate";
+	};
 	
 end
 

@@ -249,43 +249,38 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		return mapPointInfo;
 	end
 	
-	binds.EventPacket = {};
+	binds.EventPublicData = {};
 	function binds.UpdateEvents()
-		local eventsPacketRaw = eventsLibraryModule:GetAttribute("Public");
-		local eventsPacket;
-		pcall(function() eventsPacket = HttpService:JSONDecode(eventsPacketRaw); end)
-		
-		if eventsPacket then
-			for eventId, eventData in pairs(eventsPacket) do
-				local eventLib = modEventsLibrary:Find(eventId);
-				
-				if eventLib.LootMarkOnMap then
-					binds.EventPacket[eventId] = eventData;
-					
-					local eventMap = eventsFolder:FindFirstChild(eventId);
-					if eventMap then
-						local mapCore = eventMap:FindFirstChild("Core");
-						local lootSpawn = mapCore and mapCore:FindFirstChild("LootSpawn");
-						
-						binds.AddPointVector({
-							Id = eventId;
-							Target = lootSpawn;
-						});
-					end
-				end
-				
-			end
+		local worldEventDataRaw = eventsLibraryModule:GetAttribute("Public");
+		local worldEventData;
+		pcall(function() worldEventData = HttpService:JSONDecode(worldEventDataRaw); end);
+		if worldEventData == nil then return end;
+
+		for eventId, eventPublicData in pairs(worldEventData) do
+			local eventLib = modEventsLibrary:Find(eventId);
 			
-			for eId, _ in pairs(binds.EventPacket) do
-				if eventsPacket[eId] == nil then
-					
-					for a=#binds.MapPoints, 1, -1 do
-						if binds.MapPoints[a].Id == eId then
-							local mapPoint = table.remove(binds.MapPoints, a);
-							if mapPoint then
-								game.Debris:AddItem(mapPoint.Icon, 0);
-							end
-						end
+			if eventLib == nil or eventLib.LootMarkOnMap ~= true then continue end;
+			binds.EventPublicData[eventId] = eventPublicData;
+			
+			local eventMap = eventsFolder:FindFirstChild(eventId);
+			if eventMap then
+				local mapCore = eventMap:FindFirstChild("Core");
+				local crateSpawn = mapCore and mapCore:FindFirstChild("CrateSpawn");
+				
+				binds.AddPointVector({
+					Id = eventId;
+					Target = crateSpawn;
+				});
+			end
+		end
+		
+		for eId, _ in pairs(binds.EventPublicData) do
+			if worldEventData[eId] then continue end;
+			for a=#binds.MapPoints, 1, -1 do
+				if binds.MapPoints[a].Id == eId then
+					local mapPoint = table.remove(binds.MapPoints, a);
+					if mapPoint then
+						game.Debris:AddItem(mapPoint.Icon, 0);
 					end
 				end
 			end
@@ -295,6 +290,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	interface.Garbage:Tag(eventsLibraryModule:GetAttributeChangedSignal("Public"):Connect(function()
 		binds.UpdateEvents();
 	end))
+	binds.UpdateEvents();
 	
 	function binds.UpdateLoots()
 		local lootList = CollectionService:GetTagged("LootCrates");
@@ -376,17 +372,28 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			if radialObject then
 				local imageLabel = radialObject.label;
 				
-				if mapPoint.EventLib and binds.EventPacket[mapPoint.Id] then
-					local eventPacket = binds.EventPacket[mapPoint.Id];
+				if mapPoint.EventLib and binds.EventPublicData[mapPoint.Id] then
+					local eventPublicData = binds.EventPublicData[mapPoint.Id];
 					
-					local duration = mapPoint.EventLib.CycleTimer;
-					local loadTime = eventPacket.LoadTime or serverTime;
-					local activeTime = eventPacket.ActiveTime or serverTime;
+					local duration = eventPublicData.RadialDuration;
+					local activeTime = eventPublicData.RadialTick or serverTime;
 					
-					local alpha = 1-math.clamp((activeTime-serverTime)/duration, 0, 1);
+					local alpha = 0;
+
+					if eventPublicData.State == "Cooldown" then
+						alpha = 1-math.clamp((activeTime-serverTime)/duration, 0, 1);
+						imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
+
+					elseif eventPublicData.State == "Idle" or eventPublicData.State == "Active" then
+						alpha = 1;
+						imageLabel.ImageColor3 = interface.Colors.Branch;
+
+					else
+						alpha = 0;
+						imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
+					end
 					
 					radialObject:UpdateLabel(alpha);
-					imageLabel.ImageColor3 = alpha >= 1 and interface.Colors.Branch or Color3.fromRGB(255, 255, 255);
 				end
 			end
 		end

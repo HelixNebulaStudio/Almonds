@@ -1,10 +1,12 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local CollectionService = game:GetService("CollectionService");
+local HttpService = game:GetService("HttpService");
 
 local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
 local modScheduler = shared.require(game.ReplicatedStorage.Library.Scheduler);
 local modPropertiesVariable = shared.require(game.ReplicatedStorage.Library.PropertiesVariable);
+local modGarbageHandler = shared.require(game.ReplicatedStorage.Library.GarbageHandler);
 
 local mapEventsFolder: Folder = workspace.Environment.Game.Events;
 local eventsPrefabs: Folder = game.ServerStorage.Prefabs.Events;
@@ -12,7 +14,7 @@ local eventsPrefabs: Folder = game.ServerStorage.Prefabs.Events;
 local WorldEvents = {};
 WorldEvents.__index = WorldEvents;
 
-local scheduler = modScheduler.new("WorldEvents", 0.2);
+local scheduler: Scheduler = modScheduler.new("WorldEvents", 0.2);
 WorldEvents.Scheduler = scheduler;
 WorldEvents.Instances = {};
 --==
@@ -24,6 +26,7 @@ function WorldEvents:Instance(eventPackage)
         WorldEvents = WorldEvents;
         Scheduler = scheduler;
 
+        Garbage = modGarbageHandler.new();
         Properties = modPropertiesVariable.new({});
         Public = {};
     };
@@ -47,6 +50,20 @@ function WorldEvents.onRequire()
 
             WorldEvents.load(eventLib);
         end
+    end)
+
+    scheduler.OnStepped:Connect(function()
+        local publicData = {};
+
+        for eventId, eventInstance: WorldEventInstance in pairs(WorldEvents.Instances) do
+            local public = eventInstance.Public;
+            if public == nil or next(public) == nil then continue end;
+
+            publicData[eventId] = public;
+        end
+
+        local eventLibScr: ModuleScript = modEventsLibrary.Script;
+        eventLibScr:SetAttribute("Public", HttpService:JSONEncode(publicData));
     end)
 end
 

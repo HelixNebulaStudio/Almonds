@@ -45,6 +45,20 @@ modStoragePresetsLibrary:Add{
     };
 };
 
+modStoragePresetsLibrary:Add{
+	Id = "rewardcrate";
+    Name = "Crate";
+    PublicStorage = true;
+    Configuration = {
+        Persistent = false;
+        Settings = {
+            WithdrawalOnly = true;
+            DestroyOnEmpty = false;
+            ScaleByContent = true;
+        }
+    };
+};
+
 modStoragePresetsLibrary:Replace("crate", {
 	Name = "Crate";
     PublicStorage = true;
