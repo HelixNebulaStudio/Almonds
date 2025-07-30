@@ -7,7 +7,8 @@ local treePackage = {
         AlertTree = "IsUsingMelee & MeleeTree | RangeTree";
         MeleeTree = "InMeleeRange & [SwingMelee] | [RunToMeleeRange]";
         RangeTree = "CanFireGun & (RunToFireRange & [FireGun]) | (RunToCover & [ReloadGun])";
-        IdleTree = "[Idle]";
+        IdleTree = "SelfHealTree | [Patrol]";
+        SelfHealTree = "IsHurt & [SelfHeal]";
     };
 }
 
@@ -31,20 +32,15 @@ end
 
 function treePackage.EquipWeapon(npcClass: NpcClass)
     local wieldComp: WieldComp = npcClass.WieldComp;
-    if wieldComp.EquipmentClass then return true; end;
+    local equipmentClass: EquipmentClass? = wieldComp.EquipmentClass;
+    if equipmentClass and (equipmentClass.Class == "Gun" or equipmentClass.Class == "Melee") then 
+        return true;
+    end;
 
     local primaryWeaponItemId = npcClass.Properties.PrimaryWeaponItemId;
     wieldComp:Equip{
         ItemId = primaryWeaponItemId;
-        OnSuccessFunc = function(toolHandler)
-            local equipmentClass: EquipmentClass = toolHandler.EquipmentClass;
-            if equipmentClass.Class == "Gun" then
-                local modifier = equipmentClass.Configurations.newModifier("BanditGun");
-                modifier.SetValues.Damage = math.random(3, 5);
-                modifier.SetValues.AmmoCapacity = math.random(10, 20);
-                equipmentClass.Configurations:AddModifier(modifier, true);
-            end
-        end;
+        OnSuccessFunc = npcClass.Binds.EquipSuccessFunc;
     };
 
     return true;
@@ -138,10 +134,10 @@ function treePackage.ReloadGun(npcClass: NpcClass)
     
     if wieldComp.EquipmentClass.Class == "Gun" 
     and wieldComp.EquipmentClass.Properties.MaxAmmo <= 0 then
-        Debugger:Warn(`Out of ammo`);
 
         wieldComp:Equip{
             ItemId = "machete";
+            OnSuccessFunc = npcClass.Binds.EquipSuccessFunc;
         };
         return;
     end
@@ -149,7 +145,34 @@ function treePackage.ReloadGun(npcClass: NpcClass)
     wieldComp:InvokeToolAction("ReloadRequest");
 end
 
-function treePackage.Idle(npcClass: NpcClass)
+function treePackage.IsHurt(npcClass: NpcClass)
+    local healthComp: HealthComp = npcClass.HealthComp;
+    return healthComp.CurHealth < healthComp.MaxHealth;
+end
+
+function treePackage.SelfHeal(npcClass: NpcClass)
+    local wieldComp: WieldComp = npcClass.WieldComp;
+
+    npcClass.Move:Stop();
+
+    if wieldComp.EquipmentClass == nil or wieldComp.EquipmentClass.ItemId ~= "medkit" then
+        wieldComp:Equip{
+            ItemId = "medkit";
+        };
+        
+    elseif wieldComp.EquipmentClass.ItemId == "medkit" then
+        wieldComp:InvokeToolAction("UseRequest");
+
+    end
+end
+
+function treePackage.Patrol(npcClass: NpcClass)
+    if npcClass:DistanceFrom(npcClass.SpawnPoint.Position) > 5 then
+        npcClass.Move:SetMoveSpeed("set", "walk", 8, 2, 2);
+        npcClass.Move:MoveTo(npcClass.SpawnPoint.Position);
+    else
+        npcClass.Move:Stop();
+    end
 end
 
 return treePackage;

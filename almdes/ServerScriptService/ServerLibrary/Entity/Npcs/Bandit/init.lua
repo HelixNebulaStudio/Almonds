@@ -28,7 +28,7 @@ function npcPackage.Spawning(npcClass: NpcClass)
     healthComp.MaxHealth = maxHealth;
     healthComp.CurHealth = maxHealth;
     
-    wieldComp.TargetableTags.Humanoid = true;
+    wieldComp.TargetableTags.Player = true;
     wieldComp.TargetableTags.Human = true;
     wieldComp.TargetableTags.Bandit = false;
 
@@ -38,6 +38,24 @@ function npcPackage.Spawning(npcClass: NpcClass)
         "p250";
     };
     properties.PrimaryWeaponItemId = rngGun[math.random(1, #rngGun)];
+
+    local binds = npcClass.Binds;
+    function binds.EquipSuccessFunc(toolHandler: ToolHandlerInstance)
+        local equipmentClass: EquipmentClass? = toolHandler.EquipmentClass;
+        if equipmentClass == nil then return end;
+
+        if equipmentClass.Class == "Gun" then
+            local modifier = equipmentClass.Configurations.newModifier("BanditGun");
+            modifier.SetValues.Damage = math.random(3, 5);
+            modifier.SetValues.AmmoCapacity = math.random(30, 50);
+            equipmentClass.Configurations:AddModifier(modifier, true);
+
+        elseif equipmentClass.Class == "Melee" then
+            local modifier = equipmentClass.Configurations.newModifier("BanditMelee");
+            modifier.SetValues.Damage = math.random(10, 15);
+            equipmentClass.Configurations:AddModifier(modifier, true);
+        end
+    end
 
     npcClass.Garbage:Tag(npcClass.OnThink:Connect(function()
         npcClass.BehaviorTree:RunTree("BanditDefaultTree", true);
