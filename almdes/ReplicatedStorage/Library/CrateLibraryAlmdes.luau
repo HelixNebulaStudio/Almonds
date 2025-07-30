@@ -15,6 +15,13 @@ function modCrateLibrary.onRequire()
 	};
 
 	modCrateLibrary.New{
+		Id = "npcinventory";
+		Name = "Inventory";
+		Prefab = {};
+		StoragePresetId = "npcinventory";
+	};
+
+	modCrateLibrary.New{
 		Id = "envlootcrate";
 		Name = "Crate";
 		Prefab = {

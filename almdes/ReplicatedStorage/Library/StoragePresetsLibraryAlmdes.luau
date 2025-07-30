@@ -59,6 +59,20 @@ modStoragePresetsLibrary:Add{
     };
 };
 
+modStoragePresetsLibrary:Add{
+	Id = "npcinventory";
+    Name = "Inventory";
+    PublicStorage = true;
+    Configuration = {
+        Persistent = false;
+        Settings = {
+            WithdrawalOnly = true;
+            DestroyOnEmpty = false;
+            ScaleByContent = true;
+        }
+    };
+};
+
 modStoragePresetsLibrary:Replace("crate", {
 	Name = "Crate";
     PublicStorage = true;

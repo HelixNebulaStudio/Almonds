@@ -184,7 +184,29 @@ function library.onRequire()
 			{Index=4; ItemId="heavyammo"; Quantity={Min=32; Max=64}; Chance=0.0875;};
 			{Index=4; ItemId="shotgunammo"; Quantity={Min=16; Max=32}; Chance=0.0875;};
 		};
-	}
+	};
+	
+	
+	library:Add{
+		Id="bandit";
+		Rewards={
+			{Index=1; ItemId="metal"; Quantity={Min=60; Max=90}; Chance=1;};
+			{Index=1; ItemId="glass"; Quantity={Min=60; Max=90}; Chance=1;};
+			{Index=1; ItemId="wood"; Quantity={Min=60; Max=90}; Chance=1;};
+			{Index=1; ItemId="cloth"; Quantity={Min=60; Max=90}; Chance=1;};
+
+			{Index=2; ItemId="cannedbeans"; Quantity=1; Chance=0.8;};
+			{Index=2; ItemId="cannedfish"; Quantity=1; Chance=0.8;};
+			{Index=2; ItemId="bloxycola"; Quantity=1; Chance=0.8;};
+			{Index=2; ItemId="chocobar"; Quantity=1; Chance=0.8;};
+			
+			{Index=2; ItemId="medkit"; Quantity={Min=1; Max=2}; Chance=1;};
+
+			{Index=2; ItemId="lightammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
+			{Index=2; ItemId="heavyammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
+			{Index=2; ItemId="shotgunammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
+		};
+	};
 
 end
 

@@ -5,7 +5,9 @@ local npcPackage = {
     HumanoidType = "Bandit";
     
 	Configurations = {};
-    Properties = {};
+    Properties = {
+        LootableRewardId = "bandit";
+    };
 
     Chatter = {
         Greetings = {
@@ -15,7 +17,8 @@ local npcPackage = {
     
     AddComponents = {
         "TargetHandler";
-        "DropReward";
+        "LootableBody";
+        "PopToolDebris";
     };
 };
 
@@ -56,14 +59,11 @@ function npcPackage.Spawning(npcClass: NpcClass)
             equipmentClass.Configurations:AddModifier(modifier, true);
         end
     end
-
-    npcClass.Garbage:Tag(npcClass.OnThink:Connect(function()
-        npcClass.BehaviorTree:RunTree("BanditDefaultTree", true);
-    end));
 end
 
-function npcPackage.Spawned(npcClass: NpcClass)
+function npcPackage.Despawning(npcClass: NpcClass)
+    npcClass:GetComponent("PopToolDebris")();
+    npcClass.Character.Parent = workspace.Interactables;
 end
-
 
 return npcPackage;
