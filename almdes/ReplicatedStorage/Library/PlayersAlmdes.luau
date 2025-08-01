@@ -18,7 +18,8 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
     local healthComp: HealthComp = playerClass.HealthComp;
     healthComp:SetCanBeHurtBy();
     
-    local player = playerClass:GetInstance();
+    local player: Player = playerClass:GetInstance();
+    local properties: PropertiesVariable<{}> = playerClass.Properties;
 
     if RunService:IsServer() then
         local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;

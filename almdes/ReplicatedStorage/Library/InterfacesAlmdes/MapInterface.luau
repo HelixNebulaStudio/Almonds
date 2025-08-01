@@ -54,6 +54,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.UseMenuBlur = true;
     window.UseTween = false;
     window.DisableInteractables = true;
+    window.BoolStringWhenActive = {String="!CharacterHud|CharacterInterface"; Priority=5;};
 
     local binds = window.Binds;
 

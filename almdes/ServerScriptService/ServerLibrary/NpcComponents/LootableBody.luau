@@ -18,13 +18,14 @@ function Component.new(npcClass: NpcClass)
         local storage: Storage;
 
         _, interactable, storage = modCrates.Create("npcinventory", nil, npcClass.Character);
+        storage.Name = `{npcClass.Name}'s Inventory`;
         interactable.Config:SetAttribute("Label", `Loot {npcClass.Name}`);
 
         local rewardId = npcClass.Properties.LootableRewardId;
         if rewardId == nil then return end;
 
         local rewardsLib = modRewardsLibrary:Find(rewardId);
-        local rewards = modDropRateCalculator.RollDrop(rewardsLib, "Global");
+        local rewards = modDropRateCalculator.RollDrop(rewardsLib);
         for b=1, #rewards do
             local item = rewards[b];
             local itemId = item.ItemId;
@@ -39,10 +40,12 @@ function Component.new(npcClass: NpcClass)
             storage:Add(itemId, {Quantity=quantity;});
         end
 
-        storage.Garbage:Tag(function()
-            Debugger:Warn(`Storage destroy {storage.Id}`);
+        npcClass.Character.Destroying:Connect(function()
+            Debugger:Warn(`Destroying {storage.Id}`);
+            storage:Destroy();
         end)
     end)
+
 end
 
 return Component;

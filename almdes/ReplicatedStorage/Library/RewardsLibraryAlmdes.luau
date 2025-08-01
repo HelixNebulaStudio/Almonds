@@ -9,6 +9,10 @@ local function newTemplate(rewards)
 end
 
 -- Wood Templates;
+local woodHit = newTemplate{
+	{Index=1; ItemId="wood"; Quantity={Min=2; Max=4}; Chance=1; Type="Custom";};
+};
+
 local woodLight = newTemplate{
 	{Index=1; ItemId="wood"; Quantity={Min=10; Max=20}; Chance=1; Type="Custom";};
 };
@@ -23,6 +27,10 @@ local woodHeavy = newTemplate{
 
 
 -- Metal Templates;
+local metalHit = newTemplate{
+	{Index=1; ItemId="metal"; Quantity={Min=2; Max=4}; Chance=1; Type="Custom";};
+};
+
 local metalLight = newTemplate{
 	{Index=1; ItemId="metal"; Quantity={Min=10; Max=20}; Chance=1; Type="Custom";};
 };
@@ -57,6 +65,9 @@ local tent = newTemplate{
 
 function library.onRequire()
     --MARK: Generic
+	library:Add(setmetatable({Id="woodHit";}, woodHit));
+	library:Add(setmetatable({Id="metalHit";}, metalHit));
+	
 	library:Add(setmetatable({Id="woodLight";}, woodLight));
 	library:Add(setmetatable({Id="metalLight";}, metalLight));
 	

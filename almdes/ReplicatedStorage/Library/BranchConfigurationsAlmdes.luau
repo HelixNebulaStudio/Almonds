@@ -7,6 +7,7 @@ function modBranchConfigurations.onRequire()
     modConfigurations.Set("DisableInventory", false);
     modConfigurations.Set("CanQuickEquip", true);
     modConfigurations.Set("PvpMode", true);
+    modConfigurations.Set("DisableItemDrops", false);
 end
 
 return modBranchConfigurations;
