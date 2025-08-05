@@ -1,6 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
+local HttpService = game:GetService("HttpService");
 
 local AlmdesCore = {};
 --==
@@ -36,6 +37,7 @@ local modRewardsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForC
 local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("StoragePresetsLibraryAlmdes"));
 local modCrateLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("CrateLibraryAlmdes"));
 local modStatusEffects = shared.require(game.ReplicatedStorage.Library:WaitForChild("StatusEffectsAlmdes"));
+local modWeatherLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("WeatherLibraryAlmdes"));
 
 if RunService:IsServer() then
     local modProfile = shared.require(game.ServerScriptService.ServerLibrary.ProfileAlmdes);
@@ -43,22 +45,6 @@ if RunService:IsServer() then
     local modApiRequestLibrary = shared.require(game.ServerScriptService.ServerLibrary.ApiRequestLibraryAlmdes);
     local modBaseBuildingSystem = shared.require(game.ServerScriptService.ServerLibrary.BaseBuildingSystem);
     local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
-end
-
-local stormCycleTick = nil;
-local function startStormCycle()
-    if stormCycleTick == nil then
-        stormCycleTick = workspace:GetServerTimeNow() + (60*8);
-        task.spawn(function()
-            while true do
-                task.wait(10);
-                if workspace:GetServerTimeNow() >= stormCycleTick then
-                    stormCycleTick = workspace:GetServerTimeNow() + (60*8);
-                end
-                workspace:SetAttribute("StormCycleTick", stormCycleTick);
-            end
-        end)
-    end
 end
 
 function AlmdesCore.OnPlayerAdded(player)
@@ -69,7 +55,6 @@ end
 
 function AlmdesCore.OnCharacterAdded(player, character)
     if RunService:IsServer() then
-        startStormCycle();
     elseif RunService:IsClient() then
     end
 end
@@ -79,7 +64,6 @@ function AlmdesCore.OnPlayerRemoving(player)
     elseif RunService:IsClient() then
     end
 end
-
 
 Debugger:Warn("Init AlmdesCore.");
 return AlmdesCore;

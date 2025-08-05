@@ -11,6 +11,14 @@ kanban-plugin: list
 - [ ] [[Red Crow Storm]]
 
 
+## Playable
+
+- [ ] [[Raids]]
+- [ ] [[Shelters]]
+- [ ] [[Foods]]
+- [ ] [[Enemies]]
+
+
 ***
 
 ## Archive
@@ -19,6 +27,6 @@ kanban-plugin: list
 
 %% kanban:settings
 ```
-{"kanban-plugin":"list","list-collapse":[false],"new-note-folder":"docs/Development/Board"}
+{"kanban-plugin":"list","list-collapse":[false,false],"new-note-folder":"docs/Development/Board","show-checkboxes":true}
 ```
 %%

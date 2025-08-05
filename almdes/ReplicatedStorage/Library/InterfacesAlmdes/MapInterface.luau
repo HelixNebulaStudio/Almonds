@@ -252,9 +252,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	
 	binds.EventPublicData = {};
 	function binds.UpdateEvents()
-		local worldEventDataRaw = eventsLibraryModule:GetAttribute("Public");
-		local worldEventData;
-		pcall(function() worldEventData = HttpService:JSONDecode(worldEventDataRaw); end);
+		local worldEventData = shared.WorldCore.WorldEventsData;
 		if worldEventData == nil then return end;
 
 		for eventId, eventPublicData in pairs(worldEventData) do
@@ -288,9 +286,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end
 	
-	interface.Garbage:Tag(eventsLibraryModule:GetAttributeChangedSignal("Public"):Connect(function()
-		binds.UpdateEvents();
-	end))
 	binds.UpdateEvents();
 	
 	function binds.UpdateLoots()

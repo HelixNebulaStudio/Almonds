@@ -27,7 +27,6 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
         local statusComp: StatusComp = playerClass.StatusComp;
 
     elseif RunService:IsClient() then
-
     end
     
     playerClass.OnIsDeadChanged:Once(function(isDead)
@@ -112,7 +111,6 @@ function modPlayers.onRequire()
 			end;
 		};
 	};
-
 end
 
 return modPlayers;

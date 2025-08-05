@@ -239,17 +239,6 @@ function modItemsLibrary.onRequire()
 		Type = modItemsLibrary.Types.Food;
 		Tradable = modItemsLibrary.Tradable.Tradable;
 		Stackable = 4;
-		OnAdd = function(data)
-			-- local toolLib = modTools:LoadToolLib(data.Id);
-			-- local configs = toolLib and toolLib.Configurations or nil;
-			
-			-- if configs and configs.Calories then
-			-- 	data.Description = data.Description.."\n    + ".. configs.Calories .. " Calories";
-			-- end
-			-- if configs and configs.Hydration then
-			-- 	data.Description = data.Description.."\n    + ".. configs.Hydration .. " Hydration";
-			-- end
-		end;
 	}
 	
 	new(foodBase, {Id="cannedbeans"; Name="Canned Beans"; Icon="rbxassetid://4466508636"; Description="A can of beans.";});

@@ -62,6 +62,10 @@ function WorldEvents.onRequire()
             publicData[eventId] = public;
         end
 
+        if shared.WorldCore then
+            shared.WorldCore.WorldEventsData = publicData;
+        end
+
         local eventLibScr: ModuleScript = modEventsLibrary.Script;
         eventLibScr:SetAttribute("Public", HttpService:JSONEncode(publicData));
     end)
