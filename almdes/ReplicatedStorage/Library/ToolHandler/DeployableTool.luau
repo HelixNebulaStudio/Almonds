@@ -342,7 +342,15 @@ elseif RunService:IsServer() then -- MARK: Server
 
 		local destructibleConfig: Configuration = modDestructibles.createDestructible();
 		destructibleConfig.Parent = new;
-		local doorDestructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
+		local deployDestructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
+
+		deployDestructible.OnDestroy:Connect(function()
+			for _, obj in pairs(new:GetChildren()) do
+				if obj:IsA("Configuration") then
+					obj:Destroy();
+				end
+			end
+		end)
 
 		if configurations.ResizeToFit and interactable and interactable.Part then
 			local newSize = interactable.Part.Size;
@@ -396,8 +404,8 @@ elseif RunService:IsServer() then -- MARK: Server
 				blkDestructible.HealthComp:SetMaxHealth(200);
 				blkDestructible.HealthComp:SetHealth(200);
 
-				doorDestructible.OnDestroy:Connect(function()
-					doorDestructible.HealthComp:SetIsDead(true);
+				deployDestructible.OnDestroy:Connect(function()
+					deployDestructible.HealthComp:SetIsDead(true);
 				end)
 			end
 		end
@@ -502,6 +510,17 @@ elseif RunService:IsServer() then -- MARK: Server
 				end
 				inventory:Remove(storageItem.ID, 1);
 				shared.Notify(player, `1 {itemLib.Name} removed from your Inventory.`, "Negative");
+			end
+
+			if configurations.NewInteractable then
+				local newInteractConfig = modInteractables.createInteractable(configurations.NewInteractable);
+				newInteractConfig.Parent = new;
+			end
+
+			if configurations.CollectionTags then
+				for a=1, #configurations.CollectionTags do
+					new:AddTag(configurations.CollectionTags[a]);
+				end
 			end
 		end
 

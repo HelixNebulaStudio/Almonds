@@ -19,7 +19,7 @@ local toolPackage = {
 		
 		PlacementOffset = CFrame.new(0, 0, 0);
 		
-		GenericInteractable = "Workbench";
+		NewInteractable = "Workbench";
 	};
 	Properties={};
 };

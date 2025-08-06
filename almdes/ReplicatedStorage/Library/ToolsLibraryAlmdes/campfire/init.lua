@@ -19,7 +19,8 @@ local toolPackage = {
 
 		PlacementOffset = CFrame.new(0, 0, 0);
 
-		GenericInteractable = "Campfire";
+		NewInteractable = "Campfire";
+		CollectionTags = {"Campfire"};
 	};
 	Properties={};
 };

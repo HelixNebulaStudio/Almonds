@@ -1,6 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
+local CollectionService = game:GetService("CollectionService");
 
 local localPlayer = game.Players.LocalPlayer;
 
@@ -73,7 +74,53 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
 end);
 
 shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: PlayerClassAlmdes, tickData: TickData)
+    local player: Player = playerClass:GetInstance();
+    if RunService:IsClient() then
+        -- not engine implemented
+    end
 
+    if RunService:IsServer() and tickData.ms1000 then
+        local activeCampfireModels = CollectionService:GetTagged("Campfire");
+
+        local closestCampfire = nil;
+        local closestDistance = math.huge;
+
+        for _, campfireModel in pairs(activeCampfireModels) do
+            if campfireModel.Parent == nil then continue end;
+            if campfireModel.PrimaryPart == nil then continue end;
+            
+            local campfirePosition = campfireModel:GetPivot().Position;
+            local distance = player:DistanceFromCharacter(campfirePosition);
+
+            if distance < closestDistance then
+                closestDistance = distance;
+                closestCampfire = campfireModel;
+            end
+        end
+
+        local statusComp: StatusComp = playerClass.StatusComp;
+        local campfireStatus = statusComp:GetOrDefault("Campfire");
+
+        local maxCampfireRange = 24;
+        if closestCampfire and closestDistance <= maxCampfireRange then
+            local campfireConfig = closestCampfire:FindFirstChild("Interactable");
+            local isCampfireActive = campfireConfig and campfireConfig:GetAttribute("IsCampfireActive");
+
+            if isCampfireActive then
+                statusComp:Apply("Campfire", {
+                    Values = {
+                        CampfireModel = closestCampfire;
+                    };
+                    Expires = workspace:GetServerTimeNow() + 2;
+                    Duration = 2;
+                });
+            end
+        else
+            if campfireStatus then
+                campfireStatus.IsExpired = true;
+            end
+        end
+    end
 end);
 
 function modPlayers.onRequire()
