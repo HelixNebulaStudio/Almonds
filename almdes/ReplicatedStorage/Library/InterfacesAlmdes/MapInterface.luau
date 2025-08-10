@@ -55,6 +55,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.UseTween = false;
     window.DisableInteractables = true;
     window.BoolStringWhenActive = {String="!CharacterHud|CharacterInterface"; Priority=5;};
+	window.Layers = {"CharacterWindow"};
 
     local binds = window.Binds;
 

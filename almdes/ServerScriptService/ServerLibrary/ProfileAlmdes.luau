@@ -79,9 +79,35 @@ function modProfile.onRequire()
             playerClass:Spawn();
             replyPacket.Success = true;
 
+        elseif action == "rescuerequest" then
+            if playerClass.Properties.LastRescueRequest and tick() - playerClass.Properties.LastRescueRequest < 30 then
+                return replyPacket;
+            end
+
+            local playersInRange = {};
+            for _, oPlayer in pairs(game.Players:GetPlayers()) do
+                if oPlayer == player then continue end;
+                if oPlayer:DistanceFromCharacter(playerClass.RootPart.Position) > 256 then continue end;
+                table.insert(playersInRange, oPlayer);
+            end
+
+            local helpMsg = `A player near you needs help!`;
+			shared.Notify(playersInRange, `<b><font size="18" color="#d4bb6c">{helpMsg}</font></b>`, "Message");
+			shared.Notify(player, `Rescue alert radioed to nearby players.`, "Inform");
+            replyPacket.Success = true;
+
+        elseif action == "endrun" then
+        local playRunSession = playerClass.Properties.PlayRunSession;
+
+            playRunSession.EndTime = workspace:GetServerTimeNow();
+            replyPacket.RunSummary = playRunSession:GetSummary();
+
+            replyPacket.Success = true;
+        
         elseif action == "returnmenu" then
             playerClass:Despawn();
             replyPacket.Success = true;
+
         end
         return replyPacket;
     end

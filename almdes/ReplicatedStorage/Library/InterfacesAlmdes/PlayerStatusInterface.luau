@@ -38,6 +38,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	
 	--MARK: PlayerHud
 	local playerHudWindow: InterfaceWindow = interface:NewWindow("PlayerHud", playerHudFrame);
+	playerHudWindow.Layers = {"CharacterHud"};
 	playerHudWindow.IgnoreHideAll = true;
 	playerHudWindow.ReleaseMouse = false;
 	playerHudWindow:Open();

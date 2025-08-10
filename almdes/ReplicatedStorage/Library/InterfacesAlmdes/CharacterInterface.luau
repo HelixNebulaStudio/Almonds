@@ -30,6 +30,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     charWindow.DisableInteractables = true;
     charWindow.DisableHotKeysHint = true;
     charWindow.BoolStringWhenActive = {String="!CharacterHud|CharacterInterface"; Priority=5;};
+    charWindow.Layers = {"CharacterWindow"};
     charWindow:SetClosePosition(charFrame.Position, charFrame.Position);
 
     local binds = charWindow.Binds;

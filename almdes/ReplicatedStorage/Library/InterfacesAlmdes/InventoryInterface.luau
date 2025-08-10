@@ -58,6 +58,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local invWindow: InterfaceWindow = interface:NewWindow("Inventory", invFrame);
 	invWindow.UseTween = false;
+	invWindow.Layers = {"CharacterWindow"};
 
 	local binds = invWindow.Binds;
 

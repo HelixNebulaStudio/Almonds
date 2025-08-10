@@ -8,6 +8,8 @@ local localPlayer = game.Players.LocalPlayer;
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
+local modPlayRunSession = shared.require(game.ReplicatedStorage.Library.PlayRunSession);
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 if RunService:IsServer() then
 
@@ -33,6 +35,15 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
     playerClass.OnIsDeadChanged:Once(function(isDead)
         if not isDead then return end;
         Debugger:Warn(`Dead`);
+
+        if RunService:IsClient() then
+            local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
+            if deathScreenElement then
+                deathScreenElement.Visible = true;
+                modClientGuis.ActiveInterface:HideAll();
+            end
+            
+        end
     end)
 end)
 
@@ -40,15 +51,22 @@ end)
 shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClassAlmdes, character: Model)
     if RunService:IsClient() then return end;
 
+    local properties: PropertiesVariable<{}> = playerClass.Properties;
     local player = playerClass:GetInstance();
     
+    if properties.PlayRunSession then
+        properties.PlayRunSession:Destroy();
+    end
+    properties.PlayRunSession = modPlayRunSession.new();
+
+
     --MARK: Meta Status
     local statusComp: StatusComp = playerClass.StatusComp;
 
     --Hunger
     local hungerStatusCompApplyParam: StatusCompApplyParam = {
         Values = {
-            CurValue = 75;
+            CurValue = 100;
             MaxValue = 100;
         };
     }
@@ -57,7 +75,7 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     --Thirst
     local thirstStatusCompApplyParam: StatusCompApplyParam = {
         Values = {
-            CurValue = 85;
+            CurValue = 100;
             MaxValue = 100;
         };
     }
@@ -66,7 +84,7 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     --Comfort
     local comfortStatusCompApplyParam: StatusCompApplyParam = {
         Values = {
-            CurValue = 95;
+            CurValue = 100;
             MaxValue = 100;
         };
     }
