@@ -39,3 +39,22 @@ export type WorldEventInstance = {
    TemplateEventMap: Folder;
    Public: anydict;
 };
+
+-- MARK: MapMarker
+export type MapMarker = {
+    Id: string;
+
+    RadialElement: {
+        Id: string;
+        ImageButton: ImageButton;
+        RadialImage: RadialImage;
+    };
+    Pointer: Frame;
+    Target: Vector3 | Model | BasePart | Attachment;
+
+    ToolTip: string?;
+    LegendId: string?;
+
+    EventLib: anydict?;
+    MarkerName: string?;
+};

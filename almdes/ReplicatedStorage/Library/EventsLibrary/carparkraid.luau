@@ -3,6 +3,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local modCrates = shared.require(game.ReplicatedStorage.Library.Crates);
 local modRegion = shared.require(game.ReplicatedStorage.Library.Region);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 local eventPackage = {
 	Id = "carparkraid";
@@ -11,26 +12,29 @@ local eventPackage = {
 	Type = "Raid";
 	CycleTimer = 120;
 	
-	Icon = "rbxassetid://7304930076";
+	MapMarkers = {
+		["CrateSpawn"] = {
+			Icon="rbxassetid://7304930076";
+		};
+	};
 	
 	RewardsId = "carparkraid";
-	LootMarkOnMap = true;
 };
 --==
 
-function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
+function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	local modNpcs = shared.require(game.ServerScriptService.ServerLibrary.Entity.Npcs);
 	Debugger:Warn(`newInstance {eventPackage.Id}`);
 
 	local voidClips = game.ServerStorage.Prefabs.Events:WaitForChild("carparkraidVoid");
 	voidClips.Parent = script;
 
-	local templateEventMap = worldEventHandler.TemplateEventMap;
+	local templateEventMap = eventInstance.TemplateEventMap;
 
-	local scheduler: Scheduler = worldEventHandler.Scheduler;
-	local properties: PropertiesVariable<{}> = worldEventHandler.Properties;
-	local garbageHandler: GarbageHandler = worldEventHandler.Garbage;
-	local publicData = worldEventHandler.Public;
+	local scheduler: Scheduler = eventInstance.Scheduler;
+	local properties: PropertiesVariable<{}> = eventInstance.Properties;
+	local garbageHandler: GarbageHandler = eventInstance.Garbage;
+	local publicData = eventInstance.Public;
 
 	local function OnStateUpdate(state, oldState)
 		Debugger:Warn(`{eventPackage.Id} State Update: {state}`);
@@ -169,5 +173,30 @@ function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
 
 end
 
+function eventPackage.RenderMarker(mapMarker: MapMarker, eventPublicData: anydict)
+	local radialImage: RadialImage = mapMarker.RadialElement.RadialImage;
+	local imageLabel: ImageLabel = radialImage.ImageLabel;
+	
+	local serverTime = workspace:GetServerTimeNow();
+
+	local duration = eventPublicData.RadialDuration;
+	local activeTime = eventPublicData.RadialTick or serverTime;
+
+	local alpha = 0;
+	if eventPublicData.State == "Cooldown" then
+		alpha = 1-math.clamp((activeTime-serverTime)/duration, 0, 1);
+		imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
+
+	elseif eventPublicData.State == "Idle" or eventPublicData.State == "Active" then
+		alpha = 1;
+		imageLabel.ImageColor3 = modClientGuis.ActiveInterface.Colors.Branch;
+
+	else
+		alpha = 0;
+		imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
+	end
+				
+	radialImage:UpdateLabel(alpha);
+end
 
 return eventPackage;

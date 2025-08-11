@@ -11,6 +11,7 @@ local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBind
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
 local modUIElements = shared.require(game.ReplicatedStorage.Library.UI.UIElements);
+local modMath = shared.require(game.ReplicatedStorage.Library.Util.Math);
 
 local MAP_LEGEND_LIBRARY = {
 	["loot"] = {
@@ -72,6 +73,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			windowFrame.Visible = true;
 			interface:HideAll{[window.Name]=true};
 			
+			mapFollowPlayer = true;
 			binds.UpdateEvents();
 			binds.UpdateLoots();
             window:Update();
@@ -216,7 +218,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 		
 		local eventLib = modEventsLibrary:Find(id);
-		if eventLib then
+		if eventLib and mapPointInfo.MarkerName then
+			local mapMarkerDict = eventLib.MapMarkers[mapPointInfo.MarkerName];
+
 			local radialElement = modUIElements.newRadialButton();
 			radialElement.ImageButton.Parent = localPlayerPointer;
 			
@@ -228,16 +232,16 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			titleLabel.Font = Enum.Font.PermanentMarker;
 			titleLabel.TextSize = 28;
 			
-			mapPointInfo.Radial = radialElement.RadialObject;
+			mapPointInfo.RadialElement = radialElement;
 			
-			eventIconLabel.Image = eventLib.Icon or "";
+			eventIconLabel.Image = mapMarkerDict.Icon or "";
 			eventIconLabel.ZIndex = 1;
 			if eventLib.IconSize then
 				eventIconLabel.Size = UDim2.new(eventLib.IconSize, 0, eventLib.IconSize, 0);
 			end
 			
 			eventIconLabel.MouseMoved:Connect(function()
-				titleLabel.Text = eventLib.Name;
+				titleLabel.Text = mapMarkerDict.Label or eventLib.Name;
 				titleLabel.Visible = true;
 			end)
 			eventIconLabel.MouseLeave:Connect(function()
@@ -258,19 +262,30 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 		for eventId, eventPublicData in pairs(worldEventData) do
 			local eventLib = modEventsLibrary:Find(eventId);
-			
-			if eventLib == nil or eventLib.LootMarkOnMap ~= true then continue end;
+			if eventLib == nil then continue end;
+
 			binds.EventPublicData[eventId] = eventPublicData;
 			
 			local eventMap = eventsFolder:FindFirstChild(eventId);
-			if eventMap then
-				local mapCore = eventMap:FindFirstChild("Core");
-				local crateSpawn = mapCore and mapCore:FindFirstChild("CrateSpawn");
-				
-				binds.AddPointVector({
-					Id = eventId;
-					Target = crateSpawn;
-				});
+			if eventMap == nil then continue end;
+
+			local mapMarkersDict = eventLib.MapMarkers;
+			if mapMarkersDict == nil then continue end;
+
+			local mapCore = eventMap:FindFirstChild("Core");
+			local mapCoreChildren = mapCore:GetChildren();
+
+			for markerName, markerData in pairs(mapMarkersDict) do
+				for _, att in pairs(mapCoreChildren) do
+					if not att:IsA("Attachment") then continue end;
+					if att.Name ~= markerName then continue end;
+
+					binds.AddPointVector({
+						Id = eventId;
+						MarkerName = markerName;
+						Target = att;
+					});
+				end
 			end
 		end
 		
@@ -321,8 +336,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 	--MARK: OnUpdate
 	window.OnUpdate:Connect(function()
-		local serverTime = workspace:GetServerTimeNow();
-
 		local showLegends = {};
 
 		for a=#binds.MapPoints, 1, -1 do
@@ -365,33 +378,32 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			local projectPos = projectWorldPos(Vector2.new(pos.X, pos.Z));
 			pointerFrame.Position = UDim2.new(0.5, projectPos.X, 0.5, projectPos.Y);
 			
-			local radialObject = mapPoint.Radial;
-			if radialObject then
-				local imageLabel = radialObject.label;
+			local radialElement = mapPoint.RadialElement;
+			local eventLib = mapPoint.EventLib;
+
+			if radialElement then
+				local imageButton: ImageButton = radialElement.ImageButton;
+				local radialImage: RadialImage = radialElement.RadialImage;
 				
-				if mapPoint.EventLib and binds.EventPublicData[mapPoint.Id] then
+				if eventLib and binds.EventPublicData[mapPoint.Id] then
 					local eventPublicData = binds.EventPublicData[mapPoint.Id];
 					
-					local duration = eventPublicData.RadialDuration;
-					local activeTime = eventPublicData.RadialTick or serverTime;
-					
-					local alpha = 0;
-
-					if eventPublicData.State == "Cooldown" then
-						alpha = 1-math.clamp((activeTime-serverTime)/duration, 0, 1);
-						imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
-
-					elseif eventPublicData.State == "Idle" or eventPublicData.State == "Active" then
-						alpha = 1;
-						imageLabel.ImageColor3 = interface.Colors.Branch;
-
+					if eventLib.RenderMarker then
+						eventLib.RenderMarker(mapPoint, eventPublicData);
 					else
-						alpha = 0;
-						imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255);
+						radialImage:UpdateLabel(0);
 					end
-					
-					radialObject:UpdateLabel(alpha);
 				end
+
+				if zoomScale >= 5 then
+					imageButton.Size = UDim2.new(0, 50, 0, 50);
+				else
+					local size = modMath.MapNum(zoomScale, 4.5, 1, 50, 20);
+					imageButton.Size = UDim2.new(0, size, 0, size);
+				end
+
+				local pointCircle = pointerFrame:WaitForChild("PointCircle");
+				pointCircle.BackgroundTransparency = 1;
 			end
 		end
 		

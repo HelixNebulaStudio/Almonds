@@ -23,13 +23,13 @@ function eventPackage.onRequire()
 
 end
 
-function eventPackage.newInstance(worldEventHandler: WorldEventInstance)
+function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	Debugger:Warn(`newInstance {eventPackage.Id}`);
 
-	local scheduler: Scheduler = worldEventHandler.Scheduler;
-	local properties: PropertiesVariable<{}> = worldEventHandler.Properties;
-	local garbageHandler: GarbageHandler = worldEventHandler.Garbage;
-	local publicData = worldEventHandler.Public;
+	local scheduler: Scheduler = eventInstance.Scheduler;
+	local properties: PropertiesVariable<{}> = eventInstance.Properties;
+	local garbageHandler: GarbageHandler = eventInstance.Garbage;
+	local publicData = eventInstance.Public;
 
     local function OnStateUpdate(state, oldState)
 		Debugger:Warn(`{eventPackage.Id} State Update: {state}`);
