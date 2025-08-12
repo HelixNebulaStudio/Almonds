@@ -33,7 +33,6 @@ function eventPackage.onRequire()
 
 	local prefabStorage = game.ServerStorage.Prefabs;
 	eventPackage.Prefabs = {
-		Helicopter = prefabStorage:WaitForChild("Vehicles"):WaitForChild("ExtractionHelicopter");
 		HeliExfilInteract = prefabStorage:WaitForChild("Interactables"):WaitForChild("HeliExfilInteract");
 	};
 end
@@ -67,6 +66,12 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			newHeliExfilInteract.Name = exfilKey;
 			newHeliExfilInteract:PivotTo(att.WorldCFrame);
 			newHeliExfilInteract.Parent = workspace.Interactables;
+
+			garbageHandler:Tag(newHeliExfilInteract);
+
+			local interactConfig: Configuration = newHeliExfilInteract:WaitForChild("Interactable") :: Configuration;
+			local interactable: InteractableInstance = modInteractables.getOrNew(interactConfig);
+			interactable.Values.InteractModel = newHeliExfilInteract;
 		end
 	end
 	
@@ -92,7 +97,7 @@ function eventPackage.RenderMarker(mapMarker: MapMarker, eventPublicData: anydic
 	if config == nil then return end;
 
 	local interactable: InteractableInstance = modInteractables.getOrNew(config);
-	if interactable.CanInteract == false then
+	if interactable.Values.ExfilCalled then
 		imageLabel.ImageColor3 = Color3.fromRGB(204, 0, 255);
 	else
 		imageLabel.ImageColor3 = modClientGuis.ActiveInterface.Colors.Branch;

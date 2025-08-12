@@ -3,6 +3,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 
 local modFlareParticle = shared.require(game.ReplicatedStorage.Particles.FlareParticle);
+local modExfilSystem = shared.require(game.ReplicatedStorage.Library.ExfilSystem);
 
 local interactablePackage = {};
 --==
@@ -57,6 +58,12 @@ function interactablePackage.init(super) -- Server/Client
 
             interactable.Values.FlareParticle = flareParticle;
         end)
+
+        if interactable.Values.ExfilCalled ~= true then
+            interactable.Values.ExfilCalled = true;
+            interactable:Sync();
+            modExfilSystem:SpawnExfilHelicopter(part.Position, false);
+        end
     end
     
     super.registerPackage(ExfilFlares);

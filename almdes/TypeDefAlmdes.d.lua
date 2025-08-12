@@ -58,3 +58,29 @@ export type MapMarker = {
     EventLib: anydict?;
     MarkerName: string?;
 };
+
+
+-- MARK: Vehicle
+export type Vehicle = {
+    -- @properties
+    Model: Model;
+    Package: anydict;
+    Config: Configuration;
+
+    Garbage: GarbageHandler;
+    Properties: PropertiesVariable<anydict>;
+
+    Destructible: DestructibleInstance;
+    HealthComp: HealthComp;
+    Animator: Animator;
+    AnimationTracks: anydict;
+
+    -- @methods
+    SetCFrame: (Vehicle, cf: CFrame)->nil;
+    ToggleVelocityDamp: (Vehicle, v: boolean)->nil;
+    Destroy: (Vehicle)->nil;
+    PlaySound: (Vehicle, sndName: string, params: anydict?)->nil;
+
+    -- @binds
+    BindStepped: (Vehicle, timeTotal: number, timeDelta: number)->nil;
+};

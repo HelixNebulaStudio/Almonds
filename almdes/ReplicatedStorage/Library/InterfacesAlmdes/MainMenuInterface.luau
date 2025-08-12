@@ -384,11 +384,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 updateSelectionHighlight();
             end)
             
-            if key == "Tutorial" then
-                optionsButton.Visible = isMenuWorld and isTutorialFinished == nil;
-            elseif key == "Play" then
-                optionsButton.Visible = not (isMenuWorld and isTutorialFinished == nil);
-            end
             optionsButton.MouseButton1Click:Connect(function()
                 interface:PlayButtonClick();
                 
