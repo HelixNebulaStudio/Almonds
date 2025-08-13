@@ -69,6 +69,8 @@ export type Vehicle = {
 
     Garbage: GarbageHandler;
     Properties: PropertiesVariable<anydict>;
+    Components: anydict;
+    Seats: {[string]: (Seat | VehicleSeat)};
 
     Destructible: DestructibleInstance;
     HealthComp: HealthComp;
@@ -80,6 +82,8 @@ export type Vehicle = {
     ToggleVelocityDamp: (Vehicle, v: boolean)->nil;
     Destroy: (Vehicle)->nil;
     PlaySound: (Vehicle, sndName: string, params: anydict?)->nil;
+
+    GetComponent: (Vehicle, componentName: string)->any;
 
     -- @binds
     BindStepped: (Vehicle, timeTotal: number, timeDelta: number)->nil;

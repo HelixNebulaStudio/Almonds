@@ -13,6 +13,7 @@ ClientLighting.__index = ClientLighting;
 function ClientLighting:SetAtmosphere(aType)
 	if aType == "Menu" then
 		modCameraGraphics.Effects:Remove("death");
+		modCameraGraphics.Effects:Remove("exfil");
 		modCameraGraphics.Effects:Set("menu", {
 			Atmosphere = {
 				Density = 0.125;
@@ -25,8 +26,24 @@ function ClientLighting:SetAtmosphere(aType)
 			Ambient = Color3.fromRGB(180, 180, 180);
 		}, modCameraGraphics.EffectsPriority.Game);
 
+	elseif aType == "Exfil" then
+		modCameraGraphics.Effects:Remove("menu");
+		modCameraGraphics.Effects:Remove("death");
+		modCameraGraphics.Effects:Set("exfil", {
+			Atmosphere = {
+				Density = 0.4;
+				Offset = 0;
+				Color = Color3.fromRGB(255, 255, 255);
+				Decay = Color3.fromRGB(255, 255, 255);
+				Glare = 0;
+				Haze = 10;
+			};
+			Ambient = Color3.fromRGB(180, 180, 180);
+		}, modCameraGraphics.EffectsPriority.Game);
+
 	elseif aType == "Death" then
 		modCameraGraphics.Effects:Remove("menu");
+		modCameraGraphics.Effects:Remove("exfil");
 		modCameraGraphics.Effects:Set("death", {
 			Atmosphere = {
 				Density = 1;
@@ -41,6 +58,7 @@ function ClientLighting:SetAtmosphere(aType)
 
 	elseif aType == "Spawn" then
 		modCameraGraphics.Effects:Remove("death");
+		modCameraGraphics.Effects:Remove("exfil");
 		modCameraGraphics.Effects:Remove("menu");
 
 	end

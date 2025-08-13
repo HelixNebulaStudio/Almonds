@@ -9,8 +9,16 @@ local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchCon
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
+local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 
 local FRAME_TWEENINFO = TweenInfo.new(3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
+
+local STAT_KEYS = {
+    {Key="NpcKills", Name="Npc Kills"};
+    {Key="PlayerKills", Name="Player Kills"};
+    {Key="ContractsCompleted", Name="Contracts Completed"};
+    {Key="MissionsCompleted", Name="Missions Completed"};
+};
 
 local interfacePackage = {
     Name = script.Name;
@@ -89,7 +97,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	gameEndWindow.UseMenuBlur = true;
     gameEndWindow.DisableInteractables = true;
     gameEndWindow.DisableHotKeysHint = true;
-    gameEndWindow.BoolStringWhenActive = {String="!CharacterHud|CharacterInterface"; Priority=5;};
+    gameEndWindow.BoolStringWhenActive = {String="EndScreen"; Priority=5;};
     gameEndWindow.Layers = {"EndScreen"};
     gameEndWindow:SetClosePosition(gameEndFrame.Position, gameEndFrame.Position);
 
@@ -172,6 +180,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             local noteLabel = notesFrame:WaitForChild("textLabel");
 
             Debugger:Log(`runSummary:`, runSummary);
+            local firstLoad = false;
             if pageFrame.Visible == false then
                 pageFrame.Visible = true;
                 notesFrame.Visible = false;
@@ -181,17 +190,50 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 }):Play();
                 task.wait(1);
                 notesFrame.Visible = true;
+                firstLoad = true;
             end
 
             local runTimelapse = runSummary.EndTime - runSummary.StartTime;
             local runTimeStr = modSyncTime.ToString(runTimelapse);
 
             local notes = {};
-            table.insert(notes, `You have survived for {runTimeStr}.`);
-            noteLabel.Text = table.concat(notes, "\n");
-            
+
+            if runSummary.Status == "Success" then
+                table.insert(notes, `<font size="24" color="#{Color3.fromHex("#54c968"):ToHex()}"><b>Success</b></font>`);
+            else
+                table.insert(notes, `<font size="24" color="#{Color3.fromHex("#c05c5c"):ToHex()}"><b>Failed</b></font>`);
+            end
+            if runSummary.EndReason == "HeliExfil" then
+                table.insert(notes, "You have been extracted by helicopter.");
+            elseif runSummary.EndReason == "Died" then
+                table.insert(notes, "You have died.");
+            end
+            table.insert(notes, `You have survived for {runTimeStr}.\n`);
+
+            for a=1, #STAT_KEYS do
+                local k = STAT_KEYS[a].Key;
+                local v = runSummary.Stats[k];
+                if v == nil then continue end;
+
+                local name = STAT_KEYS[a].Name;
+                table.insert(notes, `{name}: {v}`);
+            end
+
+            if firstLoad then
+                task.spawn(function()
+                    for a=1, #notes do
+                        task.wait(0.4);
+                        modAudio.Play("WritingShort").PlaybackSpeed = math.random(90, 110)/100;
+                        task.wait(0.1);
+                        noteLabel.Text = table.concat(notes, "\n", 1, a);
+                    end
+                end)
+            else
+                noteLabel.Text = table.concat(notes, "\n");
+            end
         end
     end)
+
 end
 
 return interfacePackage;

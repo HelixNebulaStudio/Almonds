@@ -97,9 +97,10 @@ function modProfile.onRequire()
             replyPacket.Success = true;
 
         elseif action == "endrun" then
-        local playRunSession = playerClass.Properties.PlayRunSession;
+            -- run failed;
+            local playRunSession = playerClass.Properties.PlayRunSession;
 
-            playRunSession.EndTime = workspace:GetServerTimeNow();
+            playRunSession:EndRun("Failed", "Died");
             replyPacket.RunSummary = playRunSession:GetSummary();
 
             replyPacket.Success = true;

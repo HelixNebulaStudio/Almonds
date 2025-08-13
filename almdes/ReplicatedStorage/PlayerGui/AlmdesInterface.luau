@@ -17,12 +17,12 @@ local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configur
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
-local modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
 
 local interface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClass).new(script.Parent);
 --==
 function interface.onRequire()
     remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
+    remoteMainMenuRemote = modRemotesManager:Get("MainMenuRemote");
 end
 
 function interface.clientGuisLoad()
@@ -44,6 +44,15 @@ function interface.clientGuisLoad()
             interface:FireEvent("DataItemProcessorUpdate", packet);
 		end
 	end
+    function remoteMainMenuRemote.OnClientInvoke(action, packet)
+        Debugger:Warn(`MainMenu {action}`, packet);
+
+        if action == "endrun" then
+            local gameEndWindow: InterfaceWindow = interface:GetWindow("GameEndWindow");
+            gameEndWindow.Binds.RunSummary = packet.RunSummary;
+            interface:ToggleWindow("GameEndWindow", true);
+        end
+    end
     --==
 
     interface:Init();
@@ -58,15 +67,6 @@ function interface.clientGuisLoad()
         mainMenuWindow:Open();
 
     end
-
-    local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
-    interface.Garbage:Tag(function()
-        playerClass.HealthComp.OnIsDeadChanged:Connect(function()
-            if playerClass.HealthComp.IsDead == false then return end;
-
-            modClientLighting:SetAtmosphere("Death");
-        end)
-    end)
 
 	task.spawn(function()
         local rPacket = remoteItemProcessor:InvokeServer("sync");

@@ -11,11 +11,47 @@ local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
 local modPlayRunSession = shared.require(game.ReplicatedStorage.Library.PlayRunSession);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
-if RunService:IsServer() then
-
-end
 --==
+function modPlayers.onRequire()
+    if RunService:IsClient() then
+        modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
+    end
 
+	shared.modCommandsLibrary.bind{
+		["playeralmdes"] = {
+			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
+			Description = [[Player commands for Almonds.
+            
+            /playeralmdes sethunger [val]
+            /playeralmdes setthirst [val]
+            ]];
+
+			RequiredArgs = 0;
+			UsageInfo = "/playeralmdes action [args]";
+			Function = function(player, args)
+				local playerClass: PlayerClass = modPlayers.get(player);
+				local actionId = args[1];
+
+                if actionId == "sethunger" then
+                    local hungerStatus = playerClass.StatusComp:GetOrDefault("Hunger");
+					hungerStatus:Func("SetValue", tonumber(args[2]) or 100);
+
+                elseif actionId == "setthirst" then
+                    local thirstStatus = playerClass.StatusComp:GetOrDefault("Thirst");
+					thirstStatus:Func("SetValue", tonumber(args[2]) or 100);
+                end
+
+				return true;
+			end;
+			ClientFunction = function(player, args)
+				local playerClass: PlayerClass = modPlayers.get(player);
+				local actionId = args[1];
+
+				return;
+			end;
+		};
+	};
+end
 
 shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmdes)
     local healthComp: HealthComp = playerClass.HealthComp;
@@ -37,12 +73,21 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
         Debugger:Warn(`Dead`);
 
         if RunService:IsClient() then
-            local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
-            if deathScreenElement then
-                deathScreenElement.Visible = true;
-                modClientGuis.ActiveInterface:HideAll();
+            if playerClass.Properties.PlayRunStatus == "Success" then
+                modClientLighting:SetAtmosphere("Exfil");
+
+            else
+                modClientLighting:SetAtmosphere("Death");
+
+                local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
+                if deathScreenElement then
+                    deathScreenElement.Visible = true;
+                    modClientGuis.ActiveInterface:HideAll();
+                end
             end
-            
+
+        elseif RunService:IsServer() then
+            --
         end
     end)
 end)
@@ -57,7 +102,7 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     if properties.PlayRunSession then
         properties.PlayRunSession:Destroy();
     end
-    properties.PlayRunSession = modPlayRunSession.new();
+    properties.PlayRunSession = modPlayRunSession.new(playerClass);
 
 
     --MARK: Meta Status
@@ -140,42 +185,5 @@ shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: 
         end
     end
 end);
-
-function modPlayers.onRequire()
-	shared.modCommandsLibrary.bind{
-		["playeralmdes"] = {
-			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
-			Description = [[Player commands for Almonds.
-            
-            /playeralmdes sethunger [val]
-            /playeralmdes setthirst [val]
-            ]];
-
-			RequiredArgs = 0;
-			UsageInfo = "/playeralmdes action [args]";
-			Function = function(player, args)
-				local playerClass: PlayerClass = modPlayers.get(player);
-				local actionId = args[1];
-
-                if actionId == "sethunger" then
-                    local hungerStatus = playerClass.StatusComp:GetOrDefault("Hunger");
-					hungerStatus:Func("SetValue", tonumber(args[2]) or 100);
-
-                elseif actionId == "setthirst" then
-                    local thirstStatus = playerClass.StatusComp:GetOrDefault("Thirst");
-					thirstStatus:Func("SetValue", tonumber(args[2]) or 100);
-                end
-
-				return true;
-			end;
-			ClientFunction = function(player, args)
-				local playerClass: PlayerClass = modPlayers.get(player);
-				local actionId = args[1];
-
-				return;
-			end;
-		};
-	};
-end
 
 return modPlayers;

@@ -73,6 +73,9 @@ function Vehicles.new(id)
         Properties = modPropertiesVariable.new({});
         Garbage = modGarbageHandler.new();
 
+        Seats = {};
+        Components = {};
+
         HealthComp = nil;
 
         BindStepped = nil;
@@ -95,6 +98,12 @@ function Vehicles.new(id)
             self.Package:BindStepped(timeTotal, timeDelta);
         end
     end))
+
+    for _, obj in pairs(newModel:GetDescendants()) do
+        if obj:IsA("Seat") or obj:IsA("VehicleSeat") then
+            self.Seats[obj.Name] = obj;
+        end
+    end
 
     if self.Package.BindNew then
         self.Package.BindNew(self);
@@ -125,6 +134,10 @@ function Vehicles:ToggleVelocityDamp(v: boolean)
     if velocityDamp == nil then return end;
 
     velocityDamp.Enabled = v;
+end
+
+function Vehicles:Components(componentName: string)
+    return self.Components[componentName];
 end
 
 function Vehicles:Destroy()

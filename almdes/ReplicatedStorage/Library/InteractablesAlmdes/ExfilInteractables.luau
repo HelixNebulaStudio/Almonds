@@ -15,7 +15,7 @@ function interactablePackage.init(super) -- Server/Client
         Type = "Button";
 
         IndicatorPresist = false;
-        InteractableRange = 10;
+        InteractableRange = 16;
     };
 
     function ExfilFlares.new(interactable: InteractableInstance, npcName: string)

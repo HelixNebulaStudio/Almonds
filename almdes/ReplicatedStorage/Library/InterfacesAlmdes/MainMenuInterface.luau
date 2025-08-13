@@ -418,9 +418,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end
 
-    function remoteMainMenu.OnClientInvoke()
-        
-    end
 end
 
 return interfacePackage;
