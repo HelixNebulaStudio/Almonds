@@ -195,7 +195,7 @@ function FlareParticle:Launch()
     playStage(2);
 
     flareAtt.Parent = workspace.Terrain;
-    Debugger.Expire(flareAtt, 185);
+    Debugger.Expire(flareAtt, 60);
 end
 
 return FlareParticle;

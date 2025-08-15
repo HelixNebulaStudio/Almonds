@@ -20,7 +20,6 @@ local templateRedCrowStormField;
 function eventPackage.onRequire()
 	templateRedCrowStormField = game.ReplicatedStorage.Prefabs:WaitForChild("Misc"):WaitForChild("redCrowStormField");
 
-
 end
 
 function eventPackage.newInstance(eventInstance: WorldEventInstance)
@@ -31,6 +30,11 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
 	local publicData = eventInstance.Public;
 
+	publicData.PeaceDuration = 60*1;
+	publicData.RaiseDuration = 60*1;
+	publicData.ActiveDuration = 60*2;
+	publicData.CycleDuration = publicData.PeaceDuration + publicData.RaiseDuration + publicData.ActiveDuration;
+
     local function OnStateUpdate(state, oldState)
 		Debugger:Warn(`{eventPackage.Id} State Update: {state}`);
 
@@ -39,47 +43,52 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
             scheduler:ScheduleFunction(function()
 				if properties.State ~= "Idle" then return end;
                 properties.State = "Start";
-            end, tick()+480);
+            end, tick()+publicData.PeaceDuration);
 
-			workspace:SetAttribute("StormCycleTick", workspace:GetServerTimeNow() + (60*12));
+			workspace:SetAttribute("StormCycleTick", workspace:GetServerTimeNow() + publicData.CycleDuration);
 
 
         elseif state == "Start" then
 			scheduler:ScheduleFunction(function()
 				if properties.State ~= "Start" then return end;
 				properties.State = "Active";
-			end, tick()+120);
+
+				if properties.SndBlizzardWinds then
+					TweenService:Create(properties.SndBlizzardWinds, TweenInfo.new(3), {Volume = 2}):Play();
+				end
+			end, tick()+publicData.RaiseDuration);
 
 			scheduler:ScheduleFunction(function()
 				local sound: Sound = modAudio.Play("Soundtrack:Invisible Threat", workspace);
 				sound.Ended:Once(function()
 					sound:Destroy();
 				end);
-			end, tick()+60);
+			end, tick()+(publicData.RaiseDuration/2));
 
 			modWeatherService:SetWeather{
 				Id = "redcrowstorm";
 				Priority = 5;
-				Expire = 240;
+				Expire = (publicData.RaiseDuration + publicData.ActiveDuration);
 			};
 			
 			if properties.SndBlizzardWinds then
 				properties.SndBlizzardWinds:Destroy();
 			end
+
 			local sound: Sound = modAudio.Play("Ambience:BlizzardWinds", workspace);
 			sound.Volume = 0;
 			sound.Looped = true;
 			sound.SoundGroup = game:GetService("SoundService"):FindFirstChild("Ambient");
 			sound:AddTag("WeatherSound");
 			properties.SndBlizzardWinds = sound;
-			TweenService:Create(sound, TweenInfo.new(100), {Volume = 2}):Play();
+			TweenService:Create(sound, TweenInfo.new(publicData.RaiseDuration), {Volume = 1}):Play();
 
 
         elseif state == "Active" then
 			scheduler:ScheduleFunction(function()
 				if properties.State ~= "Active" then return end;
 				properties.State = "End";
-			end, tick()+120);
+			end, tick()+publicData.ActiveDuration);
 
 			local function doActiveTick()
 				if properties.State ~= "Active" then return end;

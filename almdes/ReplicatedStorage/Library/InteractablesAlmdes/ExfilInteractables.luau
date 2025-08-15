@@ -34,31 +34,24 @@ function interactablePackage.init(super) -- Server/Client
         local part: BasePart = interactable.Part;
         local config: Configuration = interactable.Config;
 
-
         if not interactable.CanInteract then return end;
         interactable.CanInteract = false;
         interactable.Label = `Exfil Signaled...`;
         interactable:Sync();
 
-        if RunService:IsStudio() then
-            task.delay(1, function()
-                interactable.CanInteract = true;
-                interactable.Label = `Signal Helicopter Exfil`;
-                interactable:Sync();
-            end)
+        local flareParticle = interactable.Values.FlareParticle;
+        if flareParticle then
+            flareParticle:Destroy();
         end
+        flareParticle = modFlareParticle.new(part.Position);
+        flareParticle:Launch();
 
-        task.spawn(function()
-            local flareParticle = interactable.Values.FlareParticle;
-            if flareParticle then
-                flareParticle:Destroy();
-            end
-            flareParticle = modFlareParticle.new(part.Position);
-            flareParticle:Launch();
+        interactable.Values.FlareParticle = flareParticle;
 
-            interactable.Values.FlareParticle = flareParticle;
+        task.delay(45, function()
+            flareParticle:Destroy();
         end)
-
+        
         if interactable.Values.ExfilCalled ~= true then
             interactable.Values.ExfilCalled = true;
             interactable:Sync();
