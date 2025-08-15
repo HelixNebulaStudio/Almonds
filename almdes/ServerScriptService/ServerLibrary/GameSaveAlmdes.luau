@@ -4,14 +4,14 @@ local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSa
 
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
+local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library.StoragePresetsLibraryAlmdes);
 
 local modStorage = shared.require(game.ServerScriptService.ServerLibrary.Storage);
 local modItemProcessor = shared.require(game.ServerScriptService.ServerLibrary.ItemProcessor);
-local modPortableStorages = shared.require(game.ServerScriptService.ServerLibrary.PortableStorages);
 
 --==
 shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile: ProfileAlmdes)
-	local player = profile.Player;
+	local player: Player = profile.Player;
 	Debugger:Warn("OnNewSave", player);
 
 	local saveMeta = getmetatable(gameSave :: any);
@@ -31,28 +31,34 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 		local portableStorages = {};
 		local equippedStorageIds = {};
 		
-		for storageItemId, storageItem in pairs(gameSave.Clothing.Container) do
+		for siid, storageItem in pairs(gameSave.Clothing.Container) do
 			local itemId = storageItem.ItemId;
 
-			local usableItemLib = modUsableItems:Find(itemId);
-			if usableItemLib and usableItemLib.PortableStorage then
-				local storageConfig = usableItemLib.PortableStorage;
-				
-				local new = {
-					StorageId=storageItemId;
-					ItemId=itemId;
-					StorageItemId=storageItemId;
-					StorageSize=storageConfig.Size;
-				};
-				table.insert(portableStorages, new);
-				equippedStorageIds[new.StorageId] = new;
+			local storagePresetLib = modStoragePresetsLibrary:Find(itemId);
+			if storagePresetLib == nil then continue end;
+			
+			local storageConfig = storagePresetLib.Configuration;
+			
+			local new = {
+				StorageId = siid;
+				ItemId = itemId;
+				StorageItemId = siid;
+				StorageSize = storageConfig.Size;
+			};
+			table.insert(portableStorages, new);
+			equippedStorageIds[new.StorageId] = new;
 
-				local storage = modPortableStorages.OpenStorage(storageItemId, itemId, storageConfig);
-				storage:SetOwner(player);
-			end
+			local storage: Storage = modStorage.openStorage(siid, {
+				Player = player;
+				
+				StorageName = storageConfig.Name;
+				StoragePresetLib = storagePresetLib;
+			});
 		end
 		
-		table.sort(portableStorages, function(a, b) return a.StorageSize > b.StorageSize; end)
+		table.sort(portableStorages, function(a, b)
+			return a.StorageSize > b.StorageSize;
+		end)
 		
 		local unequippedStorages = {};
 		for a=1, #gameSave.Inventory.LinkedStorages do
@@ -85,6 +91,8 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 	
 	Debugger:Warn("profile.DayRollOver", profile.DayRollOver, "data.WorkbenchSeed", gameSave.WorkbenchSeed);
 	gameSave.RecipesUnlocked = {};
+
+	gameSave.AppearanceData.UpdateReady = true;
 end)
 
 function modGameSave.onRequire()

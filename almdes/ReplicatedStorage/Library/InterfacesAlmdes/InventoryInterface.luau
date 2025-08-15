@@ -329,10 +329,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		task.wait(0.1);
 		if cIndex ~= refreshDebounceIndex then return end;
 		
-		--Debugger:Log("RefreshPortableStorages", refreshDebounceIndex);
-		
 		local linkedStorages = modData.Storages.Inventory.LinkedStorages;
-		--Debugger:Log("linkedStorages", linkedStorages);
 		local slotLayoutOrder = 12;
 		
 		for _, invListSlot in pairs(invList:GetChildren()) do
@@ -377,6 +374,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			portableStorageInterfaces[storageId]:Update();
 		end
 	end
+
+	interface.Garbage:Tag(modData.OnStorageUpdate:Connect(function(storage)
+		if storage.Id == "Inventory" then
+			RefreshPortableStorages();
+		end
+	end))
 
 	task.spawn(function()
 		modData.RequestStorage{

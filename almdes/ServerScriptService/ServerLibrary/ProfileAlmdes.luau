@@ -15,7 +15,7 @@ local function OnPlayerAdded(player: Player)
         profile:NewCustomSave();
     end
 
-	local gameSave: GameSaveAlmdes = profile:GetActiveSave();
+	local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 	
 	--== Auto-save cycle;
 	task.spawn(function()

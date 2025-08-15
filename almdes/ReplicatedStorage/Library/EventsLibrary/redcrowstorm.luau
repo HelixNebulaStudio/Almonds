@@ -30,8 +30,8 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
 	local publicData = eventInstance.Public;
 
-	publicData.PeaceDuration = 60*1;
-	publicData.RaiseDuration = 60*1;
+	publicData.PeaceDuration = 60*8;
+	publicData.RaiseDuration = 60*2;
 	publicData.ActiveDuration = 60*2;
 	publicData.CycleDuration = publicData.PeaceDuration + publicData.RaiseDuration + publicData.ActiveDuration;
 

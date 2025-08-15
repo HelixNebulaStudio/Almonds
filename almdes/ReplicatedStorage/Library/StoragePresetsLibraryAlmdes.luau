@@ -94,4 +94,50 @@ modStoragePresetsLibrary:Replace("largecrate", {
 });
 
 
+--MARK: Clothing
+modStoragePresetsLibrary:Add{
+	Id = "ammopouch";
+	Name = "Ammo Pouch";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 3;
+        MaxSize = 3;
+    };
+};
+
+modStoragePresetsLibrary:Add{
+	Id = "dufflebag";
+	Name = "Duffle Bag";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 6;
+        MaxSize = 6;
+    };
+};
+
+modStoragePresetsLibrary:Add{
+	Id = "survivorsbackpack";
+	Name = "Survivor's Backpack";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 12;
+        MaxSize = 12;
+    };
+};
+
+modStoragePresetsLibrary:Add{
+	Id = "tacticalvest";
+	Name = "Tactical Vest";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 3;
+        MaxSize = 3;
+    };
+};
+
+
 return modStoragePresetsLibrary;
