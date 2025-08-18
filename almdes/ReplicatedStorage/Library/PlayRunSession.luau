@@ -14,6 +14,14 @@ function PlayRunSession.new(playerClass: PlayerClass)
         StartTime = workspace:GetServerTimeNow();
         EndTime = nil;
         EndReason = nil;
+
+        Stats = {
+            StorageOpened = 0;
+            NpcKills = math.random(1, 999);
+            PlayerKills = math.random(1, 999);
+            ContractsCompleted = math.random(1, 999);
+            MissionsCompleted = math.random(1, 999);
+        };
     };
 
     setmetatable(meta, PlayRunSession);
@@ -42,14 +50,15 @@ function PlayRunSession:GetSummary()
         Status = self.Status;
         EndReason = self.EndReason;
 
-        Stats = {
-            NpcKills = math.random(1, 999);
-            PlayerKills = math.random(1, 999);
-            ContractsCompleted = math.random(1, 999);
-            MissionsCompleted = math.random(1, 999);
-        };
+        Stats = table.clone(self.Stats);
     };
     return r;
+end
+
+function PlayRunSession:AddStat(key: string, value)
+    if typeof(value) == "number" then
+        self.Stats[key] = (self.Stats[key] or 0) + value;
+    end
 end
 
 function PlayRunSession:Destroy()

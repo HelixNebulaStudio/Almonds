@@ -28,21 +28,21 @@ function WorldCore.onRequire()
         modWorldLoot.init();
 
         for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
-            local interactable: InteractableInstance = modInteractables.getOrNew(interactConfig);
-            if interactable.Name ~= "DeployableSocket" then continue end;
+            local socketInteractable: InteractableInstance = modInteractables.getOrNew(interactConfig);
+            if socketInteractable.Name ~= "DeployableSocket" then continue end;
             if interactConfig:GetAttribute("SkipPrebuild") then continue end;
             
-            local placeCf = interactable.Values.AttachmentPoint.WorldCFrame;
+            local placeCf = socketInteractable.Values.AttachmentPoint.WorldCFrame;
             local itemId;
             local blockadeName;
 
-            if interactable.Variant == "WindowFrame" then
+            if socketInteractable.Variant == "WindowFrame" then
                 local windowItemIds = {
                     "woodwindowbarricade";
                 };
                 itemId = windowItemIds[math.random(1, #windowItemIds)];
 
-            elseif interactable.Variant == "WallFrame" then
+            elseif socketInteractable.Variant == "WallFrame" then
                 local windowItemIds = {
                     "wooddoubledoors";
                     "cellwall";
@@ -53,7 +53,7 @@ function WorldCore.onRequire()
                     blockadeName = "BlockadeDouble";
                 end
 
-            elseif interactable.Variant == "Doorway" then
+            elseif socketInteractable.Variant == "Doorway" then
                 local windowItemIds = {
                     "wooddoor";
                 };
@@ -69,7 +69,7 @@ function WorldCore.onRequire()
             local toolPackage = modToolsLibrary.get(itemId);
             modDeployableTool.spawnDeployable(itemId, nil, placeCf, {
                 Configurations = toolPackage.Configurations;
-                Interactable = interactable;
+                SocketInteractable = socketInteractable;
                 AddBlockade = blockadeName;
             });
 

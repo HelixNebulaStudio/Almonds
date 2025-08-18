@@ -37,7 +37,7 @@ local toolPackage = {
 		WaistRotation=math.rad(75);
 		FirstPersonWaistOffset=math.rad(-30);
 
-		StaminaCost = 15;
+		StaminaCost = 2;
 		StaminaDeficiencyPenalty = 0.65;
 	};
 	Properties={};

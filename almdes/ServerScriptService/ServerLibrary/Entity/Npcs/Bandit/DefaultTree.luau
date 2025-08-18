@@ -1,5 +1,6 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
+local modStorageItem = shared.require(game.ReplicatedStorage.Library.StorageItem);
 
 local treePackage = {
     LogicString = {

@@ -47,11 +47,18 @@ function npcPackage.Spawning(npcClass: NpcClass)
         local equipmentClass: EquipmentClass? = toolHandler.EquipmentClass;
         if equipmentClass == nil then return end;
 
+        local storageItem: StorageItem = toolHandler.StorageItem;
+
         if equipmentClass.Class == "Gun" then
             local modifier = equipmentClass.Configurations.newModifier("BanditGun");
             modifier.SetValues.Damage = math.random(3, 5);
             modifier.SetValues.AmmoCapacity = math.random(30, 50);
             equipmentClass.Configurations:AddModifier(modifier, true);
+
+            equipmentClass.Properties.Ammo = equipmentClass.Configurations.MagazineSize
+            equipmentClass.Properties.MaxAmmo = equipmentClass.Configurations.MagazineSize * math.random(1, 3);
+            storageItem:SetValues("A", equipmentClass.Properties.Ammo);
+            storageItem:SetValues("MA", equipmentClass.Properties.MaxAmmo);
 
         elseif equipmentClass.Class == "Melee" then
             local modifier = equipmentClass.Configurations.newModifier("BanditMelee");

@@ -68,6 +68,8 @@ function WorldLoot:RequestSpawn()
             pickedSpawnAtt.WorldCFrame * CFrame.Angles(0, math.rad(180), 0)
         );
 
+        storage.Cache.EnvLootCrate = true;
+
         for b=1, #rewards do
             local item = rewards[b];
             local itemId = item.ItemId;

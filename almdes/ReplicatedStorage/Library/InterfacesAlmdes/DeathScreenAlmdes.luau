@@ -18,6 +18,7 @@ local STAT_KEYS = {
     {Key="PlayerKills", Name="Player Kills"};
     {Key="ContractsCompleted", Name="Contracts Completed"};
     {Key="MissionsCompleted", Name="Missions Completed"};
+    {Key="StorageOpened", Name="Crates Opened"};
 };
 
 local interfacePackage = {

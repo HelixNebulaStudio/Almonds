@@ -39,7 +39,7 @@ local toolPackage = {
 			[3]={TimeSlot=3; ResetCombo=true; AnimationSpeed=1.38;}; -- Every third attack within 3 seconds
 		};
 
-		StaminaCost = 35;
+		StaminaCost = 2;
 		StaminaDeficiencyPenalty = 0.65;
 	};
 	Properties={};

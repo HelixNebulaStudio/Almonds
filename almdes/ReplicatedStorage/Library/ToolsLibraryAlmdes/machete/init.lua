@@ -38,7 +38,7 @@ local toolPackage = {
 
 		WaistRotation=math.rad(0);
 
-		StaminaCost = 13;
+		StaminaCost = 2;
 		StaminaDeficiencyPenalty = 0.6;
 
 		BleedDamagePercent=0.1;

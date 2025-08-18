@@ -45,6 +45,7 @@ function modItemsLibrary.onRequire()
 		Type = modItemsLibrary.Types.Tool;
 		Tradable = modItemsLibrary.Tradable.PremiumOnly;
 		Tags = {"Gun"};
+		BaseValues = {A=0; MA=0;}; --default to no ammo;
 	}
 	
 	new(gunBase, {Id="p250"; Name="P250"; Icon="rbxassetid://5174775682"; Tags={"Pistol"}; Description="A handy pistol.";});
@@ -78,7 +79,8 @@ function modItemsLibrary.onRequire()
 	new(meleeBase, {Id="crowbar"; Name="Crowbar"; Icon="rbxassetid://4843541333"; Tags={"Blunt Melee"}; Description="A handy tool to break free.";});
 	new(meleeBase, {Id="pickaxe"; Name="Pickaxe"; Icon="rbxassetid://5175332073"; Tags={"Pointed Melee"; "Throwable";}; Description="A construction grade pickaxe capable of mining metal piles.";});
 	new(meleeBase, {Id="shovel"; Name="Shovel"; Icon="rbxassetid://8814526891"; Tags={"Blunt Melee"}; Description="A gardener's trusty shovel. Good for digging dirt piles.";});
-
+	new(meleeBase, {Id="fireaxe"; Name="Fire Axe"; Icon="rbxassetid://12865194088"; Tags={"Edged Melee"}; Description="Murr hurr mphuphurrur, hurr mph phrr. Capable of chopping trees.";});
+		
 	--==========================================================[[ Throwables ]]==========================================================--
 	local throwableBase = {
 		Type = modItemsLibrary.Types.Tool;

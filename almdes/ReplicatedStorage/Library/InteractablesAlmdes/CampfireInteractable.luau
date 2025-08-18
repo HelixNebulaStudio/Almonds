@@ -50,9 +50,20 @@ function interactablePackage.init(super) -- Server/Client
             return; 
         end;
 
+        local interactPart = interactable.Part;
+        if interactPart == nil then return end;
+
         if RunService:IsServer() then
-            local naturalLightAtt: Attachment = config.Parent:WaitForChild("PrimaryPart"):WaitForChild("_naturalLight") :: Attachment;
+            local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
+            local naturalLightAtt: Attachment = interactPart:WaitForChild("_naturalLight") :: Attachment;
+
             interactable.Values.IsActive = not interactable.Values.IsActive;
+
+            local redCrowStorm = modWorldEvents.getInstance("redcrowstorm");
+            Debugger:Warn(`redCrowStorm: {redCrowStorm.State}`);
+            if redCrowStorm and redCrowStorm.State == "Active" then
+                interactable.Values.IsActive = false;
+            end
 
             config:SetAttribute("IsCampfireActive", interactable.Values.IsActive);
             if interactable.Values.IsActive then
@@ -72,7 +83,8 @@ function interactablePackage.init(super) -- Server/Client
             end
         end
     end
-    
+
+
     -- When interactable pops up on screen.
     function Campfire.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
         if RunService:IsServer() then return end;
@@ -81,7 +93,6 @@ function interactablePackage.init(super) -- Server/Client
         if clientData == nil then return end;
 
     end
-
 
     super.registerPackage(Campfire);
 

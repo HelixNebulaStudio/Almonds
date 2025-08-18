@@ -19,6 +19,10 @@ WorldEvents.Scheduler = scheduler;
 WorldEvents.Instances = {};
 --==
 
+function WorldEvents.getInstance(eventId: string): WorldEventInstance
+    return WorldEvents.Instances[eventId];
+end
+
 function WorldEvents:Instance(eventPackage)
     eventPackage.__index = eventPackage;
 
@@ -32,6 +36,8 @@ function WorldEvents:Instance(eventPackage)
     };
 
     setmetatable(instance, eventPackage);
+
+    eventPackage.Instance = instance;
     return instance;
 end
 

@@ -3,6 +3,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local TweenService = game:GetService("TweenService");
 
+local modInteractables = shared.require(game.ReplicatedStorage.Library.InteractablesAlmdes)
 local modStatusClass = shared.require(game.ReplicatedStorage.Library.StatusLibrary.StatusClass);
 local modMath = shared.require(game.ReplicatedStorage.Library.Util.Math);
 
@@ -15,6 +16,8 @@ local statusPackage = {
     Description = "You are near a campfire.";
     Buff = true;
     ExpiresOnDeath = true;
+
+    BuffDistance = 50;
 };
 
 function statusPackage.BindApply(statusClass: StatusClassInstance)
@@ -24,9 +27,6 @@ function statusPackage.BindExpire(statusClass: StatusClassInstance)
 end
 
 function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData: TickData)
-    if RunService:IsServer() then return end;
-    if tickData.ms100 ~= true then return end;
-
     local campfireModel = statusClass.Values.CampfireModel;
     if campfireModel == nil 
     or not workspace:IsAncestorOf(campfireModel) then
@@ -34,13 +34,18 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
         return;
     end
 
-    local playerClass: PlayerClass = statusClass.StatusOwner;
+    if RunService:IsClient() then
+        if tickData.ms100 ~= true then return end;
 
-    local playerPos = playerClass.RootPart.Position;
-    local campfirePos = campfireModel:GetPivot().Position;
+        local playerClass: PlayerClass = statusClass.StatusOwner;
 
-    local distance = (playerPos - campfirePos).Magnitude;
-    statusClass.Alpha = modMath.MapNum(distance, 24, 8, 0, 1, true);
+        local playerPos = playerClass.RootPart.Position;
+        local campfirePos = campfireModel:GetPivot().Position;
+
+        local distance = (playerPos - campfirePos).Magnitude;
+        statusClass.Alpha = modMath.MapNum(distance, statusPackage.BuffDistance, 8, 0, 1, true);
+
+    end
 end
 
 return modStatusClass.new(statusPackage);

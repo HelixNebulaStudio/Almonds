@@ -309,7 +309,7 @@ elseif RunService:IsServer() then -- MARK: Server
 	function toolHandler.spawnDeployable(itemId, prefabName, placeCf, params)
 		local itemLib = modItemsLibrary:Find(itemId);
 		local configurations = params.Configurations or {};
-		local interactable = params.Interactable;
+		local socketInteractable: InteractableInstance = params.SocketInteractable;
 
 		local prefabsList = DEPLOYABLE_PREFABS:FindFirstChild(itemId);
 		if prefabsList == nil then
@@ -352,8 +352,8 @@ elseif RunService:IsServer() then -- MARK: Server
 			end
 		end)
 
-		if configurations.ResizeToFit and interactable and interactable.Part then
-			local newSize = interactable.Part.Size;
+		if configurations.ResizeToFit and socketInteractable and socketInteractable.Part then
+			local newSize = socketInteractable.Part.Size;
 			new.PrimaryPart.Size = Vector3.new(math.abs(newSize.X), math.abs(newSize.Y), math.abs(newSize.Z));
 		end
 
@@ -364,9 +364,13 @@ elseif RunService:IsServer() then -- MARK: Server
 		end
 
 		local interactConfig;
+		local newInteractable: InteractableInstance;
+
 		if configurations.InteractableName then
 			interactConfig = modInteractables.createInteractable(configurations.InteractableName);
 			interactConfig.Parent = new;
+
+			newInteractable = modInteractables.getOrNew(interactConfig);
 		end
 
 		if configurations.InteractableName == "Storage" then
@@ -376,16 +380,16 @@ elseif RunService:IsServer() then -- MARK: Server
 			interactConfig:SetAttribute("StorageName", itemLib.Name);
 			interactConfig:SetAttribute("StoragePresetId", storagePresetId);
 			
-			if interactable then
-				interactable:SetPermissions("CanInteract", true);
+			if newInteractable then
+				newInteractable:SetPermissions("CanInteract", true);
 			end
 		end
 
-		if interactable and interactable.Values.ActiveDeployable then
-			interactable.Values.ActiveDeployable.Value = new;
+		if socketInteractable and socketInteractable.Values.ActiveDeployable then
+			socketInteractable.Values.ActiveDeployable.Value = new;
 			new:GetPropertyChangedSignal("Parent"):Once(function()
 				if new.Parent == workspace.Environment.Game then return end;
-				interactable.Values.ActiveDeployable.Value = nil;
+				socketInteractable.Values.ActiveDeployable.Value = nil;
 			end)
 		end
 
@@ -396,7 +400,7 @@ elseif RunService:IsServer() then -- MARK: Server
 			if blockadeFolder then
 				local newBlockade: Model = blockadeFolder[blockadeId]:Clone();
 				newBlockade.Name = "Blockade";
-				newBlockade:PivotTo(new:GetPivot() * CFrame.new(0, (interactable and interactable.Part.Size.Y/2) or 0, 0));
+				newBlockade:PivotTo(new:GetPivot() * CFrame.new(0, (socketInteractable and socketInteractable.Part.Size.Y/2) or 0, 0));
 				newBlockade.Parent = new;
 				
 				local blkDestructibleModule = newBlockade:WaitForChild("Destructible");

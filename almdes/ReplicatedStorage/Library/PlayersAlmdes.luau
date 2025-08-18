@@ -8,7 +8,8 @@ local localPlayer = game.Players.LocalPlayer;
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
-local modPlayRunSession = shared.require(game.ReplicatedStorage.Library.PlayRunSession);
+local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
+local modRaycastUtil = shared.require(game.ReplicatedStorage.Library.Util.RaycastUtil);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 --==
@@ -143,6 +144,9 @@ shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: 
     end
 
     if RunService:IsServer() and tickData.ms1000 then
+        local statusComp: StatusComp = playerClass.StatusComp;
+        local campfirePackage = statusComp.getPackage("Campfire");
+
         local activeCampfireModels = CollectionService:GetTagged("Campfire");
 
         local closestCampfire = nil;
@@ -152,20 +156,28 @@ shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: 
             if campfireModel.Parent == nil then continue end;
             if campfireModel.PrimaryPart == nil then continue end;
             
-            local campfirePosition = campfireModel:GetPivot().Position;
-            local distance = player:DistanceFromCharacter(campfirePosition);
+            local fireAtt = campfireModel.PrimaryPart:FindFirstChild("_naturalLight");
+            if fireAtt == nil then continue end;
 
+            local campfirePosition = fireAtt.WorldPosition;
+            local distance = player:DistanceFromCharacter(campfirePosition);
             if distance < closestDistance then
+                local hitParts, partsChecked = modRaycastUtil.GetHittable(
+                    campfirePosition,
+                    campfirePackage.BuffDistance,
+                    playerClass.Character,
+                    1
+                );
+                if #hitParts <= 0 then continue end;
+
                 closestDistance = distance;
                 closestCampfire = campfireModel;
             end
         end
 
-        local statusComp: StatusComp = playerClass.StatusComp;
         local campfireStatus = statusComp:GetOrDefault("Campfire");
 
-        local maxCampfireRange = 24;
-        if closestCampfire and closestDistance <= maxCampfireRange then
+        if closestCampfire and closestDistance <= campfirePackage.BuffDistance then
             local campfireConfig = closestCampfire:FindFirstChild("Interactable");
             local isCampfireActive = campfireConfig and campfireConfig:GetAttribute("IsCampfireActive");
 

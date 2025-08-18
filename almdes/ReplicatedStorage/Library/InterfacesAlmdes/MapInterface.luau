@@ -61,7 +61,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local binds = window.Binds;
 
 	local keyId = "KeyWindowMap";
-	modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.M);
+	modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Backquote);
 	
 	local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
 	mapQuickButton.LayoutOrder = 3;

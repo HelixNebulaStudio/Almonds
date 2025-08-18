@@ -2,17 +2,21 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
 local TweenService = game:GetService("TweenService");
+local CollectionService = game:GetService("CollectionService");
 
 local camera = workspace.CurrentCamera;
 
+local modHealthComponent = shared.require(game.ReplicatedStorage.Components.HealthComponent);
 local modWeatherService = shared.require(game.ReplicatedStorage.Library.WeatherService);
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
+local modRaycastUtil = shared.require(game.ReplicatedStorage.Library.Util.RaycastUtil);
 
 local DamageData = shared.require(game.ReplicatedStorage.Data.DamageData);
 
 local eventPackage = {
 	Id = "redcrowstorm";
 	Name = "Red Crow Storm";
+	Instance = nil;
 };
 
 local templateRedCrowStormField;
@@ -20,6 +24,41 @@ local templateRedCrowStormField;
 function eventPackage.onRequire()
 	templateRedCrowStormField = game.ReplicatedStorage.Prefabs:WaitForChild("Misc"):WaitForChild("redCrowStormField");
 
+	shared.modCommandsLibrary.bind{
+		["redcrowstorm"] = {
+			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
+			Description = [[Red Crow Storm command
+            
+            /redcrowstorm next
+            ]];
+
+			RequiredArgs = 0;
+			UsageInfo = "/redcrowstorm action";
+			Function = function(player, args)
+				local actionId = args[1];
+
+				if eventPackage.Instance == nil then 
+					Debugger:Warn(`Red Crow Storm is not active.`);
+					return 
+				end;
+				local eventInstance: WorldEventInstance = eventPackage.Instance;
+
+				if actionId == "next" then
+					if eventInstance.Properties.State == "Idle" then
+						eventInstance.Properties.State = "Start";
+					elseif eventInstance.Properties.State == "Start" then
+						eventInstance.Properties.State = "Active";
+					elseif eventInstance.Properties.State == "Active" then
+						eventInstance.Properties.State = "End";
+					elseif eventInstance.Properties.State == "End" then
+						eventInstance.Properties.State = "Idle";
+					end
+				end
+
+				return true;
+			end;
+		};
+	};
 end
 
 function eventPackage.newInstance(eventInstance: WorldEventInstance)
@@ -93,6 +132,31 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			local function doActiveTick()
 				if properties.State ~= "Active" then return end;
 				scheduler:ScheduleFunction(doActiveTick, tick()+1);
+
+				task.spawn(function()
+					local activeCampfireModels = CollectionService:GetTagged("Campfire");
+					
+					for _, campfireModel in pairs(activeCampfireModels) do
+						if campfireModel.Parent == nil then continue end;
+						if campfireModel.PrimaryPart == nil then continue end;
+
+						local fireAtt = campfireModel.PrimaryPart:FindFirstChild("_naturalLight");
+						local fireParticle = fireAtt and fireAtt:FindFirstChild("Fire") or nil;
+						if fireParticle == nil or fireParticle.Enabled == false then continue end;
+
+						local ceilingRayResult: RaycastResult = modRaycastUtil.GetCeiling(fireAtt.WorldPosition);
+						if ceilingRayResult then continue end;
+
+						local healthComp: HealthComp = modHealthComponent.getByModel(campfireModel);
+						if healthComp == nil or healthComp.IsDead then continue end;
+
+						healthComp:TakeDamage(DamageData.new{
+							Damage = 3000;
+							DamageType = "Hidden";
+							TargetPart = campfireModel.PrimaryPart;
+						});
+					end
+				end)
 
 				for _, player in pairs(game.Players:GetPlayers()) do
 					local playerClass: PlayerClass = shared.modPlayers.get(player);
