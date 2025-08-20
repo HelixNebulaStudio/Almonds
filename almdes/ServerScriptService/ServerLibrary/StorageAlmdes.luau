@@ -37,7 +37,6 @@ function modStorage.InsertRequestHandler(storage: Storage, rPacket)
     Debugger:Log("InsertRequestHandler rPacket", rPacket);
     local player: Player = storage.Player;
 
-    local pickupTime = workspace:GetServerTimeNow();
     local storageItem = rPacket.StorageItem; -- May be proxy;
 
     local itemLib = modItemsLibrary:Find(storageItem.ItemId);
@@ -55,37 +54,15 @@ function modStorage.InsertRequestHandler(storage: Storage, rPacket)
         end
         
         local playerClass: PlayerClass = shared.modPlayers.get(player);
-        local cache = playerClass.Cache;
         local rootCFrame = playerClass.RootPart.CFrame;
         
-        local itemDrop = {
-            Type="Custom";
-            ItemId=storageItem.ItemId;
-            StorageItem=storageItem;
-        };
-        
-        
-        local lastFailPickup = cache.LastPickupFailTick;
-        if lastFailPickup == nil then
-            cache.LastPickupFailTick = pickupTime;
-            
-        elseif pickupTime-lastFailPickup >= 60 then
-            cache.LastPickupFailTick = nil;
-            cache.PickUpFailCount = nil;
-        end 
-        
-        local pickUpFailCount = (cache.PickUpFailCount or 0) +1;
-        cache.PickUpFailCount = pickUpFailCount;
-        
-        
-        local newPrefab = modItemDrops.Spawn(itemDrop, rootCFrame + rootCFrame.LookVector, nil, 300);
-        newPrefab:AddTag("ItemDrop");
+		modItemDrops.spawn{
+			ItemId = storageItem.ItemId;
+            StorageItem = storageItem;
+			SpawnCFrame = rootCFrame + rootCFrame.LookVector;
+			DespawnDuration = false;
+		};
 
-        local interactConfig = newPrefab:FindFirstChild("Interactable");
-        if interactConfig then
-           interactConfig:SetAttribute("DisableTouchInteract", pickupTime+cache.PickUpFailCount);
-        end
-        
         shared.Notify(storage.Player, "Inventory is full, "..quantity.." "..itemLib.Name.." was dropped!", "Negative");
     end
     

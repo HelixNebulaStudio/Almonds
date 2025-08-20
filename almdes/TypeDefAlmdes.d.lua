@@ -24,6 +24,11 @@ export type GameSaveAlmdes = GameSave & {
 
 -- MARK: WorldEvents
 export type WorldEvents = {
+    -- @properties
+    GlobalProperties: PropertiesVariable<{
+        Seed: number;
+        StormCounter: number;
+    }>;
     Instances: {[string]: WorldEventInstance};
 };
 

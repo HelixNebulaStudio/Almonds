@@ -52,7 +52,6 @@ function npcPackage.Spawning(npcClass: NpcClass)
         if equipmentClass.Class == "Gun" then
             local modifier = equipmentClass.Configurations.newModifier("BanditGun");
             modifier.SetValues.Damage = math.random(3, 5);
-            modifier.SetValues.AmmoCapacity = math.random(30, 50);
             equipmentClass.Configurations:AddModifier(modifier, true);
 
             equipmentClass.Properties.Ammo = equipmentClass.Configurations.MagazineSize

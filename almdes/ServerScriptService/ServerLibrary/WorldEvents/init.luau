@@ -17,6 +17,10 @@ WorldEvents.__index = WorldEvents;
 local scheduler: Scheduler = modScheduler.new("WorldEvents", 0.2);
 WorldEvents.Scheduler = scheduler;
 WorldEvents.Instances = {};
+WorldEvents.GlobalProperties = modPropertiesVariable.new({
+    Seed = math.random(11111,99999);
+    StormCounter = 0;
+});
 --==
 
 function WorldEvents.getInstance(eventId: string): WorldEventInstance
@@ -43,6 +47,7 @@ end
 
 function WorldEvents.onRequire()
     task.spawn(function()
+        shared.waitForIgnition();
         while #game.Players:GetPlayers() <= 0 do
             task.wait();
         end

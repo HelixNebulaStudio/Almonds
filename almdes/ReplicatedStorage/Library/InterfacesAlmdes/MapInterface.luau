@@ -217,7 +217,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end)
 		end
 		
-		local eventLib = modEventsLibrary:Find(id);
+		local eventId = mapPointInfo.EventId or id;
+		local eventLib = modEventsLibrary:Find(eventId);
 		if eventLib and mapPointInfo.MarkerName then
 			local mapMarkerDict = eventLib.MapMarkers[mapPointInfo.MarkerName];
 
@@ -235,6 +236,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			mapPointInfo.RadialElement = radialElement;
 			
 			eventIconLabel.Image = mapMarkerDict.Icon or "";
+			eventIconLabel.ImageColor3 = mapMarkerDict.Color or Color3.fromRGB(255, 255, 255);
 			eventIconLabel.ZIndex = 1;
 			if eventLib.IconSize then
 				eventIconLabel.Size = UDim2.new(eventLib.IconSize, 0, eventLib.IconSize, 0);
@@ -276,15 +278,25 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			local mapCoreChildren = mapCore:GetChildren();
 
 			for markerName, markerData in pairs(mapMarkersDict) do
-				for _, att in pairs(mapCoreChildren) do
+				for _, att: Attachment in pairs(mapCoreChildren) do
 					if not att:IsA("Attachment") then continue end;
 					if att.Name ~= markerName then continue end;
+					if att:GetAttribute("Disabled") == true then continue end;
+
+					local markerId = att:GetAttribute("MarkerId") or eventId;
 
 					binds.AddPointVector({
-						Id = eventId;
+						Id = markerId;
+						EventId = eventId;
+						EventLib = eventLib;
 						MarkerName = markerName;
 						Target = att;
 					});
+
+					att:GetAttributeChangedSignal("Disabled"):Connect(function()
+						if att:GetAttribute("Disabled") == true then return end;
+						binds.UpdateEvents();
+					end)
 				end
 			end
 		end
@@ -292,11 +304,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		for eId, _ in pairs(binds.EventPublicData) do
 			if worldEventData[eId] then continue end;
 			for a=#binds.MapPoints, 1, -1 do
-				if binds.MapPoints[a].Id == eId then
-					local mapPoint = table.remove(binds.MapPoints, a);
-					if mapPoint then
-						game.Debris:AddItem(mapPoint.Icon, 0);
-					end
+				if binds.MapPoints[a].Id ~= eId then continue end;
+
+				local mapPoint = table.remove(binds.MapPoints, a);
+				if mapPoint then
+					game.Debris:AddItem(mapPoint.Icon, 0);
 				end
 			end
 		end
@@ -352,6 +364,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			
 			local pointerFrame = mapPoint.Pointer;
 			local targetObject = mapPoint.Target;
+			local destroyMapPoint = false;
 			
 			local pos = Vector3.new();
 			if typeof(targetObject) == "Vector3" then
@@ -366,13 +379,21 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 					
 				elseif targetObject:IsA("Attachment") then
 					pos = targetObject.WorldPosition;
+
+					if targetObject:GetAttribute("Disabled") then
+						destroyMapPoint = true;
+					end
 				end
 				
 				if not targetObject:IsDescendantOf(workspace) and not targetObject:IsDescendantOf(game.ReplicatedFirst) then
-					local remPoint = table.remove(binds.MapPoints, a);
-					game.Debris:AddItem(remPoint.Pointer, 0);
+					destroyMapPoint = true;
 				end
-				
+			end
+			if destroyMapPoint then
+				local remPoint = table.remove(binds.MapPoints, a);
+				game.Debris:AddItem(remPoint.Pointer, 0);
+
+				continue;
 			end
 			
 			local projectPos = projectWorldPos(Vector2.new(pos.X, pos.Z));
@@ -385,8 +406,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 				local imageButton: ImageButton = radialElement.ImageButton;
 				local radialImage: RadialImage = radialElement.RadialImage;
 				
-				if eventLib and binds.EventPublicData[mapPoint.Id] then
-					local eventPublicData = binds.EventPublicData[mapPoint.Id];
+				local eventId = mapPoint.EventId;
+				if eventId and eventLib and binds.EventPublicData[eventId] then
+					local eventPublicData = binds.EventPublicData[eventId];
 					
 					if eventLib.RenderMarker then
 						eventLib.RenderMarker(mapPoint, eventPublicData);

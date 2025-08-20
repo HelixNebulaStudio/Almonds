@@ -27,6 +27,12 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 	gameSave.Inventory.Size = gameSave.Inventory.MaxSize;
 	gameSave.Inventory.PremiumStorage = 12;
 	
+	local function onStorageChanged(storage: Storage?)
+		if storage == nil then return end;
+		Debugger:Log("Storage changed", storage.Id);
+		storage:Sync(player);
+	end
+
 	gameSave.Clothing.OnChanged:Connect(function()
 		local portableStorages = {};
 		local equippedStorageIds = {};
@@ -54,6 +60,7 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 				StorageName = storageConfig.Name;
 				StoragePresetLib = storagePresetLib;
 			});
+			storage.OnChanged:Connect(onStorageChanged);
 		end
 		
 		table.sort(portableStorages, function(a, b)
@@ -76,7 +83,7 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 		
 		
 		for storageId, linkStorageInfo in pairs(unequippedStorages) do
-			local storage = modStorage.Get(linkStorageInfo.StorageId);
+			local storage: Storage = modStorage.Get(linkStorageInfo.StorageId);
 			if storage then
 				storage:Loop(function(storageItem)
 					gameSave.Inventory:InsertRequest(storageItem);

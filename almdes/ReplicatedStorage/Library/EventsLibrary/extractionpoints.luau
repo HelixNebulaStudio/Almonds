@@ -52,19 +52,25 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	publicData.ExpireTime = publicData.StartTime + (60*7);
 
 	local eventCorePart = eventMap:WaitForChild("Core");
+
 	local interactableCounter = 0;
+	for _, obj in pairs(eventCorePart:GetChildren()) do
+		if obj.Name == "HeliExfilInteract" then
+			interactableCounter = interactableCounter +1;
+			local exfilKey = `Exfil${interactableCounter}`;
+			
+			local newAtt = Instance.new("Attachment");
+			newAtt.Name = "HeliExfilInteract";
+			newAtt.Parent = eventCorePart;
+			newAtt.WorldCFrame = obj:GetPivot();
+			newAtt:SetAttribute(`ExfilKey`, exfilKey);
+			newAtt:SetAttribute("MarkerId", exfilKey);
 
-	for _, att in pairs(eventCorePart:GetChildren()) do
-		if not att:IsA("Attachment") then continue end;
+			obj:Destroy();
 
-		interactableCounter = interactableCounter +1;
-		local exfilKey = `Exfil${interactableCounter}`;
-		att:SetAttribute(`ExfileKey`, exfilKey);
-
-		if att.Name == "HeliExfilInteract" then
 			local newHeliExfilInteract = eventPackage.Prefabs.HeliExfilInteract:Clone();
 			newHeliExfilInteract.Name = exfilKey;
-			newHeliExfilInteract:PivotTo(att.WorldCFrame);
+			newHeliExfilInteract:PivotTo(newAtt.WorldCFrame);
 			newHeliExfilInteract.Parent = workspace.Interactables;
 
 			garbageHandler:Tag(newHeliExfilInteract);
@@ -89,7 +95,7 @@ function eventPackage.RenderMarker(mapMarker: MapMarker, eventPublicData: anydic
 
 	local alpha = math.clamp(lapse/duration, 0, 1);
 
-	local exfilKey = markerAtt:GetAttribute("ExfileKey");
+	local exfilKey = markerAtt:GetAttribute("ExfilKey");
 	local interactModel: Model = workspace.Interactables:FindFirstChild(exfilKey);
 
 	if interactModel == nil then return end;

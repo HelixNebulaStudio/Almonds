@@ -63,7 +63,12 @@ function ResourcePileLibrary.BindToolHit(handler: ToolHandlerInstance, packet)
 		local spawnDir = (mainToolModel.PrimaryPart.Position-hitPoint).Unit
 		local spawnPos = hitPoint + spawnDir;
 
-		modItemDrops.Spawn({Type="Custom"; ItemId=itemId; Quantity=quantity}, CFrame.new(spawnPos), nil, false);
+		modItemDrops.spawn{
+			ItemId = itemId;
+			Quantity = quantity;
+			SpawnCFrame = CFrame.new(spawnPos);
+			DespawnDuration = false;
+		};
 	end
 
     return;

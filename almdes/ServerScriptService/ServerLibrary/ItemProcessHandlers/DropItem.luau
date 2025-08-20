@@ -50,16 +50,11 @@ function Handler:ClientRequest(action, packet, rPacket)
 		
 		storage:Remove(storageItem.ID, storageItem.Quantity);
 
-		modItemDrops.Spawn(
-			{
-				Type = "Custom";
-				ItemId = storageItem.ItemId; 
-				StorageItem = clonedStorageItem;
-			}, 
-			rootCFrame + rootCFrame.LookVector, 
-			nil, 
-			300
-		);
+		modItemDrops.spawn{
+			StorageItem = clonedStorageItem;
+			SpawnCFrame = (rootCFrame + rootCFrame.LookVector);
+			DespawnDuration = false;
+		};
 		
 		rPacket.Success = true;
 		

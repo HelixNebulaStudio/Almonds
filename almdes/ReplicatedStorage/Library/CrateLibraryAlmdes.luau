@@ -40,6 +40,15 @@ function modCrateLibrary.onRequire()
         };
 		StoragePresetId = "rewardcrate";
 	};
+
+	modCrateLibrary.New{
+		Id = "smallbanditcamp";
+		Name = "Loot";
+		Prefab = {
+			script:WaitForChild("CratePalletT1");
+        };
+		StoragePresetId = "rewardcrate";
+	};
 	
 end
 

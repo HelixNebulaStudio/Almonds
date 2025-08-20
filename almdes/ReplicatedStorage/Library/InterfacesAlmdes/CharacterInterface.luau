@@ -47,6 +47,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             TweenService:Create(charFrame, FRAME_TWEENINFO, {
                 BackgroundTransparency = 0.75;
             }):Play();
+            interface:HideAll{
+                Inventory = true;
+                ExternalStorage = true;
+                CraftingMenu = true;
+            };
 
         else
             local tween: Tween = TweenService:Create(charFrame, FRAME_TWEENINFO, {

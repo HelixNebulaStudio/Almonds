@@ -23,7 +23,6 @@ local eventPackage = {
 --==
 
 function eventPackage.newInstance(eventInstance: WorldEventInstance)
-	local modNpcs = shared.require(game.ServerScriptService.ServerLibrary.Entity.Npcs);
 	Debugger:Warn(`newInstance {eventPackage.Id}`);
 
 	local voidClips = game.ServerStorage.Prefabs.Events:WaitForChild("carparkraidVoid");
@@ -102,7 +101,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			for _, spawnAtt in pairs(banditSpawns:GetChildren()) do
 				if not spawnAtt:IsA("Attachment") then continue end;
 
-				local banditNpcClass: NpcClass = modNpcs.spawn2{
+				local banditNpcClass: NpcClass = shared.modNpcs.spawn2{
 					Name = "Bandit";
 					CFrame = spawnAtt.WorldCFrame;
 				};

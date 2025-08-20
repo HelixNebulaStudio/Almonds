@@ -64,6 +64,20 @@ end
 function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	Debugger:Warn(`newInstance {eventPackage.Id}`);
 
+	local globalProperties = eventInstance.WorldEvents.GlobalProperties;
+	globalProperties.StormCounter = globalProperties.StormCounter + 1;
+
+	globalProperties.OnChanged:Connect(function(k, v)
+		if k == "StormCounter" then
+			Debugger:Warn(`StormCounter: {v}`);
+
+			local itemDropList = CollectionService:GetTagged("ItemDrop");
+			for _, itemDrop in pairs(itemDropList) do
+				game.Debris:AddItem(itemDrop, 0);
+			end
+		end
+	end)
+
 	local scheduler: Scheduler = eventInstance.Scheduler;
 	local properties: PropertiesVariable<{}> = eventInstance.Properties;
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
@@ -195,6 +209,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 				if properties.State ~= "End" then return end;
 				properties.State = "Idle";
 				modWeatherService:ClearWeather("redcrowstorm");
+				globalProperties.StormCounter = globalProperties.StormCounter + 1;
 			end, tick()+10);
 
 			if properties.SndBlizzardWinds then

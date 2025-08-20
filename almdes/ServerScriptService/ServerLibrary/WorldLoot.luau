@@ -98,15 +98,12 @@ function WorldLoot:RequestSpawn()
         destructible.OnDestroy:Connect(function()
             storage:Destroy();
             storage:Loop(function(storageItem: StorageItem)
-                modItemDrops.Spawn(
-                    {
-                        Type = "Custom";
-                        ItemId = storageItem.ItemId;
-                        StorageItem = storageItem;
-                    }, 
-                    pickedSpawnAtt.WorldCFrame + Vector3.new(0, 1, 0), nil, 
-                    60
-                );
+                modItemDrops.spawn{
+                    ItemId = storageItem.ItemId;
+                    StorageItem = storageItem;
+                    SpawnCFrame = (pickedSpawnAtt.WorldCFrame + Vector3.new(0, 1, 0));
+                    DespawnDuration = false;
+                };
             end);
         end)
 
