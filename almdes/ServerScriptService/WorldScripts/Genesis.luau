@@ -3,10 +3,6 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local CollectionService = game:GetService("CollectionService");
 
-local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
-local modDeployableTool = shared.require(game.ReplicatedStorage.Library.ToolHandler.DeployableTool);
-local modToolsLibrary = shared.require(game.ReplicatedStorage.Library.ToolsLibrary);
-
 if RunService:IsServer() then
     modWorldLoot = shared.require(game.ServerScriptService.ServerLibrary.WorldLoot);
 end
@@ -27,53 +23,6 @@ function WorldCore.onRequire()
 
         modWorldLoot.init();
 
-        for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
-            local socketInteractable: InteractableInstance = modInteractables.getOrNew(interactConfig);
-            if socketInteractable.Name ~= "DeployableSocket" then continue end;
-            if interactConfig:GetAttribute("SkipPrebuild") then continue end;
-            
-            local placeCf = socketInteractable.Values.AttachmentPoint.WorldCFrame;
-            local itemId;
-            local blockadeName;
-
-            if socketInteractable.Variant == "WindowFrame" then
-                local windowItemIds = {
-                    "woodwindowbarricade";
-                };
-                itemId = windowItemIds[math.random(1, #windowItemIds)];
-
-            elseif socketInteractable.Variant == "WallFrame" then
-                local windowItemIds = {
-                    "wooddoubledoors";
-                    "cellwall";
-                };
-                itemId = windowItemIds[math.random(1, #windowItemIds)];
-
-                if itemId:match("door") then
-                    blockadeName = "BlockadeDouble";
-                end
-
-            elseif socketInteractable.Variant == "Doorway" then
-                local windowItemIds = {
-                    "wooddoor";
-                };
-                itemId = windowItemIds[math.random(1, #windowItemIds)];
-                
-                if itemId:match("door") then
-                    blockadeName = "BlockadeSingle";
-                end
-            end
-
-            if itemId == nil then continue end;
-
-            local toolPackage = modToolsLibrary.get(itemId);
-            modDeployableTool.spawnDeployable(itemId, nil, placeCf, {
-                Configurations = toolPackage.Configurations;
-                SocketInteractable = socketInteractable;
-                AddBlockade = blockadeName;
-            });
-
-        end;
     end
 
 	shared.modCommandsLibrary.bind{

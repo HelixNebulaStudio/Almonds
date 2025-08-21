@@ -25,14 +25,9 @@ function interactablePackage.init(super) -- Server/Client
         interactable.Label = `Signal Helicopter Exfil`;
     end
 
-    -- When interacting with interactable.
-    function ExfilFlares.BindInteract(interactable: InteractableInstance, info: InteractInfo)
-        if info.Player == nil then return end;
-        interactable.TypePackage.BindInteract(interactable, info);
-        if info.Action == "Client" or RunService:IsClient() then return end;
-        
+    function ExfilFlares.Activate(interactable: InteractableInstance, final: boolean?)
         local part: BasePart = interactable.Part;
-        local config: Configuration = interactable.Config;
+        local markerAtt: Attachment = interactable.Values.Attachment;
 
         if not interactable.CanInteract then return end;
         interactable.CanInteract = false;
@@ -43,20 +38,30 @@ function interactablePackage.init(super) -- Server/Client
         if flareParticle then
             flareParticle:Destroy();
         end
-        flareParticle = modFlareParticle.new(part.Position);
+        flareParticle = modFlareParticle.new(markerAtt.WorldPosition);
         flareParticle:Launch();
 
         interactable.Values.FlareParticle = flareParticle;
 
         task.delay(45, function()
             flareParticle:Destroy();
+            game.Debris:AddItem(interactable.Values.InteractModel, 0);
         end)
         
         if interactable.Values.ExfilCalled ~= true then
-            interactable.Values.ExfilCalled = true;
+            markerAtt:SetAttribute("ExfilCalled", true);
             interactable:Sync();
-            modExfilSystem:SpawnExfilHelicopter(part.Position, false);
+            modExfilSystem:SpawnExfilHelicopter(markerAtt, final);
         end
+    end
+
+    -- When interacting with interactable.
+    function ExfilFlares.BindInteract(interactable: InteractableInstance, info: InteractInfo)
+        if info.Player == nil then return end;
+        interactable.TypePackage.BindInteract(interactable, info);
+        if info.Action == "Client" or RunService:IsClient() then return end;
+        
+        ExfilFlares.Activate(interactable);
     end
     
     super.registerPackage(ExfilFlares);

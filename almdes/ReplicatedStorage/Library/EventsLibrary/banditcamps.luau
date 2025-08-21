@@ -44,6 +44,7 @@ function EnemyCamp.new(key, prefab)
 		Key = key;
 		Name = prefab.Name;
 		Prefab = prefab;
+		CFrame = prefab:GetPivot();
 		Type = campType;
 		Garbage = modGarbageHandler.new();
 
@@ -64,7 +65,7 @@ function EnemyCamp.new(key, prefab)
 	local newAtt = Instance.new("Attachment");
 	newAtt.Name = campType;
 	newAtt.Parent = EnemyCamp.CorePart;
-	newAtt.WorldCFrame = prefab:GetPivot();
+	newAtt.WorldCFrame = self.CFrame;
 	newAtt:SetAttribute("MarkerId", key);
 	newAtt:SetAttribute("Disabled", true);
 	self.MarkerAtt = newAtt;
@@ -169,7 +170,7 @@ function EnemyCamp:Activate()
 				end
 			end
 
-			if #self.BanditNpcClasses <= 0 and self.State == "Active" then
+			if #self.BanditNpcClasses <= 0 and self.Active and self.State == "Active" then
 				self.MarkerAtt:SetAttribute("Disabled", true);
 				self.State = "Complete";
 
@@ -247,6 +248,8 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 
 	local eventMap = eventInstance.TemplateEventMap;
 
+	local globalProperties = eventInstance.WorldEvents.GlobalProperties;
+
 	local scheduler: Scheduler = eventInstance.Scheduler;
 	local properties: PropertiesVariable<{}> = eventInstance.Properties;
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
@@ -297,9 +300,21 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			campInstance:Activate();
 		end
 
-		scheduler:ScheduleFunction(spawnCamps, tick()+60);
 	end
 	spawnCamps();
+
+	globalProperties.OnChanged:Connect(function(k, v)
+		if k ~= "StormState" then return end;
+		if v == "Active" then
+			for _, campInstance in pairs(eventPackage.CampInstances) do
+				campInstance:Deactivate();
+			end
+
+		elseif v == "Idle" then
+			spawnCamps();
+			
+		end
+	end)
 end
 
 function eventPackage.RenderMarker(mapMarker: MapMarker, eventPublicData: anydict)

@@ -293,10 +293,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 						Target = att;
 					});
 
-					att:GetAttributeChangedSignal("Disabled"):Connect(function()
+					interface.Garbage:Tag(att:GetAttributeChangedSignal("Disabled"):Connect(function()
 						if att:GetAttribute("Disabled") == true then return end;
 						binds.UpdateEvents();
-					end)
+					end))
 				end
 			end
 		end

@@ -343,6 +343,7 @@ elseif RunService:IsServer() then -- MARK: Server
 		local destructibleConfig: Configuration = modDestructibles.createDestructible();
 		destructibleConfig.Parent = new;
 		local deployDestructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
+		deployDestructible.DebrisName = itemId;
 
 		deployDestructible.OnDestroy:Connect(function()
 			for _, obj in pairs(new:GetChildren()) do
@@ -488,7 +489,7 @@ elseif RunService:IsServer() then -- MARK: Server
 
 			local new = toolHandler.spawnDeployable(itemId, prefabName, placeCf, {
 				Configurations = configurations;
-				Interactable = interactable;
+				SocketInteractable = interactable;
 			});
 			if deployableHandler and deployableHandler.BindSpawnDeployable then
 				deployableHandler.BindSpawnDeployable(handler, {

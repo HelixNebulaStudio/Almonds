@@ -15,6 +15,7 @@ local exfilScheduler: Scheduler = modScheduler.new("ExfilSystem", 1/5);
 local ExfilSystem = {};
 ExfilSystem.__index = ExfilSystem;
 ExfilSystem.Scheduler = exfilScheduler;
+ExfilSystem.ExfilCounter = 0;
 
 local remoteMainMenuRemote;
 --==
@@ -63,7 +64,9 @@ function ExfilSystem:ExfilPlayer(player: Player, exfilType: string)
     playerClass:Despawn();
 end
 
-function ExfilSystem:SpawnExfilHelicopter(lz: Vector3, final: boolean?)
+function ExfilSystem:SpawnExfilHelicopter(markerAtt: Attachment, final: boolean?)
+    ExfilSystem.ExfilCounter = ExfilSystem.ExfilCounter +1;
+    local lz: Vector3 = markerAtt.WorldPosition;
     Debugger:Warn(`SpawnExfilHelicopter {lz} {final}`);
 
     local corePart = Instance.new("Part");
@@ -74,9 +77,6 @@ function ExfilSystem:SpawnExfilHelicopter(lz: Vector3, final: boolean?)
     corePart.CanCollide = false;
     corePart.CanQuery = false;
     corePart.CFrame = CFrame.new(lz) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0);
-    corePart:AddTag("ActiveExfil");
-    corePart:SetAttribute("Type", "Helicopter");
-
     corePart.Parent = workspace.Environment.Game;
 
     local coreCf: CFrame = corePart.CFrame;
@@ -113,6 +113,15 @@ function ExfilSystem:SpawnExfilHelicopter(lz: Vector3, final: boolean?)
     local playFlyStage = nil;
     local leaveTickDown = nil;
 
+    local function getPlayersInRange()
+        local r = {};
+        for _, player: Player in pairs(game.Players:GetPlayers()) do
+            if player:DistanceFromCharacter(lz) > 128 then continue end;
+            table.insert(r, player);
+        end
+        return r;
+    end
+
     local tAU = 0;
     local tl = tick();
     local function flyinComplete()
@@ -125,8 +134,12 @@ function ExfilSystem:SpawnExfilHelicopter(lz: Vector3, final: boolean?)
             seatOccupants[seat] = seat.Occupant;
         end
 
-        local leaveTime = workspace:GetServerTimeNow()+30;
-        corePart:SetAttribute("LeaveTime", leaveTime);
+        local waitDuration = final and 90 or 30;
+        local leaveTime = workspace:GetServerTimeNow() + waitDuration;
+        markerAtt:SetAttribute("WaitDuration", waitDuration);
+        markerAtt:SetAttribute("LeaveTime", leaveTime);
+
+        shared.Notify(getPlayersInRange(), `[Radio]: Exfil helicopter has arrived to the LZ! We won't stay for long!`, "Important");
 
         leaveTickDown();
 
@@ -224,30 +237,45 @@ function ExfilSystem:SpawnExfilHelicopter(lz: Vector3, final: boolean?)
 
     local flyoutStarted = false;
     leaveTickDown = function()
-        local leaveTime = corePart:GetAttribute("LeaveTime");
+        local leaveTime = markerAtt:GetAttribute("LeaveTime");
         local timeRemaining = leaveTime - workspace:GetServerTimeNow();
 
-        if next(seatOccupants) then
-            local readyLeaveTime = corePart:GetAttribute("ReadyLeaveTime");
+        if not final and next(seatOccupants) then
+            local readyLeaveTime = markerAtt:GetAttribute("ReadyLeaveTime");
             if readyLeaveTime == nil then
                 readyLeaveTime = workspace:GetServerTimeNow()+8;
-                corePart:SetAttribute("ReadyLeaveTime", readyLeaveTime);
+                markerAtt:SetAttribute("ReadyLeaveTime", readyLeaveTime);
             end
 
             timeRemaining = readyLeaveTime - workspace:GetServerTimeNow();
         else
-            corePart:SetAttribute("ReadyLeaveTime", nil);
+            markerAtt:SetAttribute("ReadyLeaveTime", nil);
         end
     
-        Debugger:Warn(`LeaveTickDown:`, timeRemaining);
-
         if timeRemaining >= 0 then
+            shared.Notify(
+                getPlayersInRange(), 
+                `Extraction Helicopter is leaving in {math.ceil(timeRemaining)}s..`, 
+                "Important", 
+                `exfilalert`
+            );
             exfilScheduler:ScheduleFunction(leaveTickDown, tick()+1);
             return;
         end
+        markerAtt:SetAttribute("Disabled", true);
 
         if flyoutStarted then return end;
         flyoutStarted = true;
+
+        for _, player in pairs(getPlayersInRange()) do
+            local playerClass: PlayerClass = shared.modPlayers.get(player);
+            
+            if playerClass.Humanoid.Sit == true then
+                shared.Notify(player, `[Radio]: We have to leave now!`, "Important", `exfilalert`);
+            else
+               shared.Notify(player, `[Radio]: We are ordered out of the LZ! I'm sorry!`, "Important", `exfilalert`);
+            end
+        end
 
         tl = tick();
         Debugger:Warn(`Fly out starts`);

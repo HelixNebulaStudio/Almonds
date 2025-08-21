@@ -17,6 +17,11 @@ local eventPackage = {
 	Id = "redcrowstorm";
 	Name = "Red Crow Storm";
 	Instance = nil;
+
+	PeaceDuration = 60*10;
+	RaiseDuration = 60*3;
+	ActiveDuration = 60*10;
+	CooldownDuration = 10;
 };
 
 local templateRedCrowStormField;
@@ -71,10 +76,45 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 		if k == "StormCounter" then
 			Debugger:Warn(`StormCounter: {v}`);
 
-			local itemDropList = CollectionService:GetTagged("ItemDrop");
-			for _, itemDrop in pairs(itemDropList) do
-				game.Debris:AddItem(itemDrop, 0);
+		elseif k == "StormState" then
+
+			if v == "Idle" then
+				
+			elseif v == "Start" then
+				
+			elseif v == "Active" then
+				
+				local itemDropList = CollectionService:GetTagged("ItemDrop");
+				for _, itemDrop in pairs(itemDropList) do
+					
+					local expireTime = math.random(60, eventPackage.ActiveDuration);
+					local primaryPart = itemDrop.PrimaryPart;
+					Debugger.Expire(itemDrop, expireTime);
+
+					local offsetRange = 200;
+					for _, side: Enum.NormalId in pairs(Enum.NormalId:GetEnumItems()) do
+						local newMoss: Texture = game.ReplicatedStorage.Particles.RedMoss:Clone();
+						newMoss.Color3 = Color3.fromRGB(0, 0, 0);
+						newMoss.Transparency = 1;
+						newMoss.Face = side;
+						newMoss.Parent = primaryPart;
+						TweenService:Create(newMoss, TweenInfo.new(expireTime), {
+							Color3 = Color3.fromRGB(200, 0, 0);
+							OffsetStudsU = math.random(-offsetRange, offsetRange)/100;
+							OffsetStudsV = math.random(-offsetRange, offsetRange)/100;
+							Transparency = 0.5;
+						}):Play();
+					end
+				end
+
+			elseif v == "End" then
+				local itemDropList = CollectionService:GetTagged("ItemDrop");
+				for _, itemDrop in pairs(itemDropList) do
+					game.Debris:AddItem(itemDrop, 0);
+				end
+				
 			end
+
 		end
 	end)
 
@@ -83,23 +123,22 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
 	local publicData = eventInstance.Public;
 
-	publicData.PeaceDuration = 60*8;
-	publicData.RaiseDuration = 60*2;
-	publicData.ActiveDuration = 60*2;
-	publicData.CycleDuration = publicData.PeaceDuration + publicData.RaiseDuration + publicData.ActiveDuration;
+	publicData.CycleDuration = eventPackage.PeaceDuration + eventPackage.RaiseDuration + eventPackage.ActiveDuration + eventPackage.CooldownDuration;
+	publicData.IdleCycleDuration = eventPackage.PeaceDuration + eventPackage.RaiseDuration;
+	publicData.EndTick = workspace:GetServerTimeNow() + publicData.CycleDuration;
 
     local function OnStateUpdate(state, oldState)
+		local serverTime = workspace:GetServerTimeNow();
 		Debugger:Warn(`{eventPackage.Id} State Update: {state}`);
 
 		publicData.State = state;
+		globalProperties.StormState = state;
         if state == "Idle" then
             scheduler:ScheduleFunction(function()
 				if properties.State ~= "Idle" then return end;
                 properties.State = "Start";
-            end, tick()+publicData.PeaceDuration);
-
-			workspace:SetAttribute("StormCycleTick", workspace:GetServerTimeNow() + publicData.CycleDuration);
-
+            end, tick()+eventPackage.PeaceDuration);
+			publicData.EndTick = serverTime + publicData.CycleDuration;
 
         elseif state == "Start" then
 			scheduler:ScheduleFunction(function()
@@ -109,19 +148,21 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 				if properties.SndBlizzardWinds then
 					TweenService:Create(properties.SndBlizzardWinds, TweenInfo.new(3), {Volume = 2}):Play();
 				end
-			end, tick()+publicData.RaiseDuration);
+			end, tick()+eventPackage.RaiseDuration);
+			publicData.EndTick = serverTime + eventPackage.RaiseDuration + eventPackage.ActiveDuration + eventPackage.CooldownDuration;
 
 			scheduler:ScheduleFunction(function()
+				if properties.State ~= "Start" then return end;
 				local sound: Sound = modAudio.Play("Soundtrack:Invisible Threat", workspace);
 				sound.Ended:Once(function()
 					sound:Destroy();
 				end);
-			end, tick()+(publicData.RaiseDuration/2));
+			end, tick()+(eventPackage.RaiseDuration-60));
 
 			modWeatherService:SetWeather{
 				Id = "redcrowstorm";
 				Priority = 5;
-				Expire = (publicData.RaiseDuration + publicData.ActiveDuration);
+				Expire = (eventPackage.RaiseDuration + eventPackage.ActiveDuration);
 			};
 			
 			if properties.SndBlizzardWinds then
@@ -134,14 +175,15 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			sound.SoundGroup = game:GetService("SoundService"):FindFirstChild("Ambient");
 			sound:AddTag("WeatherSound");
 			properties.SndBlizzardWinds = sound;
-			TweenService:Create(sound, TweenInfo.new(publicData.RaiseDuration), {Volume = 1}):Play();
+			TweenService:Create(sound, TweenInfo.new(eventPackage.RaiseDuration), {Volume = 1}):Play();
 
 
         elseif state == "Active" then
 			scheduler:ScheduleFunction(function()
 				if properties.State ~= "Active" then return end;
 				properties.State = "End";
-			end, tick()+publicData.ActiveDuration);
+			end, tick()+eventPackage.ActiveDuration);
+			publicData.EndTick = serverTime + eventPackage.ActiveDuration + eventPackage.CooldownDuration;
 
 			local function doActiveTick()
 				if properties.State ~= "Active" then return end;
@@ -211,6 +253,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 				modWeatherService:ClearWeather("redcrowstorm");
 				globalProperties.StormCounter = globalProperties.StormCounter + 1;
 			end, tick()+10);
+			publicData.EndTick = serverTime + eventPackage.CooldownDuration;
 
 			if properties.SndBlizzardWinds then
 				local tween = TweenService:Create(properties.SndBlizzardWinds, TweenInfo.new(10), {Volume = 0});
@@ -228,7 +271,6 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 				end);
 				tween:Play();
 			end
-
 
         end
     end

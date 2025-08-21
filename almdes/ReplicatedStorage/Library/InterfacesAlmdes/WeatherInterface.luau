@@ -2,6 +2,8 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local TweenService = game:GetService("TweenService");
 
+local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
+
 local interfacePackage = {
     Type = "Character";
 };
@@ -125,8 +127,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local prevProgress = 0;
 
     interface.Scheduler.OnStepped:Connect(function(tickData: TickData)
+        local stormEventLib = modEventsLibrary:Find("redcrowstorm");
         local eventPublicData = shared.WorldCore.WorldEventsData and shared.WorldCore.WorldEventsData.redcrowstorm;
-        if eventPublicData then 
+        if stormEventLib and eventPublicData then 
             redStormFrame.Visible = true;
 
             if eventPublicData.State == "End" and #redStormNeedles > 0 then
@@ -138,7 +141,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
 
             local cycleDuration = eventPublicData.CycleDuration;
-            local timelapsed = cycleDuration - math.round(workspace:GetAttribute("StormCycleTick")-workspace:GetServerTimeNow());
+            local timelapsed = cycleDuration - math.round(eventPublicData.EndTick-workspace:GetServerTimeNow());
 
             if timelapsed <= 10 and #redStormNeedles >0 then
                 prevProgress = 0;
@@ -148,7 +151,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 redStormFrame.BackgroundColor3 = frameStartColor;
             end
 
-            local safeDuration = (eventPublicData.PeaceDuration + eventPublicData.RaiseDuration);
+            local safeDuration = (stormEventLib.PeaceDuration + stormEventLib.RaiseDuration);
             local newProgressRatio = math.clamp((timelapsed-10)/safeDuration, 0, 1);
             local progressRatio = math.lerp(prevProgress, newProgressRatio, 0.1);
             prevProgress = progressRatio;

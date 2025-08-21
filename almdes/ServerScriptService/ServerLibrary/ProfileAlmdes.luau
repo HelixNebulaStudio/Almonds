@@ -92,7 +92,7 @@ function modProfile.onRequire()
             end
 
             local helpMsg = `A player near you needs help!`;
-			shared.Notify(playersInRange, `<b><font size="18" color="#d4bb6c">{helpMsg}</font></b>`, "Message");
+			shared.Notify(playersInRange, `<b><font size="18" color="#d4bb6c">{helpMsg}</font></b>`, "Message", `rescuealert`);
 			shared.Notify(player, `Rescue alert radioed to nearby players.`, "Inform");
             replyPacket.Success = true;
 

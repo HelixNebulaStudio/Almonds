@@ -8,6 +8,7 @@ function modBranchConfigurations.onRequire()
     modConfigurations.Set("CanQuickEquip", true);
     modConfigurations.Set("PvpMode", true);
     modConfigurations.Set("DisableItemDrops", false);
+    modConfigurations.Set("ForceNotifyStyle", 1);
 end
 
 return modBranchConfigurations;

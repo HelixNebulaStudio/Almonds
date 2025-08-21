@@ -55,7 +55,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     endButton.MouseButton1Click:Connect(function()
         interface:PlayButtonClick();
 
-        local timeLeft = math.round(workspace:GetAttribute("StormCycleTick") - workspace:GetServerTimeNow());
+        local eventPublicData = shared.WorldCore.WorldEventsData and shared.WorldCore.WorldEventsData.redcrowstorm;
+        local endTick = eventPublicData and eventPublicData.EndTick or workspace:GetServerTimeNow();
+        local timeLeft = math.round(endTick - workspace:GetServerTimeNow());
+        
         modClientGuis.promptDialogBox({
             Title=`Are you sure you want to end this run?`;
             Desc=`You can not respawn for <b>{timeLeft} seconds</b>, you should call for help instead.`;
