@@ -72,10 +72,16 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
 
         else
+			task.spawn(function()
+                modData.RequestStorage{
+                    Action = "CloseStorage";
+                    StorageId = binds.StorageId;
+                };
+			end)
+
             modStorageInterface.SetQuickTarget();
             interface:ToggleWindow("Inventory", false);
             storageFrame.Visible = false;
-
         end
     end)
 

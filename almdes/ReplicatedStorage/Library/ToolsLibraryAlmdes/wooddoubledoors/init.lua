@@ -18,7 +18,7 @@ local toolPackage = {
 		DeployableType = "WallFrame";
 
 		IsDoorEntity = true;
-		InteractableName = "Door";
+		InteractableName = "DoorAlmdes";
 	};
 	Properties={};
 };

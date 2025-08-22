@@ -25,6 +25,11 @@ local DEPLOYABLE_PREFABS;
 local DEPLOYABLE_HANDLER_MODULES;
 local deployableCounter = 0;
 
+
+local worldRayParams = RaycastParams.new();
+worldRayParams.FilterType = Enum.RaycastFilterType.Include;
+worldRayParams.FilterDescendantsInstances = {workspace.Environment; workspace.Terrain;};
+
 local toolHandler = modToolHandler.new();
 --==
 
@@ -187,15 +192,15 @@ if RunService:IsClient() then -- MARK: Client
 				end)
 			end
 
-			local aimInteractConfig: Configuration = playerClass.Properties.RayHitInteractable;
-			if aimInteractConfig and aimInteractConfig:GetAttribute("_Name") == "DeployableSocket" then
+			local socketInteractConfig: Configuration = playerClass.Properties.RayHitInteractable;
+			if socketInteractConfig and socketInteractConfig:GetAttribute("_Name") == "DeployableSocket" then
 				activeHightlightModel.Parent = camera;
 				characterProperties.ProxyInteractable = interactProxy;
 
-				local interactable = modInteractables.getOrNew(aimInteractConfig);
-				local attachPoint: Attachment = interactable.Values.AttachmentPoint;
+				local socketInteractable = modInteractables.getOrNew(socketInteractConfig);
+				local attachPoint: Attachment = socketInteractable.Values.AttachmentPoint;
 
-				local interactPart = interactable.Part;
+				local interactPart = socketInteractable.Part;
 				if configurations.ResizeToFit and interactPart then
 					local newSize = interactPart.Size;
 					activeHightlightModel.PrimaryPart.Size = Vector3.new(
@@ -211,16 +216,16 @@ if RunService:IsClient() then -- MARK: Client
 				activeHightlightModel:PivotTo(placeCf);
 
 				local isPlaceable = true;
-				if interactable.Variant ~= configurations.DeployableType then
+				if socketInteractable.Variant ~= configurations.DeployableType then
 					isPlaceable = false;
-				elseif interactable.Values.ActiveDeployable.Value ~= nil then
+				elseif socketInteractable.Values.ActiveDeployable.Value ~= nil then
 					isPlaceable = false;
 				end
 
 				if isPlaceable then
 					interactProxy.Values = {
 						PrefabName = activeHightlightModel.Name;
-						SocketConfig = aimInteractConfig;
+						SocketConfig = socketInteractConfig;
 						RotationY = properties.RotY;
 					};
 					setHighlightColor(PLACEMENT_COLORS.Placable);
@@ -230,7 +235,8 @@ if RunService:IsClient() then -- MARK: Client
 				else
 					setHighlightColor(PLACEMENT_COLORS.Invalid);
 					interactProxy.CanInteract = false;
-					interactProxy.Label = `Can't Attach Here`;
+					interactProxy.Label = `Can't attach here`;
+
 				end
 
 
@@ -268,8 +274,22 @@ if RunService:IsClient() then -- MARK: Client
 				placeCf = placeCf * CFrame.Angles(0, properties.RotY* math.pi/2, 0);
 
 				local isPlaceable = true;
+				local invalidPlaceReason = "Invalid placement";
 				if localPlayer:DistanceFromCharacter(placeCf.Position) > 15 then
 					isPlaceable = false;
+				end
+
+				local deployableInteractConfig: Configuration? = deployableModel and deployableModel:FindFirstChild("Interactable") or nil;
+				if deployableInteractConfig then
+					local deployableInteractable: InteractableInstance = modInteractables.getOrNew(deployableInteractConfig);
+
+					if deployableInteractable.Values.Barricaded then
+						isPlaceable = false;
+						invalidPlaceReason = `Can't attach because of barricade`;
+					elseif deployableInteractable.Values.KeylockId then
+						isPlaceable = false;
+						invalidPlaceReason = `This is already locked`;
+					end
 				end
 
 				if isCfLocked == false or isPlaceable == false then
@@ -290,7 +310,12 @@ if RunService:IsClient() then -- MARK: Client
 				else
 					setHighlightColor(PLACEMENT_COLORS.Invalid);
 					interactProxy.CanInteract = false;
-					interactProxy.Label = `Can't Place Here`;
+
+					if invalidPlaceReason then
+						interactProxy.Label = invalidPlaceReason;
+					else
+						interactProxy.Label = `Can't Place Here`;
+					end
 				end
 
 			else
@@ -415,6 +440,34 @@ elseif RunService:IsServer() then -- MARK: Server
 			end
 		end
 
+		task.spawn(function()
+			local outsideExposureCFrame = nil;
+
+			local originCf = placeCf;
+			local angStep = math.pi/3;
+			for a=1, 6 do
+				local outwardCf = originCf * CFrame.Angles(0, angStep*a, 0) * CFrame.Angles(math.rad(45), 0, 0) * CFrame.new(0, 3, 0);
+				local upwardCf = outwardCf * CFrame.Angles(math.rad(-30), 0, 0);
+				local dir = upwardCf.UpVector * 32;
+				local rayResult = workspace:Raycast(outwardCf.Position, dir, worldRayParams);
+				
+				-- local rayDbPart = Debugger:Ray(
+				-- 	Ray.new(outwardCf.Position, dir), 
+				-- 	rayResult and rayResult.Instance or nil, 
+				-- 	rayResult and rayResult.Position or nil, 
+				-- 	rayResult and rayResult.Normal or nil
+				-- );
+				-- rayDbPart.Name = `ray{a}`;
+				-- game.Debris:AddItem(rayDbPart, 60);
+
+				if rayResult == nil then
+					outsideExposureCFrame = upwardCf;
+					break;
+				end
+			end
+			
+			new:SetAttribute("OutsideExposureCFrame", outsideExposureCFrame);
+		end)
 
 		return new;
 	end
@@ -451,8 +504,6 @@ elseif RunService:IsServer() then -- MARK: Server
 			local aimInteractConfig = proxyValues.SocketConfig;
 			local deployableModel = proxyValues.DeployableModel;
 			local rotationY = proxyValues.RotationY or 0;
-
-			Debugger:Warn(`rotationY: {rotationY}`);
 
 			local placementPacket = {
 				DeployableModel = deployableModel;
@@ -493,6 +544,7 @@ elseif RunService:IsServer() then -- MARK: Server
 			});
 			if deployableHandler and deployableHandler.BindSpawnDeployable then
 				deployableHandler.BindSpawnDeployable(handler, {
+					CharacterClass = characterClass;
 					PlacementData = placementPacket;
 					DeployableModel = new;
 				});

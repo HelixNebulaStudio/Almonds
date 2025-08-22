@@ -17,7 +17,7 @@ local toolPackage = {
 		DisplayName = "DoorLock";
 		DeployableType = "Lock";
 
-		PlacementOffset = CFrame.new(0, 0, 0);
+		InteractableName = "Keylock";
 	};
 	Properties={};
 };

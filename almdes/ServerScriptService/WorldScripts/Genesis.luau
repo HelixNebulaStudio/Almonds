@@ -44,6 +44,12 @@ function WorldCore.onRequire()
 		};
 	};
 
+    shared.modEventService:OnInvoked("Interactables_BindButtonInteract", function(eventPacket: EventPacket, ...)
+        local interactable: InteractableInstance = ...;
+        local variantId = interactable.Variant;
+
+        Debugger:StudioLog("Interactables_BindButtonInteract eventPacket", eventPacket, "interactable", interactable);
+    end)
 end
 
 

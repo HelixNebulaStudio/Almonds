@@ -100,11 +100,13 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     local properties: PropertiesVariable<{}> = playerClass.Properties;
     local player = playerClass:GetInstance();
     
+    local humanoid: Humanoid = playerClass.Humanoid;
+    humanoid.HealthDisplayDistance = 0;
+
     if properties.PlayRunSession then
         properties.PlayRunSession:Destroy();
     end
     properties.PlayRunSession = modPlayRunSession.new(playerClass);
-
 
     --MARK: Meta Status
     local statusComp: StatusComp = playerClass.StatusComp;

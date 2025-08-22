@@ -1,9 +1,12 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
+local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 
 local deployablePackage = {
     Type = "Lock";
+
+    KeyCounter = 0;
 };
 --==
 
@@ -37,7 +40,18 @@ function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance, pac
     weld.Part0 = newModel.PrimaryPart;
     weld.Part1 = attachPart;
 
-    local destructible: DestructibleInstance = modDestructibles.getOrNew(newModel:FindFirstChild("Destructible"));
+    deployablePackage.KeyCounter = deployablePackage.KeyCounter +1;
+
+    local keylockId = deployablePackage.KeyCounter;
+
+    local ownerClass = packet.CharacterClass;
+    local interactable: InteractableInstance = modInteractables.getOrNew(newModel:WaitForChild("Interactable"));
+    if ownerClass then
+        interactable.Values.KeylockId = keylockId;
+        interactable:SetUserPermissions(ownerClass.Name, "CanInteract", true);
+    end
+
+    local destructible: DestructibleInstance = modDestructibles.getOrNew(newModel:WaitForChild("Destructible"));
     
     local parentDestructibleConfig: Configuration? = parentModel:FindFirstChild("Destructible");
     if parentDestructibleConfig and parentDestructibleConfig:HasTag("Destructible") then
@@ -46,6 +60,20 @@ function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance, pac
             destructible.HealthComp:SetIsDead(true);
         end)
     end
+
+    local parentInteractableConfig: Configuration? = parentModel:FindFirstChild("Interactable");
+    if parentInteractableConfig and parentInteractableConfig:HasTag("Interactable") then
+        local parentInteractable: InteractableInstance = modInteractables.getOrNew(parentInteractableConfig);
+        
+        parentInteractable.Values.KeylockId = keylockId;
+        parentInteractable:Sync();
+
+        destructible.OnDestroy:Connect(function()
+            parentInteractable.Values.KeylockId = nil;
+            parentInteractable:Sync();
+        end)
+    end
+
 end
 
 return deployablePackage;

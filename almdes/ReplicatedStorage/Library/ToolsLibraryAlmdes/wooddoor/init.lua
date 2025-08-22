@@ -18,7 +18,7 @@ local toolPackage = {
 		DeployableType = "Doorway";
 
 		IsDoorEntity = true;
-		InteractableName = "Door";
+		InteractableName = "DoorAlmdes";
 	};
 	Properties={};
 };

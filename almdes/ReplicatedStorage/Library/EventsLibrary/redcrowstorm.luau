@@ -185,11 +185,34 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			end, tick()+eventPackage.ActiveDuration);
 			publicData.EndTick = serverTime + eventPackage.ActiveDuration + eventPackage.CooldownDuration;
 
-			local function doActiveTick()
+			local function do1sTick()
 				if properties.State ~= "Active" then return end;
-				scheduler:ScheduleFunction(doActiveTick, tick()+1);
+				scheduler:ScheduleFunction(do1sTick, tick()+1);
 
 				task.spawn(function()
+					local dmgHitCount = 0;
+					local totalExposedCount = 0;
+
+					local deployableList = CollectionService:GetTagged("Deployable");
+					for _, deployableModel: Model in pairs(deployableList) do
+						local exposureCFrame = deployableModel:GetAttribute("OutsideExposureCFrame");
+						if exposureCFrame == nil then continue end;
+						totalExposedCount = totalExposedCount +1;
+						if math.random(1, 10) ~= 1 then continue end;
+						
+						local healthComp: HealthComp = modHealthComponent.getByModel(deployableModel);
+						if healthComp == nil or healthComp.IsDead then continue end;
+
+						healthComp:TakeDamage(DamageData.new{
+							Damage = 10;
+							DamageType = "Hidden";
+							TargetPart = deployableModel.PrimaryPart;
+						});
+						dmgHitCount = dmgHitCount +1;
+					end
+					Debugger:StudioWarn("Hit count", dmgHitCount,"/", totalExposedCount);
+				end)
+				task.spawn(function() -- Extinguish campfires
 					local activeCampfireModels = CollectionService:GetTagged("Campfire");
 					
 					for _, campfireModel in pairs(activeCampfireModels) do
@@ -232,7 +255,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 				crowSound.PlaybackSpeed = math.random(97, 103)/100;
 				crowSound:AddTag("WeatherSound");
 			end
-			scheduler:ScheduleFunction(doActiveTick, tick()+1);
+			scheduler:ScheduleFunction(do1sTick, tick()+1);
 
 			if properties.SndApocalyticDreams then
 				properties.SndApocalyticDreams:Destroy();

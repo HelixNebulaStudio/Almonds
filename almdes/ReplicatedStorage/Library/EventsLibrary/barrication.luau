@@ -69,7 +69,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
             local itemId;
             local blockadeName;
 
-			local playersInRange = shared.modPlayers.getPlayersInRange(attachPoint.WorldPosition, 64);
+			local playersInRange = shared.modPlayers.getPlayersInRange(attachPoint.WorldPosition, 128);
 			if #playersInRange > 0 then continue end;
 
             if socketInteractable.Variant == "WindowFrame" then
