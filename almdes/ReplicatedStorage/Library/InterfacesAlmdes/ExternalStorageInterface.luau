@@ -21,7 +21,7 @@ local interfacePackage = {
 function interfacePackage.newInstance(interface: InterfaceInstance)
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
 
-    local templateSlot = script:WaitForChild("templateSlot");
+    local templateSlot = interface.newTemplate("ItemSlot");
 
     local charWindow = interface:GetWindow("CharacterWindow");
     local rPanel = charWindow.Binds.RPanel;

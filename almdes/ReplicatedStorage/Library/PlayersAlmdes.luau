@@ -137,6 +137,16 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
         };
     }
     statusComp:Apply("Comfort", comfortStatusCompApplyParam);
+
+    local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+    local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+
+	for storageId, storage: Storage in pairs(gameSave.Storages) do
+		storage:Wipe();
+		Debugger:Warn(`Wiped storage: {storageId}`);
+	end
+    gameSave.LoadoutSaves:LoadActiveLoadout();
+
 end);
 
 shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: PlayerClassAlmdes, tickData: TickData)

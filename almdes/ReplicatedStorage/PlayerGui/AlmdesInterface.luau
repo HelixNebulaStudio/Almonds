@@ -29,8 +29,14 @@ function interface.clientGuisLoad()
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
     local interface: InterfaceInstance = interface;
 
+    interface.Colors.ActivePrimary = Color3.fromRGB(204, 0, 255);
+    interface.Colors.InactivePrimary = Color3.fromRGB(108, 91, 170);
+
     interface.Colors.ForepanelBackground = Color3.fromRGB(47, 49, 65);
     interface.Colors.BorderColorPrimary = Color3.fromRGB(108, 91, 170);
+
+    interface.Colors.Button = Color3.fromRGB(50, 50, 100);
+
     
 	--==MARK: ItemProcessor
     interface:BindEvent("DataItemProcessorUpdate", function(returnPacket)

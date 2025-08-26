@@ -17,9 +17,24 @@ export type GameSaveAlmdes = GameSave & {
     -- @properties
     WorkbenchSeed: number;
     ItemProcessor: anydict;
-    RecipesUnlocked: anydict;
+    LoadoutSaves: LoadoutSaves;
 
     -- @methods
+};
+
+-- MARK: LoadoutSaves
+export type LoadoutSaves = {
+    -- @properties
+    Player: Player;
+    GameSave: GameSaveAlmdes;
+
+    ActiveLoadout: number;
+    Loadouts: {[number]: anydict};
+
+    -- @methods
+    SaveActiveLoadout: (LoadoutSaves) -> nil;
+    LoadActiveLoadout: (LoadoutSaves) -> nil;
+    Shrink: (LoadoutSaves) -> anydict;
 };
 
 -- MARK: WorldEvents

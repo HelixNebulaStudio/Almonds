@@ -8,13 +8,13 @@ local TweenService = game:GetService("TweenService");
 local camera = workspace.CurrentCamera;
 local localPlayer = game.Players.LocalPlayer;
 
-local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
-local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
 local modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
+local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 local modScreenRelativeTextSize = shared.require(game.ReplicatedStorage.Library.UI.ScreenRelativeTextSize);
 
 local BASIC_TWEENINFO = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
@@ -28,7 +28,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local curPage = "Root";
     local activePlayPage = "OptionsFrame";
 
+    local templateItemSlot = interface.newTemplate("ItemSlot");
+
+    local modData = shared.require(localPlayer:WaitForChild("DataModule"));
+
     local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
+    local remoteLoadoutSaves = modRemotesManager:Get("LoadoutSaves");
 
     local frame = script:WaitForChild("MainMenuFrame"):Clone();
     frame.Parent = interface.ScreenGui;
@@ -43,6 +48,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.UseTween = false;
     window.DisableHotKeysHint = true;
 
+    local binds = window.Binds;
+
+    
+    --MARK: OnToggle
     window.OnToggle:Connect(function(visible)
         if visible then
             curPage = "Root";
@@ -162,31 +171,56 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     menuButton.MouseLeave:Connect(function() toggleMenuButtonMouseEvent(false); end);
 
 
-    local loadPlayPageFunc;
-    local updatePlayPages;
+    local PAGES = {
+        ["PlayPage"] = {
+            _loaded = false;
+
+            Frame = bodyFrame.PlayPage;
+
+            -- @functions
+            Load = nil;
+            Update = nil;
+        };
+        ["LoadoutsPage"] = {
+            _loaded = false;
+
+            Frame = bodyFrame.LoadoutsPage;
+
+            -- @functions
+            Load = nil;
+            Update = nil;
+        };
+    };
 
     local function updatePages()
-        if curPage == "PlayPage" then
-            loadPlayPageFunc();
+        for pageId, pageContent in pairs(PAGES) do
+            if pageId == curPage then
+                if pageContent.Load then
+                    pageContent.Load();
+                end
 
-            local playPage: Frame = bodyFrame.PlayPage;
-            if playPage.Visible == false or activePlayPage ~= "OptionsFrame" then
-                activePlayPage = "OptionsFrame";
+                local pageFrame: Frame = pageContent.Frame;
+                if pageFrame.Visible == false then
+                    pageFrame.Position = UDim2.new(0.5, 0, -1, 0);
+                    pageFrame.Visible = true;
+                    local tween = TweenService:Create(pageFrame, BASIC_TWEENINFO, {
+                        Position = UDim2.new(0.5, 0, 0, 0);
+                    });
+                    tween:Play();
+                end
 
-                playPage.Position = UDim2.new(0.5, 0, -1, 0);
-                playPage.Visible = true;
-                local tween = TweenService:Create(playPage, BASIC_TWEENINFO, {
-                    Position = UDim2.new(0.5, 0, 0, 0);
-                });
-                tween:Play();
+                if pageContent.Update then
+                    pageContent.Update();
+                end
+
+            else
+                pageContent.Frame.Visible = false;
+
             end
-
-        else
-            bodyFrame.PlayPage.Visible = false;
-
         end
     end
 
+    --MARK: OnUpdate
     window.OnUpdate:Connect(function()
         if window.Visible then
             interface.VersionLabel.ZIndex = 2;
@@ -201,14 +235,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         if curPage == "Root" then
             interface:ToggleWindow("UpdateWindow", true);
-            updatePages();
-
-        elseif curPage == "PlayPage" then
+        else
             interface:ToggleWindow("UpdateWindow", false);
-            updatePages()
-            updatePlayPages();
-
         end
+
+        updatePages();
     end)
 
     local function updateBodySize(k, v, ov)
@@ -220,18 +251,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 
     --== MARK: Play Page
-    local playPageLoaded = false;
-    loadPlayPageFunc = function()
-        if playPageLoaded then return end;
-        playPageLoaded = true;
+    PAGES.PlayPage.Load = function()
+        if PAGES.PlayPage._loaded then return end;
+        PAGES.PlayPage._loaded = true;
 
-        local modData = shared.require(localPlayer:WaitForChild("DataModule"));
-        
         local isMenuWorld = modBranchConfigs.IsWorld("Genesis");
         local isTutorialFinished = modData:GetEvent("tutorialFinished");
 
-        local playPageFrame = bodyFrame:WaitForChild("PlayPage");
-
+        local playPageFrame = PAGES.PlayPage.Frame;
         
         local PlayPages = {
             Options = playPageFrame:WaitForChild("OptionsFrame");
@@ -256,7 +283,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
                 local buttonImage: ImageLabel = optionsButton.ImageLabel;
                 if isSelected then
-                    selectionHighlight.Parent = buttonImage;
+                    if optionsButton:GetAttribute("Disabled") ~= true then
+                        selectionHighlight.Parent = buttonImage;
+                    end
                 elseif selectionName == nil then
                     selectionHighlight.Parent = nil;
                 end
@@ -338,7 +367,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
         end)
 
-        updatePlayPages = function()
+        PAGES.PlayPage.Update = function()
             for _, pageFrame in pairs(PlayPages) do
                 pageFrame.Visible = pageFrame.Name == activePlayPage;
             end
@@ -371,6 +400,27 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
 
         for key, optionsButton: TextButton in pairs(PlayOptions) do
+            optionsButton:GetAttributeChangedSignal("Disabled"):Connect(function()
+                local isDisabled = optionsButton:GetAttribute("Disabled") == true;
+
+                local buttonImage: ImageLabel = optionsButton:FindFirstChild("ImageLabel") :: ImageLabel;
+                local textLabel: TextLabel = optionsButton:FindFirstChild("TextLabel") :: TextLabel;
+                local descLabel: TextLabel = optionsButton:FindFirstChild("DescLabel") :: TextLabel;
+
+                if isDisabled then
+                    buttonImage.ImageColor3 = Color3.fromRGB(100,100,100);
+                    textLabel.TextColor3 = Color3.fromRGB(100,100,100);
+                    descLabel.TextColor3 = Color3.fromRGB(100,100,100);
+                else
+                    buttonImage.ImageColor3 = Color3.fromRGB(255,255,255);
+                    textLabel.TextColor3 = Color3.fromRGB(255,255,255);
+                    descLabel.TextColor3 = Color3.fromRGB(255,255,255);
+                end
+            end)
+            if isMenuWorld and key == "Play" then
+                optionsButton:SetAttribute("Disabled", true);
+            end
+
             optionsButton.MouseEnter:Connect(function()
                 selectionName = optionsButton.Name;
                 updateSelectionHighlight();
@@ -391,20 +441,20 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     Debugger:Warn(`Clicked Tutorial`);
 
                     activePlayPage = "SpawningFrame";
-                    updatePlayPages();
+                    PAGES.PlayPage.Update();
                     deploy("playtutorial");
                     
                 elseif key == "Play" then
                     Debugger:Warn(`Clicked Quick play`);
                     
                     activePlayPage = "SpawningFrame";
-                    updatePlayPages();
+                    PAGES.PlayPage.Update();
                     deploy("quickplay");
 
                 elseif key == "Servers" then
                     Debugger:Warn(`Clicked Server`);
                     activePlayPage = "ServerBrowserFrame";
-                    updatePlayPages();
+                    PAGES.PlayPage.Update();
                     
                 elseif key == "Event" then
                     Debugger:Warn(`Clicked Event`);
@@ -417,6 +467,130 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             descLabel.TextSize = modScreenRelativeTextSize.GetTextSize();
         end
     end
+
+    local templateLoadoutSlot = script:WaitForChild("LoadoutSlot");
+
+    --== MARK: Loadouts Page
+    PAGES.LoadoutsPage.Load = function()
+        if PAGES.LoadoutsPage._loaded then return end;
+        PAGES.LoadoutsPage._loaded = true;
+        local fetchCooldown = nil;
+
+        local loadoutsPage: Frame = PAGES.LoadoutsPage.Frame;
+        local loadoutsFrame: Frame = loadoutsPage:WaitForChild("LoadoutsFrame") :: Frame;
+        local loadoutsScrollFrame: ScrollingFrame = loadoutsFrame:WaitForChild("LoadoutsScrollFrame") :: ScrollingFrame;
+
+        PAGES.LoadoutsPage.Update = function()
+            local rawLoadoutSaves = binds.LoadoutSaves;
+
+            if fetchCooldown == nil or tick()-fetchCooldown >= 10 then
+                local rPacket = remoteLoadoutSaves:InvokeServer("fetch");
+                Debugger:Warn("Update LoadoutsPage", rPacket);
+                if rPacket == nil or rPacket.Success == false then return end;
+
+                rawLoadoutSaves = rPacket.Data;
+                binds.LoadoutSaves = rawLoadoutSaves;
+                fetchCooldown = tick();
+            end
+
+            for _, obj in pairs(loadoutsScrollFrame:GetChildren()) do
+                if not obj:IsA("GuiObject") then continue end;
+                obj:Destroy();
+            end
+
+            local activeLoadoutHighlight: UIStroke = script:WaitForChild("SelectionHighlight"):Clone();
+
+            for index=1, rawLoadoutSaves.MaxLoadouts do
+                local newLoadoutSlot = templateLoadoutSlot:Clone();
+                newLoadoutSlot.Name = index;
+                newLoadoutSlot.LayoutOrder = index;
+                newLoadoutSlot.Parent = loadoutsScrollFrame;
+
+                if index == rawLoadoutSaves.ActiveLoadout then
+                    activeLoadoutHighlight.Color = interface.Colors.ActivePrimary;
+                    activeLoadoutHighlight.Parent = newLoadoutSlot;
+                end
+
+                local titleLabel: TextLabel = newLoadoutSlot:WaitForChild("TitleLabel");
+                titleLabel.Text = index == 1 and `Primary`
+                    or index == 2 and `Secondary`
+                    or index == 3 and `Auxiliary `
+                    or `{index}`;
+
+                local activeLabel: TextLabel = newLoadoutSlot:WaitForChild("ActiveLabel");
+                activeLabel.Visible = index == rawLoadoutSaves.ActiveLoadout;
+
+
+                local loadoutData = rawLoadoutSaves.Loadouts[index];
+                if loadoutData == nil then continue end;
+                Debugger:StudioLog(`Loadout {index}`, loadoutData);
+
+                local storagesFrame: ScrollingFrame = newLoadoutSlot:WaitForChild("Storages") :: ScrollingFrame;
+                local coldStorages = loadoutData.ColdStorages;
+
+                local slotColors = {};
+                for siid, clothingStorage in pairs(coldStorages.Clothing.Container) do
+                    local itemLib = modItemsLibrary:Find(clothingStorage.ItemId);
+                    if itemLib.SlotColor then
+                        slotColors[siid] = itemLib.SlotColor;
+                    end
+                end
+
+                local storageFrames = {};
+                for sid, storage: Storage in pairs(coldStorages) do
+                    local newStorageFrame = script:WaitForChild("ColdStorageFrame"):Clone();
+                    newStorageFrame.Name = sid;
+
+                    if sid == "Clothing" then
+                        newStorageFrame.LayoutOrder = 1;
+                    elseif sid == "Inventory" then
+                        newStorageFrame.LayoutOrder = 2;
+                    else
+                        newStorageFrame.LayoutOrder = 3;
+                    end
+
+                    storageFrames[sid] = newStorageFrame;
+                    newStorageFrame.Parent = storagesFrame;
+                end
+
+                for sid, storage: Storage in pairs(coldStorages) do
+                    local newStorageFrame = storageFrames[sid];
+
+                    local slotFrames = {};
+                    for index=1, storage.Size do
+                        local newSlot = templateItemSlot:Clone();
+                        newSlot.LayoutOrder = index;
+                        newSlot.Visible = false;
+                        newSlot.Parent = newStorageFrame;
+                        if slotColors[sid] then
+                            newSlot.ImageColor3 = slotColors[sid];
+                        end
+                        slotFrames[index] = newSlot;
+                    end
+
+                    for siid, storageItem: StorageItem in pairs(storage.Container) do
+                        local newSlot = slotFrames[storageItem.Index];
+                        newSlot.Visible = true;
+                        
+                        if slotColors[siid] then
+                            newSlot.ImageColor3 = slotColors[siid];
+                            if storageFrames[siid] then
+                                newSlot.LayoutOrder = 0;
+                                newSlot.Parent = storageFrames[siid];
+                            end
+                        elseif slotColors[sid] then
+                            newSlot.ImageColor3 = slotColors[sid];
+                        end
+
+                        local itemButtonObject = modItemInterface.newItemButton(storageItem.ItemId);
+                        itemButtonObject.ImageButton.Parent = newSlot;
+                        itemButtonObject:Update(storageItem);
+                    end
+                end
+
+            end
+        end
+    end;
 
 end
 

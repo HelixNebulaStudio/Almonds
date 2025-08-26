@@ -430,7 +430,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 		
 		mapImageLabel.Size = UDim2.new(zoomScale, 0, zoomScale, 0);
-		centerButton.BackgroundColor3 = mapFollowPlayer and Color3.fromRGB(50, 50, 100) or Color3.fromRGB(50, 50, 50);
+		centerButton.BackgroundColor3 = mapFollowPlayer and interface.Colors.Button or Color3.fromRGB(50, 50, 50);
 
 
 		local legendExist = {};

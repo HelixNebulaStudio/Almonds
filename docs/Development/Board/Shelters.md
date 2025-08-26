@@ -11,3 +11,4 @@ Available Shelters: 7
 - ### Alm Market
 - ### Epic Cakery
 - ### RedBrick Industrial
+- ### Ice Scream Fortress

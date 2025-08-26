@@ -10,11 +10,6 @@ local function OnPlayerAdded(player: Player)
 	Debugger:Log("Initializing player (",player,")");
 
 	local profile: ProfileAlmdes = modProfile.new(player);
-	
-	if #profile.Saves <= 0 then
-        profile:NewCustomSave();
-    end
-
 	local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 	
 	--== Auto-save cycle;
@@ -42,7 +37,7 @@ local function OnPlayerAdded(player: Player)
 
     player.CharacterRemoving:Connect(function()
         Debugger:Warn(`Player ({player.Name}) returned to menu.`);
-	    player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
+	    --player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
     end)
 end
 
@@ -55,8 +50,12 @@ shared.coreBind(modProfile, "_key_load", function(profile: ProfileAlmdes, key: s
     --     profile[key]:Load(data);
     --     return true;
     -- end
-
     return false;
+end)
+
+shared.coreBind(modProfile, "_save", function(profile: ProfileAlmdes, overrideData: any?, force: boolean?)
+    local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+    
 end)
 
 function modProfile.onRequire()
@@ -74,7 +73,6 @@ function modProfile.onRequire()
             playerClass:Spawn();
             replyPacket.Success = true;
             
-			
         elseif action == "quickplay" then
             playerClass:Spawn();
             replyPacket.Success = true;

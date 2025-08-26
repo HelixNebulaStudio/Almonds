@@ -6,10 +6,15 @@ local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library.StoragePresetsLibraryAlmdes);
 
+local modLoadoutSaves = shared.require(game.ServerScriptService.ServerLibrary.LoadoutSaves);
 local modStorage = shared.require(game.ServerScriptService.ServerLibrary.Storage);
 local modItemProcessor = shared.require(game.ServerScriptService.ServerLibrary.ItemProcessor);
 
 --==
+function modGameSave.onRequire()
+
+end
+
 shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile: ProfileAlmdes)
 	local player: Player = profile.Player;
 	Debugger:Warn("OnNewSave", player);
@@ -37,7 +42,7 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 		local portableStorages = {};
 		local equippedStorageIds = {};
 		
-		for siid, storageItem in pairs(gameSave.Clothing.Container) do
+		for siid, storageItem: StorageItem in pairs(gameSave.Clothing.Container) do
 			local itemId = storageItem.ItemId;
 
 			local storagePresetLib = modStoragePresetsLibrary:Find(itemId);
@@ -60,7 +65,7 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 				StorageName = storageConfig.Name;
 				StoragePresetLib = storagePresetLib;
 			});
-			storage.OnChanged:Connect(onStorageChanged);
+			storage.OnChanged:Connect(onStorageChanged); -- doesn't reconnect if func already exists
 		end
 		
 		table.sort(portableStorages, function(a, b)
@@ -94,16 +99,20 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 		
 	end)
 
-	gameSave.WorkbenchSeed = modSyncTime.TimeOfEndOfDay();
-	
-	Debugger:Warn("profile.DayRollOver", profile.DayRollOver, "data.WorkbenchSeed", gameSave.WorkbenchSeed);
-	gameSave.RecipesUnlocked = {};
-
 	gameSave.AppearanceData.UpdateReady = true;
+	gameSave.WorkbenchSeed = modSyncTime.TimeOfEndOfDay();
+	gameSave.LoadoutSaves = modLoadoutSaves.new(player, gameSave);
 end)
 
-function modGameSave.onRequire()
+shared.coreBind(modGameSave, "_loaded", function(gameSave: GameSaveAlmdes)
+	local profile: ProfileAlmdes = gameSave.Profile;
+	local player: Player = profile.Player;
+	Debugger:Warn("OnLoadedSave", player);
 
-end
+	for storageId, storage: Storage in pairs(gameSave.Storages) do
+		storage:Wipe();
+		Debugger:Warn(`Wiped storage: {storageId}`);
+	end
+end)
 
 return modGameSave;

@@ -38,7 +38,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local remoteUseStorageItem = modRemotesManager:Get("UseStorageItem");
     local remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
 
-    local templateItemSlot = script:WaitForChild("ItemSlot");
+    local templateItemSlot = interface.newTemplate("ItemSlot");
 	local templateProgressBar = script:WaitForChild("progressBar");
 
 

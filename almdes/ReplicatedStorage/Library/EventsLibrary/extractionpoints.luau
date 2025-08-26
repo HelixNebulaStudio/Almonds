@@ -140,7 +140,7 @@ function eventPackage.RenderMarker(mapMarker: MapMarker, eventPublicData: anydic
 
 	local isExfilCalled = markerAtt:GetAttribute("ExfilCalled");
 	if isExfilCalled then
-		imageLabel.ImageColor3 = Color3.fromRGB(204, 0, 255);
+		imageLabel.ImageColor3 = modClientGuis.ActiveInterface.Colors.ActivePrimary;
 
 		local waitDuration = markerAtt:GetAttribute("WaitDuration");
         local leaveTime = markerAtt:GetAttribute("LeaveTime");

@@ -7,8 +7,9 @@ kanban-plugin: list
 ## Priority
 
 - [ ] [[ItemProcessor]]
-- [ ] [[Death and Revive screen]]
-- [ ] [[Red Crow Storm]]
+- [x] [[Death and Revive screen]]
+- [x] [[Red Crow Storm]]
+- [ ] [[Loadouts]]
 
 
 ## Playable
@@ -17,6 +18,7 @@ kanban-plugin: list
 - [ ] [[Shelters]]
 - [ ] [[Foods]]
 - [ ] [[Enemies]]
+- [ ] [[Points of Interest]]
 
 
 ***

@@ -32,15 +32,25 @@ function PlayRunSession.new(playerClass: PlayerClass)
     return self;
 end
 
-function PlayRunSession:EndRun(status: string, reason: string)
+function PlayRunSession:EndRun(runStatus: string, reason: string)
     if self.Status ~= "Active" then return end;
-    
-    self.PlayerClass.Properties.PlayRunStatus = status;
+    Debugger:Warn(`EndRun {runStatus} Reason: {reason}`);
+    self.PlayerClass.Properties.PlayRunStatus = runStatus;
 
     self.EndTime = workspace:GetServerTimeNow();
 
-    self.Status = status;
+    self.Status = runStatus;
     self.EndReason = reason;
+
+    local player: Player = self.PlayerClass:GetInstance();
+    local profile: ProfileAlmdes = shared.modProfile:Get(player);
+    local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+
+    if runStatus == "Success" then 
+        gameSave.LoadoutSaves:SaveActiveLoadout();
+    end;
+
+    profile:Save();
 end
 
 function PlayRunSession:GetSummary()
