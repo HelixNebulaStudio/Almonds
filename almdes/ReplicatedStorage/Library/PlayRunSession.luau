@@ -46,9 +46,7 @@ function PlayRunSession:EndRun(runStatus: string, reason: string)
     local profile: ProfileAlmdes = shared.modProfile:Get(player);
     local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 
-    if runStatus == "Success" then 
-        gameSave.LoadoutSaves:SaveActiveLoadout();
-    end;
+    gameSave.LoadoutSaves:SaveActiveLoadout(runStatus == "Success");
 
     profile:Save();
 end

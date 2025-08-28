@@ -80,7 +80,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end)
 
             modStorageInterface.SetQuickTarget();
-            interface:ToggleWindow("Inventory", false);
             storageFrame.Visible = false;
         end
     end)

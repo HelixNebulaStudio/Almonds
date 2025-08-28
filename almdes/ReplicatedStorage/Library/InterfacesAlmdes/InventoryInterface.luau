@@ -252,8 +252,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			});
 
 			if returnPacket and returnPacket.Success then
-				Debugger:Log("Deconstructing ", slotItem, returnPacket);
-				binds.UpdateItemProcessorData(returnPacket)
 				interface:FireEvent("DataItemProcessorUpdate");
 			end
 		end;

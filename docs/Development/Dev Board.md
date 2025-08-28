@@ -9,7 +9,7 @@ kanban-plugin: list
 - [ ] [[ItemProcessor]]
 - [x] [[Death and Revive screen]]
 - [x] [[Red Crow Storm]]
-- [ ] [[Loadouts]]
+- [x] [[Loadouts]]
 
 
 ## Playable

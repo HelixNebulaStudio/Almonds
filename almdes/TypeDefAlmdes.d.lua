@@ -29,10 +29,11 @@ export type LoadoutSaves = {
     GameSave: GameSaveAlmdes;
 
     ActiveLoadout: number;
+    MaxLoadouts: number;
     Loadouts: {[number]: anydict};
 
     -- @methods
-    SaveActiveLoadout: (LoadoutSaves) -> nil;
+    SaveActiveLoadout: (LoadoutSaves, saveStorages: boolean) -> nil;
     LoadActiveLoadout: (LoadoutSaves) -> nil;
     Shrink: (LoadoutSaves) -> anydict;
 };
@@ -43,6 +44,7 @@ export type WorldEvents = {
     GlobalProperties: PropertiesVariable<{
         Seed: number;
         StormCounter: number;
+        StormState: "Idle" | "Start" | "Active" | "End";
     }>;
     Instances: {[string]: WorldEventInstance};
 };

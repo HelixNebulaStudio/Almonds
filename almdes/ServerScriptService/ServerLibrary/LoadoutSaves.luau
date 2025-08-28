@@ -17,16 +17,27 @@ function LoadoutSaves.onRequire()
         local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
         local loadoutSaves: LoadoutSaves = gameSave.LoadoutSaves;
 
+        local rPacket = {
+            Success = false;
+        };
         if action == "fetch" then
-            local rPacket = {
-                Success = true;
-                Data = loadoutSaves:Shrink();
-            };
+            rPacket.Success = true;
 
+        elseif action == "setloadout" then
+            local newIndex = pPacket.LoadoutIndex;
+            if typeof(newIndex) ~= "number" then return rPacket end;
+            if newIndex == loadoutSaves.ActiveLoadout then return rPacket end;
+
+            loadoutSaves.ActiveLoadout = math.clamp(newIndex or 1, 1, loadoutSaves.MaxLoadouts);
+            rPacket.Success = true;
+
+        else
             return rPacket;
-        end
 
-        return {};
+        end
+        
+        rPacket.Data = loadoutSaves:Shrink();
+        return rPacket;
     end
 
 	shared.modCommandsLibrary.bind{
@@ -119,6 +130,7 @@ function LoadoutSaves:Shrink()
 
     for loadoutIndex, loadout in pairs(self.Loadouts) do
         local rawLoadout = {
+            State = loadout.State;
             ColdStorages = {};
         };
         for sId, storage: Storage in pairs(loadout.ColdStorages) do
@@ -166,42 +178,56 @@ function LoadoutSaves:LoadActiveLoadout()
     gameSave.Inventory:Sync(self.Player);
 end
 
-function LoadoutSaves:SaveActiveLoadout()
+function LoadoutSaves:SaveActiveLoadout(saveStorages: boolean)
     local gameSave: GameSaveAlmdes = self.GameSave;
     local activeLoadout = self.ActiveLoadout;
 
     local loadout = {
+        State = "Empty";
         ColdStorages = {};
     };
     local coldStorages = loadout.ColdStorages; -- Inactive storages
 
-    local clothingStorages = {};
-    for siid, storageItem: StorageItem in pairs(gameSave.Clothing.Container) do
-        local storage: Storage = modStorages.get(siid);
-        if storage == nil then continue end;
-        clothingStorages[storageItem] = storage;
-    end
+    if saveStorages then
+        loadout.State = "Filled";
 
-    for storageId, storage: Storage in pairs(gameSave.Storages) do
-        Debugger:Warn("Saving storage", storageId);
+        local clothingStorages = {};
+        for siid, storageItem: StorageItem in pairs(gameSave.Clothing.Container) do
+            local storage: Storage = modStorages.get(siid);
+            if storage == nil then continue end;
 
-        local newStorage: Storage = modStorages.new(storageId, storage.PresetId, self.Player);
-        coldStorages[storageId] = newStorage;
+            storage.Locked = true;
 
-        storage:TransferContainer(newStorage);
-        
-        if storageId == "Clothing" then
-            for siid, storageItem: StorageItem in pairs(newStorage.Container) do
-                local portableStorage: Storage = clothingStorages[storageItem];
-                if portableStorage == nil then
-                    Debugger:Warn(`Missing portable storage {siid}`);
-                    continue;
+            clothingStorages[storageItem] = storage;
+        end
+
+        local storagesToSave = {
+            Inventory = gameSave.Inventory;
+            Clothing = gameSave.Clothing;
+        };
+        for storageId, storage: Storage in pairs(storagesToSave) do
+            Debugger:Warn("Saving storage", storageId);
+
+            local newStorage: Storage = modStorages.new(storageId, storage.PresetId, self.Player);
+            coldStorages[storageId] = newStorage;
+
+            storage:TransferContainer(newStorage);
+
+            if storageId == "Clothing" then
+                for siid, storageItem: StorageItem in pairs(newStorage.Container) do
+                    local portableStorage: Storage = clothingStorages[storageItem];
+                    if portableStorage == nil then
+                        Debugger:Warn(`Missing portable storage {siid}`);
+                        continue;
+                    end
+                    Debugger:Warn("Saving storage", siid);
+                    
+                    local newPortableStorage: Storage = modStorages.new(siid, portableStorage.PresetId, self.Player);
+                    coldStorages[siid] = newPortableStorage;
+
+                    portableStorage:TransferContainer(newPortableStorage);
+                    portableStorage:Destroy();
                 end
-                
-                local newPortableStorage: Storage = modStorages.new(siid, portableStorage.PresetId, self.Player);
-                coldStorages[siid] = newPortableStorage;
-
-                portableStorage:TransferContainer(newPortableStorage);
             end
         end
     end
@@ -209,10 +235,6 @@ function LoadoutSaves:SaveActiveLoadout()
     self.Loadouts[activeLoadout] = loadout;
     Debugger:StudioLog("LoadoutSaves:Save", self);
     
-	for storageId, storage: Storage in pairs(gameSave.Storages) do
-		storage:Wipe();
-	end
-
 end
 
 return LoadoutSaves;

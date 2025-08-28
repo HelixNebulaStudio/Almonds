@@ -474,7 +474,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     PAGES.LoadoutsPage.Load = function()
         if PAGES.LoadoutsPage._loaded then return end;
         PAGES.LoadoutsPage._loaded = true;
+
         local fetchCooldown = nil;
+        local setloadoutDebounce = tick();
 
         local loadoutsPage: Frame = PAGES.LoadoutsPage.Frame;
         local loadoutsFrame: Frame = loadoutsPage:WaitForChild("LoadoutsFrame") :: Frame;
@@ -485,7 +487,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             if fetchCooldown == nil or tick()-fetchCooldown >= 10 then
                 local rPacket = remoteLoadoutSaves:InvokeServer("fetch");
-                Debugger:Warn("Update LoadoutsPage", rPacket);
                 if rPacket == nil or rPacket.Success == false then return end;
 
                 rawLoadoutSaves = rPacket.Data;
@@ -499,16 +500,81 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
 
             local activeLoadoutHighlight: UIStroke = script:WaitForChild("SelectionHighlight"):Clone();
+            local selectLoadoutHighlight: UIStroke = script:WaitForChild("SelectionHighlight"):Clone();
+
+            local activeLoadoutIndex = rawLoadoutSaves.ActiveLoadout;
+
+            local selectedLoadoutIndex = 1;
+            local loadoutSlotButtons = {};
+            local function updateLoadoutSelectionHighlight()
+                for index, slotButton in pairs(loadoutSlotButtons) do
+                    local useButton = slotButton:WaitForChild("UseButton");
+                    
+                    useButton.Visible = index == selectedLoadoutIndex and index ~= activeLoadoutIndex;
+                end
+
+                if selectedLoadoutIndex == nil then
+                    selectLoadoutHighlight.Parent = nil;
+                    return;
+                end
+
+                local selectedSlot = loadoutSlotButtons[selectedLoadoutIndex];
+                selectLoadoutHighlight.Parent = selectedSlot.Highlight;
+            end
+
+
+            local function setLoadoutSlot(index)
+                if index == activeLoadoutIndex then return end;
+                
+                interface:PlayButtonClick();
+                if tick()-setloadoutDebounce <= 0.3 then return end;
+                setloadoutDebounce = tick();
+
+                local rPacket = remoteLoadoutSaves:InvokeServer("setloadout", {
+                    LoadoutIndex = selectedLoadoutIndex;
+                });
+                if rPacket == nil or rPacket.Success == false then return end;
+
+                rawLoadoutSaves = rPacket.Data;
+                binds.LoadoutSaves = rawLoadoutSaves;
+                PAGES.LoadoutsPage.Update();
+            end
+
 
             for index=1, rawLoadoutSaves.MaxLoadouts do
                 local newLoadoutSlot = templateLoadoutSlot:Clone();
                 newLoadoutSlot.Name = index;
                 newLoadoutSlot.LayoutOrder = index;
                 newLoadoutSlot.Parent = loadoutsScrollFrame;
+                loadoutSlotButtons[index] = newLoadoutSlot;
 
-                if index == rawLoadoutSaves.ActiveLoadout then
+                newLoadoutSlot.MouseEnter:Connect(function()
+                    selectedLoadoutIndex = index;
+                    updateLoadoutSelectionHighlight();
+
+                end)
+                newLoadoutSlot.MouseMoved:Connect(function()
+                    selectedLoadoutIndex = index;
+                    updateLoadoutSelectionHighlight();
+
+                    newLoadoutSlot.AutoButtonColor = index ~= activeLoadoutIndex;
+                end)
+                newLoadoutSlot.MouseLeave:Connect(function()
+                    selectedLoadoutIndex = nil;
+                    updateLoadoutSelectionHighlight();
+                end)
+
+                local useButton = newLoadoutSlot:WaitForChild("UseButton");
+                useButton.MouseButton1Click:Connect(function()
+                    setLoadoutSlot(index);
+                end)
+                newLoadoutSlot.MouseButton1Click:Connect(function()
+                    setLoadoutSlot(index);
+                end)
+
+                if index == activeLoadoutIndex then
                     activeLoadoutHighlight.Color = interface.Colors.ActivePrimary;
-                    activeLoadoutHighlight.Parent = newLoadoutSlot;
+                    activeLoadoutHighlight.Parent = newLoadoutSlot:WaitForChild("Highlight");
                 end
 
                 local titleLabel: TextLabel = newLoadoutSlot:WaitForChild("TitleLabel");
@@ -518,12 +584,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     or `{index}`;
 
                 local activeLabel: TextLabel = newLoadoutSlot:WaitForChild("ActiveLabel");
-                activeLabel.Visible = index == rawLoadoutSaves.ActiveLoadout;
-
+                activeLabel.Visible = index == activeLoadoutIndex;
 
                 local loadoutData = rawLoadoutSaves.Loadouts[index];
-                if loadoutData == nil then continue end;
-                Debugger:StudioLog(`Loadout {index}`, loadoutData);
+                if loadoutData == nil or loadoutData.State ~= "Filled" then
+                    local emptyLabel: TextLabel = newLoadoutSlot:WaitForChild("EmptyLabel");
+                    emptyLabel.Visible = true;
+                    continue;
+                end;
 
                 local storagesFrame: ScrollingFrame = newLoadoutSlot:WaitForChild("Storages") :: ScrollingFrame;
                 local coldStorages = loadoutData.ColdStorages;
@@ -574,10 +642,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                         
                         if slotColors[siid] then
                             newSlot.ImageColor3 = slotColors[siid];
-                            if storageFrames[siid] then
+
+                            local matchingStorageFrame = storageFrames[siid];
+                            if matchingStorageFrame then
                                 newSlot.LayoutOrder = 0;
-                                newSlot.Parent = storageFrames[siid];
+                                newSlot.Parent = matchingStorageFrame;
+                                matchingStorageFrame.LayoutOrder = 2+ newSlot.LayoutOrder;
                             end
+
                         elseif slotColors[sid] then
                             newSlot.ImageColor3 = slotColors[sid];
                         end
@@ -585,6 +657,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                         local itemButtonObject = modItemInterface.newItemButton(storageItem.ItemId);
                         itemButtonObject.ImageButton.Parent = newSlot;
                         itemButtonObject:Update(storageItem);
+
+                        newSlot.Parent.Visible = true;
                     end
                 end
 

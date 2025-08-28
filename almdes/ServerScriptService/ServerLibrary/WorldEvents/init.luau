@@ -18,32 +18,12 @@ local scheduler: Scheduler = modScheduler.new("WorldEvents", 0.2);
 WorldEvents.Scheduler = scheduler;
 WorldEvents.Instances = {};
 WorldEvents.GlobalProperties = modPropertiesVariable.new({
+    Tutorial = true;
+
     Seed = math.random(11111,99999);
     StormCounter = 0;
 });
 --==
-
-function WorldEvents.getInstance(eventId: string): WorldEventInstance
-    return WorldEvents.Instances[eventId];
-end
-
-function WorldEvents:Instance(eventPackage)
-    eventPackage.__index = eventPackage;
-
-    local instance = {
-        WorldEvents = WorldEvents;
-        Scheduler = scheduler;
-
-        Garbage = modGarbageHandler.new();
-        Properties = modPropertiesVariable.new({});
-        Public = {};
-    };
-
-    setmetatable(instance, eventPackage);
-
-    eventPackage.Instance = instance;
-    return instance;
-end
 
 function WorldEvents.onRequire()
     task.spawn(function()
@@ -80,6 +60,55 @@ function WorldEvents.onRequire()
         local eventLibScr: ModuleScript = modEventsLibrary.Script;
         eventLibScr:SetAttribute("Public", HttpService:JSONEncode(publicData));
     end)
+
+    WorldEvents.GlobalProperties.OnChanged:Connect(function(k, v)
+        if k == "Tutorial" then
+            workspace:SetAttribute("IsTutorialWorld", v);
+            if v ~= true then
+                local list = CollectionService:GetTagged("TutorialItem")
+                for _, obj in pairs(list) do
+                    obj:Destroy();
+                end
+            end
+        end
+    end)
+    workspace:SetAttribute("IsTutorialWorld", WorldEvents.GlobalProperties.Tutorial == true);
+
+	shared.modCommandsLibrary.bind{
+		["toggletutorialflag"]={
+			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
+			Description = `Toggle tutorial flag in this world.`;
+
+			RequiredArgs = 0;
+			UsageInfo = "/toggletutorialflag";
+			Function = function(player, args)
+                WorldEvents.GlobalProperties.Tutorial = not WorldEvents.GlobalProperties.Tutorial;
+				return true;
+			end;
+		};
+	};
+end
+
+function WorldEvents.getInstance(eventId: string): WorldEventInstance
+    return WorldEvents.Instances[eventId];
+end
+
+function WorldEvents:Instance(eventPackage)
+    eventPackage.__index = eventPackage;
+
+    local instance = {
+        WorldEvents = WorldEvents;
+        Scheduler = scheduler;
+
+        Garbage = modGarbageHandler.new();
+        Properties = modPropertiesVariable.new({});
+        Public = {};
+    };
+
+    setmetatable(instance, eventPackage);
+
+    eventPackage.Instance = instance;
+    return instance;
 end
 
 function WorldEvents.load(eventPackage)

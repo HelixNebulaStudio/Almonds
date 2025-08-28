@@ -20,25 +20,28 @@ function interactablePackage.init(super) -- Server/Client
         end;
 
         local keyId = interactable.Values.KeylockId;
-        if keyId == nil then return end;
+        if keyId ~= nil then
+            local hasKey = false;
 
-        local hasKey = false;
+            local player: Player? = info.Player;
+            if player then
+                local lockKeyList, _lockKeysCount = shared.modStorage.listItemIdFromStorages("lockkey", player);
 
-        local player: Player? = info.Player;
-        if player then
-            local lockKeyList, _lockKeysCount = shared.modStorage.listItemIdFromStorages("lockkey", player);
+                for a=1, #lockKeyList do
+                    local storageItem: StorageItem = lockKeyList[a].Item;
 
-            for a=1, #lockKeyList do
-                local storageItem: StorageItem = lockKeyList[a].Item;
-
-                if storageItem.Values.KeyId == keyId then
-                    hasKey = true;
-                    break;
+                    if storageItem.Values.KeyId == keyId then
+                        hasKey = true;
+                        break;
+                    end
                 end
             end
-        end
-        
-        if not hasKey then return end;
+            
+            if not hasKey then
+                return 
+            end;
+        end;
+
         interactable.TypePackage.BindInteract(interactable, info);
     end
     

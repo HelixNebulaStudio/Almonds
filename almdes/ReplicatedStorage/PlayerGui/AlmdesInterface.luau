@@ -62,6 +62,7 @@ function interface.clientGuisLoad()
     --==
 
     interface:Init();
+    interface.Properties.ActiveHotbarKeys = 6;
 
     if localPlayer.Character then
         if modConfigurations.AutoOpenBlinds then 

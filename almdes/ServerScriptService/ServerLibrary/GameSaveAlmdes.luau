@@ -89,7 +89,7 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 		
 		for storageId, linkStorageInfo in pairs(unequippedStorages) do
 			local storage: Storage = modStorage.Get(linkStorageInfo.StorageId);
-			if storage then
+			if storage and storage.Locked ~= true then
 				storage:Loop(function(storageItem)
 					gameSave.Inventory:InsertRequest(storageItem);
 				end)

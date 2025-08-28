@@ -12,3 +12,8 @@ Available Shelters: 7
 - ### Epic Cakery
 - ### RedBrick Industrial
 - ### Ice Scream Fortress
+- ### Cheesymealz
+- ### KomicsLibrary
+- ### Chippy Toy Store
+- ### KwikEBlox
+- 

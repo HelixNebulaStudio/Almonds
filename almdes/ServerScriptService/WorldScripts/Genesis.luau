@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService");
 local CollectionService = game:GetService("CollectionService");
 
 if RunService:IsServer() then
-    modWorldLoot = shared.require(game.ServerScriptService.ServerLibrary.WorldLoot);
 end
 
 
@@ -18,31 +17,11 @@ function WorldCore.onRequire()
             if profile == nil then return end;
 
             Debugger:Warn(`{player.Name} has joined the world!`);
-
         end, 999);
 
-        modWorldLoot.init();
-
+        local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
+        modWorldEvents.GlobalProperties.Tutorial = true;
     end
-
-	shared.modCommandsLibrary.bind{
-		["deletetutorialobjects"]={
-			Permission = shared.modCommandsLibrary.PermissionLevel.DevBranch;
-			Description = `Deletes all tutorial objects in this world.`;
-
-			RequiredArgs = 0;
-			UsageInfo = "/deletetutorialobjects";
-			Function = function(player, args)
-
-                local list = CollectionService:GetTagged("TutorialItem")
-                for _, obj in pairs(list) do
-                    obj:Destroy();
-                end
-
-				return true;
-			end;
-		};
-	};
 
     shared.modEventService:OnInvoked("Interactables_BindButtonInteract", function(eventPacket: EventPacket, ...)
         local interactable: InteractableInstance = ...;

@@ -98,6 +98,7 @@ function ExfilSystem:SpawnExfilHelicopter(markerAtt: Attachment, final: boolean?
     local heliModel: Model = heliVehicle.Model;
     local heliRoot: BasePart = heliModel.PrimaryPart :: BasePart;
 
+    heliModel:SetAttribute("DynamicPlatform", true);
     heliRoot.Anchored = true;
 
     heliModel.Parent = workspace.Environment.Vehicles;
@@ -269,11 +270,12 @@ function ExfilSystem:SpawnExfilHelicopter(markerAtt: Attachment, final: boolean?
 
         for _, player in pairs(getPlayersInRange()) do
             local playerClass: PlayerClass = shared.modPlayers.get(player);
-            
+            if playerClass.Character == nil or playerClass.Humanoid == nil then continue end;
+             
             if playerClass.Humanoid.Sit == true then
                 shared.Notify(player, `[Radio]: We have to leave now!`, "Important", `exfilalert`);
             else
-               shared.Notify(player, `[Radio]: We are ordered out of the LZ! I'm sorry!`, "Important", `exfilalert`);
+                shared.Notify(player, `[Radio]: We are ordered out of the LZ! I'm sorry!`, "Important", `exfilalert`);
             end
         end
 
