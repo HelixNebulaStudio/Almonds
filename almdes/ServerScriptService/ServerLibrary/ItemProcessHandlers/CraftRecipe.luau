@@ -53,13 +53,6 @@ function Handler:ClientRequest(action, packet, rPacket)
             return rPacket;
         end
 
-        local unlockedRecipes = gameSave.RecipesUnlocked;
-        if recipeLib.Workbench ~= nil and unlockedRecipes[recipeId] == nil then
-            -- rPacket.FailMsg = "Recipe not unlocked.";
-            -- return rPacket;
-            Debugger:Log("Recipe not unlocked. Return disabled.", recipeId);
-        end;
-
         local fulfill, resultList = modStorage.FulfillList(player, recipeLib.Recipe);
         if not fulfill then
             Debugger:Log("NeedList", resultList);

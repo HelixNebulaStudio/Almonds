@@ -73,26 +73,6 @@ modStoragePresetsLibrary:Add{
     };
 };
 
-modStoragePresetsLibrary:Replace("crate", {
-	Name = "Crate";
-    PublicStorage = true;
-    Configuration = {
-        Persistent=true;
-        Size = 10;
-        MaxSize = 10;
-    };
-});
-
-modStoragePresetsLibrary:Replace("largecrate", {
-	Name = "Large Crate";
-    PublicStorage = true;
-    Configuration = {
-        Persistent=true;
-        Size = 30;
-        MaxSize = 30;
-    };
-});
-
 
 --MARK: Clothing
 modStoragePresetsLibrary:Add{
@@ -136,6 +116,39 @@ modStoragePresetsLibrary:Add{
         Persistent=true;
         Size = 3;
         MaxSize = 3;
+    };
+};
+
+
+--MARK: Structures
+modStoragePresetsLibrary:Replace("crate", {
+	Name = "Crate";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 10;
+        MaxSize = 10;
+    };
+});
+
+modStoragePresetsLibrary:Replace("largecrate", {
+	Name = "Large Crate";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 30;
+        MaxSize = 30;
+    };
+});
+
+modStoragePresetsLibrary:Add{
+	Id = "furnace";
+	Name = "Furnace";
+    PublicStorage = true;
+    Configuration = {
+        Persistent=true;
+        Size = 6;
+        MaxSize = 6;
     };
 };
 

@@ -34,10 +34,9 @@ function modStorage.onRequire()
 end
 
 function modStorage.InsertRequestHandler(storage: Storage, rPacket)
-    Debugger:Log("InsertRequestHandler rPacket", rPacket);
     local player: Player = storage.Player;
 
-    local storageItem = rPacket.StorageItem; -- May be proxy;
+    local storageItem = rPacket.StorageItem; -- Might be proxy;
 
     local itemLib = modItemsLibrary:Find(storageItem.ItemId);
     local quantity = storageItem.Quantity;

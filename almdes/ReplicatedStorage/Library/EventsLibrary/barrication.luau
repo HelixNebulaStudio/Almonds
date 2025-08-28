@@ -58,6 +58,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 
 	local function setupBarricades()
 		for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
+			if interactConfig:GetAttribute("_Name") ~= "DeployableSocket" then continue end;
             if interactConfig:GetAttribute("SkipPrebuild") then continue end;
 
             local socketInteractable: InteractableInstance = modInteractables.getOrNew(interactConfig);

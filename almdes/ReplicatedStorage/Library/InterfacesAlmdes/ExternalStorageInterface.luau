@@ -41,21 +41,26 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local binds = window.Binds;
     binds.StorageId = nil;
     binds.Interactable = nil;
+    binds.ActiveStorageInterface = nil;
 
     local activeStorageId = nil;
-    local activeStorageInterface = nil;
     
     --MARK: OnToggle
     window.OnToggle:Connect(function(visible, storageId, packet)
         if visible then
-            binds.Interactable = packet.Interactable;
+            local interactable: InteractableInstance? = packet.Interactable;
+            if interactable and interactable.Type ~= "Storage" then
+                interactable = nil;
+            end
+
+            binds.Interactable = interactable;
             binds.StorageId = storageId;
 
             interface:ToggleWindow("Inventory", true);
             storageFrame.Visible = true;
             window:Update(true);
 
-            local interactPart = binds.Interactable and binds.Interactable.Part;
+            local interactPart = interactable and interactable.Part;
             if interactPart then
                 task.spawn(function()
                     while window.Visible do
@@ -81,11 +86,18 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             modStorageInterface.SetQuickTarget();
             storageFrame.Visible = false;
+
+            if binds.ActiveStorageInterface then
+                binds.ActiveStorageInterface:Destroy();
+                binds.ActiveStorageInterface = nil;
+            end;
         end
     end)
 
     --MARK: OnUpdate
 	window.OnUpdate:Connect(function(forceReload)
+        local activeStorageInterface = binds.ActiveStorageInterface;
+
         local storageId = binds.StorageId;
         if forceReload ~= true and activeStorageId == storageId and activeStorageInterface then
             modStorageInterface.SetQuickTarget(activeStorageInterface);
@@ -104,7 +116,32 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 		if activeStorageInterface then
             activeStorageInterface:Destroy();
+            binds.ActiveStorageInterface = nil;
         end;
+
+        local interactable: InteractableInstance = binds.Interactable;
+        if interactable and interactable.Package.WindowName then
+            storageSlots.Visible = false;
+
+            local interfaceWindow: InterfaceWindow = interface:GetWindow(interactable.Package.WindowName);
+
+            local slotFrames = {};
+            for _, obj in pairs(interfaceWindow.Frame:GetChildren()) do
+                if not obj:IsA("GuiObject") then continue end;
+                if obj.LayoutOrder <= 0 or tostring(obj.LayoutOrder) ~= obj.Name then continue end;
+                slotFrames[obj.LayoutOrder] = obj;
+            end
+
+            activeStorageInterface = modStorageInterface.new(activeStorageId, storageFrame, slotFrames);
+            activeStorageInterface:Update();
+            binds.ActiveStorageInterface = activeStorageInterface;
+
+            interfaceWindow:Open(interactable);
+
+            return;
+        end
+
+        storageSlots.Visible = true;
 		for _, c in pairs(storageSlots:GetChildren()) do
             if c:IsA("GuiObject") then 
                 c:Destroy();
@@ -131,7 +168,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         activeStorageInterface = modStorageInterface.new(activeStorageId, storageFrame, slotFrames);
         activeStorageInterface:Update();
+        binds.ActiveStorageInterface = activeStorageInterface;
         modStorageInterface.SetQuickTarget(activeStorageInterface);
+
     end)
 
 end
