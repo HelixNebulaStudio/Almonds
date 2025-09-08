@@ -1,11 +1,15 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
+local RunService = game:GetService("RunService");
+
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
+
 local interactablePackage = {};
 
 function interactablePackage.init(super) -- Server/Client
     local WorkbenchInteractable = {
         Name = "Workbench";
-        Type = "Workbench";
+        Type = "Button";
 
         IndicatorPresist = false;
     };
@@ -18,10 +22,32 @@ function interactablePackage.init(super) -- Server/Client
     end
 
     function WorkbenchInteractable.BindInteract(interactable: InteractableInstance, info: InteractInfo)
-        if info.Action ~= info.ActionSource.Client then return end;
+        local config: Configuration = interactable.Config;
+        if config.Parent == nil then return end;
 
-		local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
-        modClientGuis.toggleWindow("WorkbenchWindow", true);
+        if RunService:IsClient() then
+            modClientGuis.toggleWindow("Inventory", true);
+        end
+
+        interactable.TypePackage.BindInteract(interactable, info);
+
+        local player: Player? = info.Player;
+        if info.Action == "Client" or player == nil then return end;
+
+        local playerClass: PlayerClass = shared.modPlayers.get(player);
+        local statusComp: StatusComp = playerClass.StatusComp;
+
+        local workbenchStatus: StatusClassInstance = statusComp:GetOrDefault("Workbench");
+        if workbenchStatus == nil then
+            workbenchStatus = statusComp:Apply("Workbench", {
+                Values = {
+                    ActiveInteractable = nil;
+                };
+            });
+        end
+        
+        workbenchStatus.Values.ActiveInteractable = interactable;
+        workbenchStatus:Sync();
     end
     
     super.registerPackage(WorkbenchInteractable);

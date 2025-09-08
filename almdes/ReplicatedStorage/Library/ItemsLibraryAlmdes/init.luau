@@ -194,7 +194,7 @@ function modItemsLibrary.onRequire()
 	
 	new(structureBase, {Id="cellwall"; Name="Cell Wall"; Icon="rbxassetid://11450927716"; Description="Cell walls used to build a jail cell.";});
 
-	new(structureBase, {Id="workbench"; Name="Workbench"; Icon="rbxassetid://12122151861"; Description="Used for unlocking new crafting recipes and craft higher tier items.";});
+	new(structureBase, {Id="workbench"; Name="Basic Workbench"; Icon="rbxassetid://12122151861"; Description="Used for unlocking new crafting recipes and craft higher tier items.";});
 	new(structureBase, {Id="planter"; Name="Planter"; Icon="rbxassetid://12335379052"; Description="Used for growing basic crops.";});
 	
 	new(structureBase, {Id="barbedwooden"; Name="Barbed Wooden Fence"; Icon="rbxassetid://5803776520"; Description="Placable barbed wooden fence that does 1% damage per second when touched.";});

@@ -26,6 +26,8 @@ local interfacePackage = {
 
 function interfacePackage.newInstance(interface: InterfaceInstance)
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
+
+	local remoteStorageService = modRemotesManager:Get("StorageService");
     
     local furnaceFrame = script:WaitForChild("FurnaceFrame"):Clone();
 
@@ -38,6 +40,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	local mixIcon = furnaceFrame:WaitForChild("MixIcon");
 	local mixTween: Tween = TweenService:Create(mixIcon, MIX_TWEENINFO, {Rotation=359});
 
+	local igniteToggleButton = furnaceFrame:WaitForChild("IgniteToggle");
 
     local window: InterfaceWindow = interface:NewWindow("FurnaceWindow", furnaceFrame);
     window.IgnoreHideAll = true;
@@ -77,7 +80,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     end)
     externalStorageWindow.OnToggle:Connect(function(visible)
         if not visible then
-            Debugger:Warn("ExternalStorageWindow closed, close FurnaceWindow");
             window:Close();
         end
     end)
@@ -90,9 +92,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         local currTime = workspace:GetServerTimeNow();
 
         local storage = modData.GetStorage(storageInterface.StorageId);
-        local values = storage.Values;
+        local storageValues = storage.Values;
 
-        local activeFuel = values.ActiveFuel or {};
+        local activeFuel = storageValues.ActiveFuel or {};
 		local fuelLib = activeFuel.FuelId and modFuelsLibrary:Find(activeFuel.FuelId);
 		
 		local activeTime = activeFuel.Active and (activeFuel.Active - currTime) or 0;
@@ -114,7 +116,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 		
 		
-		local activeCook = values.ActiveCook or {};
+		local activeCook = storageValues.ActiveCook or {};
 		local cookLib = activeCook.CookId and modCookLibrary:Find(activeCook.CookId);
 		if cookLib and activeTime > 0 then
 			if activeCook.Tick then
@@ -155,12 +157,54 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 		end
 
+		if storageValues.Ignited == true then
+			igniteToggleButton.Text = "Extinguish";
+			igniteToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 100);
+		else
+			igniteToggleButton.Text = "Ignite";
+			igniteToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50);
+		end
     end)
 
     interface.Scheduler.OnStepped:Connect(function()
         if window.Visible ~= true then return end;
         window:Update();
     end)
+
+	local toggleDebounce = false;
+	igniteToggleButton.MouseButton1Click:Connect(function()
+        local storageInterface = externalStorageWindow.Binds.ActiveStorageInterface;
+        if not storageInterface then return end;
+
+		if toggleDebounce then return end;
+		toggleDebounce = true;
+
+		interface:PlayButtonClick();
+
+		if igniteToggleButton.Text == "Ignite" then
+			igniteToggleButton.Text = "Igniting..";
+		else
+			igniteToggleButton.Text = "Extinguishing..";
+		end
+
+		local storageId = storageInterface.StorageId;
+
+		local rPacket = remoteStorageService:InvokeServer{
+			Action = "toggleignite";
+			StorageId = storageId;
+		};
+		
+		if rPacket.Success then
+			local newStorageValues = rPacket.Values;
+
+			local storage = modData.GetStorage(storageId);
+			storage.Values.Ignited = newStorageValues.Ignited;
+
+			window:Update();
+		end
+
+		toggleDebounce = false;
+	end)
 
 end
 

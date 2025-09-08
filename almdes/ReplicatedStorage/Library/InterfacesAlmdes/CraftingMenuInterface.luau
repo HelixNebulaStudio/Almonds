@@ -24,6 +24,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
     local remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
 
+    local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
+    
     local templateListCate = script:WaitForChild("listCategory");
     local templateRecipeTooltip = script:WaitForChild("recipeTooltip");
     local templateProgressBar = script:WaitForChild("progressBar");
@@ -47,6 +49,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.OnToggle:Connect(function(visible)
         if visible then
             binds.RefreshRecipesLists();
+            binds.UpdateMenuContent();
         end
     end)
 
@@ -266,13 +269,34 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         resultItemButton.ImageButton.Size = UDim2.new(0, 60, 0, 60);
         
         local descLabel = recipeTooltipFrame:WaitForChild("descLabel");
-        local descStr = itemLib.Description;
-        descLabel.Text = `<font size="16">{descStr}</font>\n\n{table.concat(recipeCostStr, "\n")}`;
+        local descStr = `<font size="16">{itemLib.Description}</font>\n\n{table.concat(recipeCostStr, "\n")}`;
 
-        local timerFrame = descLabel:WaitForChild("TimerFrame");
+        local shortHintFrame = descLabel:WaitForChild("ShortHintsFrame");
+
+        local timerFrame = shortHintFrame:WaitForChild("TimerFrame");
         local timerLabel = timerFrame:WaitForChild("TimerLabel");
         timerLabel.Text = `{recipeLib.Duration or 1}s`;
 
+        local wbFrame = shortHintFrame:WaitForChild("WbFrame");
+        if recipeLib.Workbench then
+            local wbItemLib = modItemsLibrary:Find(recipeLib.Workbench);
+
+            local wbIcon = wbFrame:WaitForChild("WbIcon");
+            wbIcon.Image = wbItemLib.Icon;
+
+            wbFrame.Visible = true;
+        else
+            wbFrame.Visible = false;
+        end
+
+
+        local requiredWorkbench = recipeLib.Workbench;
+        local workbenchItemLib = requiredWorkbench and modItemsLibrary:Find(requiredWorkbench);
+        if workbenchItemLib then
+            descStr = `{descStr}\n\nRequires <b>{workbenchItemLib.Name}</b>`;
+        end
+
+        descLabel.Text = descStr;
         resultItemButton:SetItemId(itemId);
         resultItemButton:Update();
     end
@@ -301,8 +325,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 
         --==
-		local dataRecipesUnlocked = modTableManager.GetDataHierarchy(modData.Profile, "GameSave/RecipesUnlocked");
-		
 		local recipesLibs = recipesCateLib[category];
 		for a=1, #recipesLibs do
 			local recipeLib = recipesLibs[a];
@@ -321,28 +343,36 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             newCraftButton.Size = UDim2.new(0, 70, 0, 70);
             newCraftButton:SetAttribute("RecipeCategory", category);
 			craftMenuContent[itemId] = newItemButtonObject;
-		
+
 			newCraftButton.Image = itemLib.Icon;
 			local quantityLabel = newCraftButton:WaitForChild("QuantityLabel");
 			quantityLabel.Text = craftAmount > 1 and " x".. craftAmount or "";
 			quantityLabel.Visible = true;
+
+            local requiredWorkbench = recipeLib.Workbench;
+            local workbenchItemLib = requiredWorkbench and modItemsLibrary:Find(requiredWorkbench);
+            if workbenchItemLib then
+                local typeIcon = newCraftButton:WaitForChild("TypeIcon");
+                typeIcon.Image = workbenchItemLib.Icon;
+            end
 			
-			newItemButtonObject.RefreshCraftButton = function()
-				if (dataRecipesUnlocked and dataRecipesUnlocked[itemId]) or recipeLib.Workbench == nil then
-					newCraftButton.Active = true;
-					newCraftButton.BackgroundTransparency = 0.75;
-					newCraftButton.ImageColor3 = Color3.fromRGB(255, 255, 255);
-					newCraftButton.ImageTransparency = 0;
-					newCraftButton.LayoutOrder = a;
-				else
+			newItemButtonObject.RefreshCraftButton = function(_, validWorkbench)
+                if validWorkbench then
+                    newCraftButton.Active = true;
+                    newCraftButton.BackgroundTransparency = 0.75;
+                    newCraftButton.ImageColor3 = Color3.fromRGB(255, 255, 255);
+                    newCraftButton.ImageTransparency = 0;
+                    newCraftButton.LayoutOrder = a;
+
+                else
 					newCraftButton.Active = false;
 					newCraftButton.ImageColor3 = Color3.fromRGB(0, 0, 0);
 					newCraftButton.BackgroundTransparency = 1;
 					newCraftButton.ImageTransparency = 0.5;
 					newCraftButton.LayoutOrder = a+1000;
-				end
+
+                end
 			end
-			newItemButtonObject:RefreshCraftButton();
 			
 			newCraftButton.MouseButton1Click:Connect(function()
 				local returnPacket = remoteItemProcessor:InvokeServer("craftrequest", {
@@ -396,6 +426,29 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		newCateList.LayoutOrder = cateLib.Order;
 		newCateList.Parent = recipesList;
 	end
+
+
+    function binds.UpdateMenuContent()
+        local statusComp: StatusComp = playerClass.StatusComp;
+        local workbenchStatus: StatusClassInstance? = statusComp:GetOrDefault("Workbench");
+
+        for itemId, itemButtonObject in pairs(craftMenuContent) do
+            local validWorkbench = true;
+
+            local recipeLib = modRecipeLibrary:Find(itemId);
+            local requiredWorkbench = recipeLib.Workbench;
+            if requiredWorkbench then
+                validWorkbench = false;
+
+                local activeWbInteractable: InteractableInstance? = workbenchStatus and workbenchStatus.Values.ActiveInteractable;
+                if activeWbInteractable and activeWbInteractable.Variant == requiredWorkbench then
+                    validWorkbench = true;
+                end
+            end
+
+            itemButtonObject:RefreshCraftButton(validWorkbench);
+        end
+    end
 
     --MARK: ItemProcessor
     local craftingProcessItemButtons = {};
@@ -489,6 +542,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
 
         queueList.Visible = next(existNums) ~= nil;
+    end)
+
+    interface:BindEvent("UpdateCraftingStatus", function()
+        binds.UpdateMenuContent();
     end)
 end
 

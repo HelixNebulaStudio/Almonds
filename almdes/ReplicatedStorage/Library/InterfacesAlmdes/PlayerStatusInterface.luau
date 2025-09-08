@@ -292,11 +292,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			radialBar.ImageColor3 = lib.Buff and BUFF_COLOR or DEBUFF_COLOR;
 		end
 		
-		local statusVisible = true;
-		
-		if statusClass.Visible == false then
-			statusVisible = false;
-		end
+		local statusVisible = statusClass.Visible ~= false;
 		
 		if isInCharWindow then
 			statusGuiObj.Button.Size = UDim2.new(0, 90, 0, 90);

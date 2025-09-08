@@ -95,6 +95,12 @@ function library:GetTechTree(seed)
 	return list;
 end
 
+local workbenchTypes = {
+	BasicWorkbench = "workbench";
+};
+
+library.WorkbenchTypes = workbenchTypes;
+
 library:Add{
 	Id="torch";
 	Category=categories.Tools;
@@ -133,7 +139,7 @@ library:Add{
 	};
 	Duration=5;
 	
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Tools;
 	Rarity=1;
 }
@@ -146,7 +152,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Tools;
 	Rarity=1;
 }
@@ -161,14 +167,14 @@ library:Add{
 	Duration=60;
 }
 
-library:Add{
-	Id="sleepingbag";
-	Category=categories.Buildings;
-	Recipe={
-		{Type="Item"; ItemId="cloth"; Amount=30};
-	};
+-- library:Add{
+-- 	Id="sleepingbag";
+-- 	Category=categories.Buildings;
+-- 	Recipe={
+-- 		{Type="Item"; ItemId="cloth"; Amount=30};
+-- 	};
 
-}
+-- }
 
 library:Add{
 	Id="woodwindowbarricade";
@@ -246,7 +252,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.HardRaid;
 	Rarity=0.01;
 }
@@ -259,23 +265,23 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.BasicStructure;
 	Rarity=1;
 }
 
-library:Add{
-	Id="cupboard";
-	Category=categories.Buildings;
-	Recipe={
-		{Type="Item"; ItemId="wood"; Amount=200};
-	};
-	Duration=60;
+-- library:Add{
+-- 	Id="cupboard";
+-- 	Category=categories.Buildings;
+-- 	Recipe={
+-- 		{Type="Item"; ItemId="wood"; Amount=200};
+-- 	};
+-- 	Duration=60;
 
-	Workbench=1;
-	Branch=treeBranches.TacStructure;
-	Rarity=0.5;
-}
+-- 	Workbench = workbenchTypes.BasicWorkbench;
+-- 	Branch=treeBranches.TacStructure;
+-- 	Rarity=0.5;
+-- }
 
 library:Add{
 	Id="cellwall";
@@ -285,7 +291,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.RpStructure;
 	Rarity=0.5;
 }
@@ -308,7 +314,7 @@ library:Add{
 	};
 	Duration=10;
 	
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Clothing;
 	Rarity=1;
 }
@@ -321,7 +327,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Clothing;
 	Rarity=0.5;
 }
@@ -336,7 +342,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Clothing;
 	Rarity=0.25;
 }
@@ -349,7 +355,7 @@ library:Add{
 	};
 	Duration=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.RpClothing;
 	Rarity=1;
 }
@@ -362,7 +368,7 @@ library:Add{
 	};
 	Duration=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.RpClothing;
 	Rarity=1;
 }
@@ -377,7 +383,7 @@ library:Add{
 	};
 	Duration=1;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.ArmorClothing;
 	Rarity=0.5;
 }
@@ -392,7 +398,7 @@ library:Add{
 	};
 	Duration=1;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.ArmorClothing;
 	Rarity=0.5;
 }
@@ -407,7 +413,7 @@ library:Add{
 	};
 	Duration=20;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.ProClothing;
 	Rarity=0.25;
 }
@@ -421,7 +427,7 @@ library:Add{
 	};
 	Duration=20;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.WarmClothing;
 	Rarity=0.25;
 }
@@ -435,7 +441,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Weapons;
 	Rarity=0.5;
 }
@@ -449,7 +455,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.EdgeMelee;
 	Rarity=0.5;
 }
@@ -463,7 +469,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.BluntMelee;
 	Rarity=0.5;
 }
@@ -477,7 +483,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.BluntMelee;
 	Rarity=0.5;
 }
@@ -491,7 +497,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.EdgeMelee;
 	Rarity=0.5;
 }
@@ -505,7 +511,7 @@ library:Add{
 	};
 	Duration=10;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Melee;
 	Rarity=0.1;
 }
@@ -520,7 +526,7 @@ library:Add{
 	};
 	Duration=1;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Raiding;
 	Rarity=0.5;
 }
@@ -536,7 +542,7 @@ library:Add{
 	Duration=1;
 	Amount=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Ammunition;
 	Rarity=0.5;
 }
@@ -551,7 +557,7 @@ library:Add{
 	Duration=1;
 	Amount=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Ammunition;
 	Rarity=0.5;
 }
@@ -566,7 +572,7 @@ library:Add{
 	Duration=1;
 	Amount=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Ammunition;
 	Rarity=0.5;
 }
@@ -581,7 +587,7 @@ library:Add{
 	Duration=1;
 	Amount=5;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Ammunition;
 	Rarity=0.4;
 }
@@ -595,7 +601,7 @@ library:Add{
 	};
 	Duration=60;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.Guns;
 	Rarity=0.5;
 }
@@ -609,7 +615,7 @@ library:Add{
 	};
 	Duration=60;
 
-	Workbench=1;
+	Workbench = workbenchTypes.BasicWorkbench;
 	Branch=treeBranches.SoftRaid;
 	Rarity=0.01;
 }
@@ -621,25 +627,25 @@ library:Add{
 		{Type="Item"; ItemId="wood"; Amount=100};
 		{Type="Item"; ItemId="tarp"; Amount=20};
 	};
-	Duration=30;
+	Duration = 30;
 
-	Workbench=1;
-	Branch=treeBranches.TacStructure;
-	Rarity=0.5;
+	Workbench  =  workbenchTypes.BasicWorkbench;
+	Branch = treeBranches.TacStructure;
+	Rarity = 0.5;
 }
 
 library:Add{
-	Id="barbedwooden";
-	Category=categories.Buildings;
-	Recipe={
+	Id = "barbedwooden";
+	Category = categories.Buildings;
+	Recipe = {
 		{Type="Item"; ItemId="wood"; Amount=100};
 		{Type="Item"; ItemId="metal"; Amount=20};
 	};
-	Duration=30;
+	Duration = 30;
 
-	Workbench=1;
-	Branch=treeBranches.DefStructure;
-	Rarity=0.5;
+	Workbench = workbenchTypes.BasicWorkbench;
+	Branch = treeBranches.DefStructure;
+	Rarity = 0.5;
 }
 
 

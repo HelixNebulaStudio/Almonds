@@ -34,6 +34,8 @@ function Handler:ClientRequest(action, packet, rPacket)
     local itemProcessor = self.ItemProcessor;
     local player = self.Player;
 
+    local playerClass: PlayerClass = shared.modPlayers.get(player);
+
     local profile: ProfileAlmdes = shared.modProfile:Get(player);
     local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 
@@ -47,6 +49,15 @@ function Handler:ClientRequest(action, packet, rPacket)
             return rPacket;
         end;
         
+        if recipeLib.Workbench then
+            local workbenchStatus: StatusClassInstance? = playerClass.StatusComp:GetOrDefault("Workbench");
+            local wbInteractable: InteractableInstance = workbenchStatus and workbenchStatus.Values.ActiveInteractable;
+            if wbInteractable == nil or wbInteractable.Variant ~= recipeLib.Workbench then
+                rPacket.FailMsg = "Invalid workbench.";
+                return rPacket;
+            end 
+        end
+
         if #self.Queue > 5 then
             rPacket.FailMsg = "Queue is full.";
             shared.Notify(player, "Crafting queue is full!", "Negative");

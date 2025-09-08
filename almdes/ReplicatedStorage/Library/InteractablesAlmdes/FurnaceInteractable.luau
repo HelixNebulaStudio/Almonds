@@ -60,17 +60,34 @@ function interactablePackage.init(super) -- Server/Client
             return packet;
         end)
 
+        --MARK: BindActionHandler
+        storage:BindActionHandler("toggleignite", function(params, rPacket)
+            local storageValues = storage.Values;
+            
+            storageValues.Ignited = not storageValues.Ignited;
+            storage:SyncValues();
+
+            local storageShrink = storage:Shrink();
+
+            rPacket.Success = true;
+            rPacket.Values = storageShrink.Values;
+        end)
+
         --MARK: OnChanged
         storage.OnChanged:Connect(function()
             local currTime = workspace:GetServerTimeNow();
             local indexDict: {[number]: StorageItem} = storage:GetIndexDictionary();
             
             local fuelStorageItem: StorageItem? = indexDict[FURNACE_INDEX.FUEL_INPUT];
-            local activeFuel = storage.Values.ActiveFuel or {};
+
+            local storageValues = storage.Values;
+
+            local isIgnited = storageValues.Ignited == true;
+            local activeFuel = storageValues.ActiveFuel or {};
             
             local fuelLib = fuelStorageItem and modFuelsLibrary:Find(fuelStorageItem.ItemId);
-            if fuelLib and fuelStorageItem then
-                activeFuel.ID = fuelStorageItem.ID;
+            if isIgnited and fuelLib and fuelStorageItem then
+                activeFuel.Siid = fuelStorageItem.ID;
                 
                 if activeFuel.FuelId == nil or activeFuel.FuelId ~= fuelStorageItem.ItemId then
                     activeFuel.FuelId = fuelLib.Id;
@@ -107,34 +124,35 @@ function interactablePackage.init(super) -- Server/Client
 
             else
                 activeFuel.Tick = nil;
-                activeFuel.ID = nil;
+                activeFuel.Siid = nil;
                 
             end
             
             
             local isActive = activeFuel.Active and activeFuel.Active > currTime;
 
-            local productStorageItem = indexDict[FURNACE_INDEX.PRODUCT_INPUT];
-            local mixStorageItem = indexDict[FURNACE_INDEX.MIX_INPUT];
-            local activeCook = storage.Values.ActiveCook or {};
-            local activeMix = storage.Values.ActiveMix or {};
+            local productStorageItem: StorageItem? = indexDict[FURNACE_INDEX.PRODUCT_INPUT];
+            local mixStorageItem: StorageItem? = indexDict[FURNACE_INDEX.MIX_INPUT];
+            local activeCook = storageValues.ActiveCook or {};
+            local activeMix = storageValues.ActiveMix or {};
 
             local cookLib = productStorageItem and modCookLibrary:Find(productStorageItem.ItemId);
-            if cookLib then
+            if isIgnited and cookLib and productStorageItem then
                 local canCook = true;
                 
                 local _enoughProductIn = productStorageItem.Quantity >= cookLib.InputQuantity;
                 
-                if cookLib.MixInItemId and mixStorageItem 
-                    and mixStorageItem.ItemId == cookLib.MixInItemId 
-                    and mixStorageItem.Quantity >= cookLib.MixInQuantity
-                    and productStorageItem.Quantity >= cookLib.InputQuantity then
+                if cookLib.MixInItemId 
+                and mixStorageItem 
+                and mixStorageItem.ItemId == cookLib.MixInItemId 
+                and mixStorageItem.Quantity >= cookLib.MixInQuantity
+                and productStorageItem.Quantity >= cookLib.InputQuantity then
                     
-                    if activeMix.ID == nil or activeMix.ID ~= mixStorageItem.ID then
+                    if activeMix.Siid == nil or activeMix.Siid ~= mixStorageItem.ID then
                         if activeCook.Tick ~= nil then
                             activeCook.Tick = currTime;
                         end
-                        activeMix.ID = mixStorageItem.ID;
+                        activeMix.Siid = mixStorageItem.ID;
                         
                     end
                     activeCook.Mix = 2;
@@ -149,7 +167,7 @@ function interactablePackage.init(super) -- Server/Client
                         activeCook.Mix = 0;
                     end
                     
-                    activeMix.ID = nil;
+                    activeMix.Siid = nil;
                     
                 end
                 
@@ -178,7 +196,7 @@ function interactablePackage.init(super) -- Server/Client
                             Quantity = cookLib.MixOutQuantity;
                         } :: StorageItem, {ForceIndex = FURNACE_INDEX.MIX_OUTPUT});
 
-                        if cookLib.ConsumeMix == true then
+                        if cookLib.ConsumeMix == true and mixStorageItem then
                             storage:Remove(mixStorageItem.ID, cookLib.MixInQuantity);
                         end
 
@@ -191,12 +209,13 @@ function interactablePackage.init(super) -- Server/Client
                 activeCook.Tick = nil;
                 activeCook.Mix = 0;
 
-                activeMix.ID = nil;
+                activeMix.Siid = nil;
             end
 
-            storage.Values.ActiveFuel = activeFuel;
-            storage.Values.ActiveCook = activeCook;
-            storage.Values.ActiveMix = activeMix;
+            storageValues.Ignited = isIgnited;
+            storageValues.ActiveFuel = activeFuel;
+            storageValues.ActiveCook = activeCook;
+            storageValues.ActiveMix = activeMix;
             
             storage:SyncValues();
         end)
