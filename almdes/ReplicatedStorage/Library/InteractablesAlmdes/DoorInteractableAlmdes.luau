@@ -66,7 +66,7 @@ function interactablePackage.init(super) -- Server/Client
 
         if not hasKey then
             interactable.CanInteract = false;
-            interactable.Label = `This door is locked`;
+            interactable.Label = `This door is locked with key #{keyId}`;
         else
             interactable.CanInteract = true;
             interactable.Label = `Open with key #{keyId}`;

@@ -2,7 +2,6 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local modEquipmentClass = shared.require(game.ReplicatedStorage.Library.EquipmentClass);
 --==
-
 local toolPackage = {
 	ItemId=script.Name;
 	Class="Tool";
@@ -14,8 +13,10 @@ local toolPackage = {
 	};
 	Audio={};
 	Configurations={
-		MineralCapacity = 100;
-		MineralRate = 100; --per min;
+		DisplayName = "Planter";
+		DeployableType = "Planter";
+
+		InteractableName = "Planter";
 	};
 	Properties={};
 };

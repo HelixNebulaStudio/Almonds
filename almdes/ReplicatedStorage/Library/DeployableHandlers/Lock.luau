@@ -6,54 +6,66 @@ local modInteractables = shared.require(game.ReplicatedStorage.Library.Interacta
 local deployablePackage = {
     Type = "Lock";
 
-    KeyCounter = 0;
+    KeyCounter = 110;
 };
 --==
 
-function deployablePackage.onRequire()
-
-end
-
 function deployablePackage.BindDeployablePlacement(handler: ToolHandlerInstance, packet)
-    local deployableModel = packet.DeployableModel;
-    if deployableModel == nil then return end;
+    local hitDeployableModel = packet.HitDeployableModel;
+    if hitDeployableModel == nil then return end;
 
-    local lockPlacement = deployableModel:FindFirstChild("LockPlacement", true);
+    local lockPlacement = hitDeployableModel:FindFirstChild("LockPlacement", true);
     if lockPlacement == nil then return end;
 
     packet.LockPlacement = lockPlacement;
     packet.PlaceCFrame = lockPlacement.WorldCFrame;
+
+    local deployableInteractConfig: Configuration? = hitDeployableModel:FindFirstChild("Interactable");
+    if deployableInteractConfig then
+        local deployableInteractable: InteractableInstance = modInteractables.getOrNew(deployableInteractConfig);
+
+        if deployableInteractable.Values.Barricaded then
+            packet.IsPlaceable = false;
+            packet.InvalidReason = `Can't attach because of barricade`;
+
+        elseif deployableInteractable.Values.KeylockId then
+            packet.IsPlaceable = false;
+            packet.InvalidReason = `This is already locked`;
+
+        end
+    end
 end
 
-function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance, packet)
+function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance?, packet)
     local newModel: Model = packet.DeployableModel;
-    if newModel.PrimaryPart == nil then error(`{newModel.Name} is missing PrimaryPart.`); return end;
 
-    local placementData = packet.PlacementData;
-    local parentModel = placementData.DeployableModel;
+    local primaryPart = newModel:WaitForChild("PrimaryPart");
+    local hitDeployableModel = packet.HitDeployableModel;
 
-    local lockAttachPoint: Attachment = placementData.LockPlacement;
+    local lockAttachPoint: Attachment = packet.LockPlacement;
     local attachPart = lockAttachPoint.Parent;
 
-    local weld: WeldConstraint = Instance.new("WeldConstraint");
-    weld.Parent = newModel;
-    weld.Part0 = newModel.PrimaryPart;
+    local weld = Instance.new("Weld");
+    weld.Name = "LockWeld";
+    weld.Part0 = primaryPart;
     weld.Part1 = attachPart;
-
+    weld.C0 = primaryPart.CFrame:ToObjectSpace(attachPart.CFrame);
+    weld.Parent = newModel;
+    
     deployablePackage.KeyCounter = deployablePackage.KeyCounter +1;
 
     local keylockId = deployablePackage.KeyCounter;
 
+    local interactable: InteractableInstance = packet.NewInteractable;
     local ownerClass = packet.CharacterClass;
-    local interactable: InteractableInstance = modInteractables.getOrNew(newModel:WaitForChild("Interactable"));
     if ownerClass then
         interactable.Values.KeylockId = keylockId;
         interactable:SetUserPermissions(ownerClass.Name, "CanInteract", true);
     end
 
-    local destructible: DestructibleInstance = modDestructibles.getOrNew(newModel:WaitForChild("Destructible"));
+    local destructible: DestructibleInstance = packet.NewDestructible;
     
-    local parentDestructibleConfig: Configuration? = parentModel:FindFirstChild("Destructible");
+    local parentDestructibleConfig: Configuration? = hitDeployableModel:FindFirstChild("Destructible");
     if parentDestructibleConfig and parentDestructibleConfig:HasTag("Destructible") then
         local parentDestructible: DestructibleInstance = modDestructibles.getOrNew(parentDestructibleConfig);
         parentDestructible.OnDestroy:Connect(function()
@@ -61,7 +73,7 @@ function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance, pac
         end)
     end
 
-    local parentInteractableConfig: Configuration? = parentModel:FindFirstChild("Interactable");
+    local parentInteractableConfig: Configuration? = hitDeployableModel:FindFirstChild("Interactable");
     if parentInteractableConfig and parentInteractableConfig:HasTag("Interactable") then
         local parentInteractable: InteractableInstance = modInteractables.getOrNew(parentInteractableConfig);
         

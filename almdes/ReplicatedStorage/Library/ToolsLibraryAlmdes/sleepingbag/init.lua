@@ -18,8 +18,6 @@ local toolPackage = {
 		DeployableType = "SpawnPoint";
 		
 		PlacementOffset=CFrame.new(0, 0, 0);
-		
-		NewInteractable = "SleepingBag";
 	};
 	Properties={};
 };

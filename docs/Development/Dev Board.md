@@ -10,7 +10,6 @@ kanban-plugin: list
 - [x] [[Death and Revive screen]]
 - [x] [[Red Crow Storm]]
 - [x] [[Loadouts]]
-- [x] [[Workbench Requirement]]
 
 
 ## Playable
@@ -27,6 +26,7 @@ kanban-plugin: list
 ## Archive
 
 - [ ] [[Crafting System & Interface]]
+- [x] [[Workbench Requirement]]
 
 %% kanban:settings
 ```

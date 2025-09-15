@@ -2,21 +2,31 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local modEquipmentClass = shared.require(game.ReplicatedStorage.Library.EquipmentClass);
 --==
+local PLACE_NORMAL_LIMIT = math.rad(20);
 
 local toolPackage = {
 	ItemId=script.Name;
 	Class="Tool";
-	HandlerType="SeedTool";
+	HandlerType="DeployableTool";
 
 	Animations={
 		Core={Id=11490542403;};
 	};
 	Audio={};
 	Configurations={
-		SeedType = "cabbage";
+		DisplayName = "Cabbage";
+		DeployableType = "Seed";
+		UseToolModelItemId = "cabbage";
 		
+		PlaceNormalLimits = NumberRange.new(-PLACE_NORMAL_LIMIT, PLACE_NORMAL_LIMIT);
+
+		SeedType = "cabbage";
 		SpaceRequired = 1;
-		MineralCost = 30;
+
+		WaterCostPerMin = 30;
+
+		InteractableName = "Seed";
+		CollectionTags = {"Seed"};
 	};
 	Properties={};
 };

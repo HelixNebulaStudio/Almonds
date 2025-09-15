@@ -19,7 +19,7 @@ local toolPackage = {
 
 		PlacementOffset=CFrame.new(0, 0, 0);
 		
-		NewInteractable = "Cupboard";
+		InteractableName = "Cupboard";
 		Health = 500;
 	};
 	Properties={};

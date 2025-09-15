@@ -229,7 +229,7 @@ function modItemsLibrary.onRequire()
 	new(toolBase, {Id="fotlcardgame"; Name="Fall of the Living: Card Game"; Icon="rbxassetid://10862651147"; Description="Card game called Fall of the Living.. Play safe by not bluffing or take risks and bluff to gain an advantage.\n\n<b>Actions:</b>\nScavenging might yield 0-2 resources.\nAttacking with 10 resources is unblockable. \n\n<b>Card:</b>\n<font color='#8c5252'>Rouge</font>: Attack using 4 resources\n<font color='#78476f'>Rat</font>: Scavenge 3 resources\n<font color='#634335'>Bear</font>: Raid others for 2 resources\n<font color='#31564c'>Rabbit</font>: Pick 2 random card and switch cards\n<font color='#52622a'>Zombie</font>: Blocks rouge attacks.\n\nPlayers starts with 2 cards, if they have a card, they can perform the card's action legitimately. If they don't have the card, they can bluff their actions.";});
 	
 	new(toolBase, {Id="cabbageseeds"; Name="Cabbage Seeds"; Icon="rbxassetid://12336988868"; BaseValues={Cap=4; MaxCap=4;}; Description="It is used to plant cabbages.";});
-	new(toolBase, {Id="keylock"; Name="Key Lock"; Icon="rbxassetid://12650377361"; Description="Attachable lock for doors.";});
+	new(toolBase, {Id="keylock"; Name="Key Lock"; Icon="rbxassetid://12650377361"; Description="Attachable lock for doors. Interacting with a placed key locks to create a key.";});
 
 	new(toolBase, {Id="lockkey"; Name="Lock Key"; Icon="rbxassetid://13149516635"; Description="A key used for a specific lock.";});
 
