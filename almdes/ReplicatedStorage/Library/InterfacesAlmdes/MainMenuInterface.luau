@@ -611,8 +611,46 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
                     if sid == "Clothing" then
                         newStorageFrame.LayoutOrder = 1;
+
+                        local signImg = Instance.new("ImageLabel");
+                        signImg.Name = `SignSlot`;
+                        signImg.Image = "rbxassetid://99478960624946";
+                        signImg.LayoutOrder = 0;
+                        signImg.Size = UDim2.new(0, 60, 0, 60);
+                        signImg.BackgroundTransparency = 1;
+                        signImg.Parent = newStorageFrame;
+
+                        local signStroke = Instance.new("UIStroke");
+                        signStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner;
+                        signStroke.Thickness = 3;
+                        signStroke.Transparency = 0.5;
+                        signStroke.Color = Color3.fromRGB(20, 20, 20);
+                        signStroke.Parent = signImg;
+
+                        local uiCorner = Instance.new("UICorner");
+                        uiCorner.Parent = signImg;
+
                     elseif sid == "Inventory" then
                         newStorageFrame.LayoutOrder = 2;
+
+                        local signImg = Instance.new("ImageLabel");
+                        signImg.Name = `SignSlot`;
+                        signImg.Image = "rbxassetid://11191077792";
+                        signImg.LayoutOrder = 0;
+                        signImg.Size = UDim2.new(0, 60, 0, 60);
+                        signImg.BackgroundTransparency = 1;
+                        signImg.Parent = newStorageFrame;
+
+                        local signStroke = Instance.new("UIStroke");
+                        signStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner;
+                        signStroke.Thickness = 3;
+                        signStroke.Transparency = 0.5;
+                        signStroke.Color = Color3.fromRGB(20, 20, 20);
+                        signStroke.Parent = signImg;
+
+                        local uiCorner = Instance.new("UICorner");
+                        uiCorner.Parent = signImg;
+
                     else
                         newStorageFrame.LayoutOrder = 3;
                     end
@@ -645,8 +683,24 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
                             local matchingStorageFrame = storageFrames[siid];
                             if matchingStorageFrame then
-                                newSlot.LayoutOrder = 0;
-                                newSlot.Parent = matchingStorageFrame;
+                                local cloneSignSlot = newSlot:Clone();
+                                cloneSignSlot.LayoutOrder = 0;
+                                cloneSignSlot.Parent = matchingStorageFrame;
+                                cloneSignSlot.ImageTransparency = 1;
+                                cloneSignSlot.Name = "SignSlot";
+
+                                local itemButtonObject = modItemInterface.newItemButton(storageItem.ItemId);
+                                itemButtonObject.ImageButton.Parent = cloneSignSlot;
+                                itemButtonObject.HideTypeIcon = true;
+                                itemButtonObject:Update(storageItem);
+
+                                local signStroke = Instance.new("UIStroke");
+                                signStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner;
+                                signStroke.Thickness = 3;
+                                signStroke.Transparency = 0.5;
+                                signStroke.Color = slotColors[siid];
+                                signStroke.Parent = cloneSignSlot;
+
                                 matchingStorageFrame.LayoutOrder = 2+ newSlot.LayoutOrder;
                             end
 

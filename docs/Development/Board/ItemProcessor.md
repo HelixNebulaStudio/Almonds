@@ -14,6 +14,6 @@ These process all have a time and resource cost. The process consumes items and 
 
 A concurrent queue will be used for each process types. It is a queue that process 1 or more items in front of the list at a time.
 
-**Features**:
-- Equipping a `toolbelt` will set the CraftRecipe queue to from 2 items at a time instead of 1.
-- Standing next to [[Shredding Stations]] increases Deconstruct queue to process 4 items at the same time. 
+## Concepts
+- [ ] Equipping a `toolbelt` will set the CraftRecipe queue to from 2 items at a time instead of 1.
+- [ ] Standing next to [[Shredding Stations]] increases Deconstruct queue to process 4 items at the same time. 
