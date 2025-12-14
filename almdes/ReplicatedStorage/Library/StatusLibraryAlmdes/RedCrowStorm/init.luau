@@ -49,7 +49,6 @@ function statusPackage.BindApply(statusClass: StatusClassInstance)
 	local tweenInfo = TweenInfo.new(1);
 	redCrowEffect.OnChanged:Connect(function(k, v, ov)
 		if k == "Transparency" then
-			Debugger:Warn(`Update withering transparency {v}`);
 			TweenService:Create(rootLayer, tweenInfo, {ImageTransparency=v}):Play();
 			TweenService:Create(layer2, tweenInfo, {ImageTransparency=v}):Play();
 		end

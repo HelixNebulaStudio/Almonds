@@ -8,7 +8,6 @@ local modRecipeLibrary = shared.require(game.ReplicatedStorage.Library.RecipeLib
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modTableManager = shared.require(game.ReplicatedStorage.Library.TableManager);
 local modFormatNumber = shared.require(game.ReplicatedStorage.Library.FormatNumber);
-local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 local modBoolString = shared.require(game.ReplicatedStorage.Library.Util.BoolString);
@@ -478,6 +477,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 craftButtonObject:Update();
                 craftingProcessItemButtons[processNum] = craftButtonObject;
 
+                craftButtonObject.ImageButton.LayoutOrder = -a;
                 craftButtonObject.ImageButton.BackgroundTransparency = 0.5;
                 craftButtonObject.ImageButton.Size = UDim2.new(0, 45, 0, 45);
                 craftButtonObject.ImageButton.Parent = queueList:WaitForChild("ContentList");

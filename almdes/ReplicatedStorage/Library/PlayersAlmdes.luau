@@ -5,7 +5,6 @@ local CollectionService = game:GetService("CollectionService");
 
 local localPlayer = game.Players.LocalPlayer;
 
-local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
 local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
@@ -65,6 +64,10 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
         local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
 
         local statusComp: StatusComp = playerClass.StatusComp;
+
+        if modBranchConfigs.CurrentBranch.Name == "Dev" then
+            player:SetAttribute("DbTinkerCmds", true);
+        end
 
     elseif RunService:IsClient() then
     end

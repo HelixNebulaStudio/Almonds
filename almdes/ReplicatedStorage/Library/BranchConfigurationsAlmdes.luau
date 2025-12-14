@@ -9,6 +9,7 @@ function modBranchConfigurations.onRequire()
     modConfigurations.Set("PvpMode", true);
     modConfigurations.Set("DisableItemDrops", false);
     modConfigurations.Set("ForceNotifyStyle", 1);
+    
 end
 
 return modBranchConfigurations;

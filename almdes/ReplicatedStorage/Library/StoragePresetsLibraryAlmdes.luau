@@ -81,8 +81,8 @@ modStoragePresetsLibrary:Add{
     PublicStorage = true;
     Configuration = {
         Persistent=true;
-        Size = 3;
-        MaxSize = 3;
+        Size = 6;
+        MaxSize = 6;
     };
 };
 
@@ -92,8 +92,8 @@ modStoragePresetsLibrary:Add{
     PublicStorage = true;
     Configuration = {
         Persistent=true;
-        Size = 6;
-        MaxSize = 6;
+        Size = 12;
+        MaxSize = 12;
     };
 };
 
@@ -103,8 +103,8 @@ modStoragePresetsLibrary:Add{
     PublicStorage = true;
     Configuration = {
         Persistent=true;
-        Size = 12;
-        MaxSize = 12;
+        Size = 18;
+        MaxSize = 18;
     };
 };
 
@@ -114,8 +114,8 @@ modStoragePresetsLibrary:Add{
     PublicStorage = true;
     Configuration = {
         Persistent=true;
-        Size = 3;
-        MaxSize = 3;
+        Size = 6;
+        MaxSize = 6;
     };
 };
 

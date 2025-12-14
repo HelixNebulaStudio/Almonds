@@ -108,13 +108,19 @@ function FlareParticle:Destroy()
 
     local flareAtt = self.Attachment;
 
-    local glare: ParticleEmitter = flareAtt:WaitForChild("Glare") :: ParticleEmitter;
-    local halo: ParticleEmitter = flareAtt:WaitForChild("Halo") :: ParticleEmitter;
-    local sparks: ParticleEmitter = flareAtt:WaitForChild("Sparks") :: ParticleEmitter;
+    local glare: ParticleEmitter = flareAtt:FindFirstChild("Glare") :: ParticleEmitter;
+    local halo: ParticleEmitter = flareAtt:FindFirstChild("Halo") :: ParticleEmitter;
+    local sparks: ParticleEmitter = flareAtt:FindFirstChild("Sparks") :: ParticleEmitter;
 
-    glare.Enabled = false;
-    halo.Enabled = false;
-    sparks.Enabled = false;
+    if glare then
+        glare.Enabled = false;
+    end
+    if halo then
+        halo.Enabled = false;
+    end
+    if sparks then
+        sparks.Enabled = false;
+    end
 end
 
 function FlareParticle:SetStage(n, a: number)

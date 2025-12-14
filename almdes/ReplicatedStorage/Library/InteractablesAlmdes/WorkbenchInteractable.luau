@@ -16,7 +16,8 @@ function interactablePackage.init(super) -- Server/Client
 
     function WorkbenchInteractable.new(interactable: InteractableInstance, player: Player)
         local config: Configuration = interactable.Config;
-        
+        config:SetAttribute("_Proximity", true);
+
         interactable.CanInteract = true;
         interactable.Label = `Use Workbench`;
     end

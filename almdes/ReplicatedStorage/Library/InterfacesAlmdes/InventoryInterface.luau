@@ -4,8 +4,10 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local TextService = game:GetService("TextService");
 local TweenService = game:GetService("TweenService");
+local CollectionService = game:GetService("CollectionService");
 
 local localPlayer = game.Players.localPlayer;
+local camera = workspace.CurrentCamera;
 
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
@@ -16,6 +18,7 @@ local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibra
 local modFormatNumber = shared.require(game.ReplicatedStorage.Library.FormatNumber);
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
 local modTableManager = shared.require(game.ReplicatedStorage.Library.TableManager);
+local modInteractables = shared.require(game.ReplicatedStorage.Library.InteractablesAlmdes);
 
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 local modStorageInterface = shared.require(game.ReplicatedStorage.Library.UI.StorageInterface);
@@ -62,9 +65,19 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 	local binds = invWindow.Binds;
 
+
     local invFrameUILayout = invFrame:WaitForChild("UIListLayout");
     invFrameUILayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        invFrame.Size = UDim2.new(1, 0, 0, invFrameUILayout.AbsoluteContentSize.Y);
+		local contentY = invFrameUILayout.AbsoluteContentSize.Y;
+		local sizeYLimit = camera.ViewportSize.Y -70;
+		local newSizeY = math.min(contentY, sizeYLimit);
+        invFrame.Size = UDim2.new(1, 0, 0, newSizeY);
+		invFrame.CanvasSize = UDim2.new(0, 0, 0, contentY > newSizeY and contentY or 0);
+		
+		for a=0, 3 do
+			task.wait();
+			invFrame.CanvasPosition = Vector2.new(0, camera.ViewportSize.Y);
+		end
     end)
 
     local invListUIGridLayout = invList:WaitForChild("UIGridLayout");
@@ -94,6 +107,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             
             modStorageInterface.QueueRefreshStorage({"Inventory", "Clothing"});
             interface:ToggleWindow("CraftingMenu", true);
+			shared.modEventService:ClientInvoke("Interface_BindInventoryToggle", {SendBy = localPlayer}, true);
+			
+			for config, interactable in pairs(modInteractables.InstanceList) do
+				if interactable.Name ~= "Workbench" then continue end;
+				
+				modData.InteractRequest(config);
+				break;
+			end
 
         else
 			newHotbarFrame.Parent = interface.ScreenGui;
@@ -107,6 +128,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             interface:ToggleWindow("ExternalStorage", false);
             interface:ToggleWindow("CraftingMenu", false);
+			shared.modEventService:ClientInvoke("Interface_BindInventoryToggle", {SendBy = localPlayer}, false);
             modStorageInterface.CloseOptionMenus();
         end
     end)
@@ -337,11 +359,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 		
+		Debugger:StudioLog("#LinkedStorage", linkedStorages);
 		for order=1, #linkedStorages do
 			local linkedStorage = linkedStorages[order];
 
 			local itemLib = modItemsLibrary:Find(linkedStorage.ItemId);
 			
+			Debugger:StudioLog("LinkedStorage", linkedStorage.ItemId);
+
 			local slotFrames = {};
 			for a=1, linkedStorage.StorageSize do
 				local newSlot = templateItemSlot:Clone();

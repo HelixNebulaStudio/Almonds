@@ -4,6 +4,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
 local modRecipeLibrary = shared.require(game.ReplicatedStorage.Library.RecipeLibrary);
 local modDropRateCalculator = shared.require(game.ReplicatedStorage.Library.DropRateCalculator);
+local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 
 local PROCESSTYPE = script.Name;
 
@@ -113,6 +114,20 @@ function Handler:ClientRequest(action, packet, rPacket)
     end
 
     return rPacket;
+end
+
+function Handler:BindProcessStart(processData)
+	local storage = processData.meta.Storage;
+
+    local targetPart;
+    if storage.Player then
+        local playerClass: PlayerClass = shared.modPlayers.get(storage.Player);
+        targetPart = playerClass.Head;
+    end
+
+    if targetPart == nil then return end;
+    local snd = modAudio.Play("Crafting1", targetPart);
+    snd.PlaybackSpeed = math.random(95, 105)/100;
 end
 
 function Handler:BindProcessComplete(processData)

@@ -6,7 +6,6 @@ local CollectionService = game:GetService("CollectionService");
 local localPlayer = game.Players.LocalPlayer;
 local camera = workspace.CurrentCamera;
 
-local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
@@ -181,7 +180,7 @@ if RunService:IsClient() then -- MARK: Client
 						Action = "action";
 						ActionIndex = 1;
 						Siid = storageItem.ID;
-						ProxyValues = interactProxy.Values;
+						ProxyValues = interactProxy.Values.Raw;
 					}));
 				end
 
@@ -227,14 +226,13 @@ if RunService:IsClient() then -- MARK: Client
 				end
 
 				if isPlaceable then
-					interactProxy.Values = {
-						PrefabName = activeHightlightModel.Name;
-						SocketConfig = socketInteractConfig;
-						RotationY = properties.RotY;
-
-						AimRayHit = aimRayHit;
-						AimPoint = aimPoint;
-					};
+					
+					interactProxy.Values.PrefabName = activeHightlightModel.Name;
+					interactProxy.Values.SocketConfig = socketInteractConfig;
+					interactProxy.Values.RotationY = properties.RotY;
+					interactProxy.Values.AimRayHit = aimRayHit;
+					interactProxy.Values.AimPoint = aimPoint;
+					
 					setHighlightColor(PLACEMENT_COLORS.Placable);
 					interactProxy.CanInteract = true;
 					interactProxy.Label = `Attach`;
@@ -317,15 +315,14 @@ if RunService:IsClient() then -- MARK: Client
 				end
 
 				if isPlaceable then
-					interactProxy.Values = {
-						PrefabName = activeHightlightModel.Name;
-						PlaceCFrame = activeHightlightModel:GetPivot();
-						HitDeployableModel = hitDeployableModel;
-						RotationY = properties.RotY;
+					interactProxy.Values.PrefabName = activeHightlightModel.Name;
+					interactProxy.Values.PlaceCFrame = activeHightlightModel:GetPivot();
+					interactProxy.Values.HitDeployableModel = hitDeployableModel;
+					interactProxy.Values.RotationY = properties.RotY;
 
-						AimRayHit = aimRayHit;
-						AimPoint = aimPoint;
-					};
+					interactProxy.Values.AimRayHit = aimRayHit;
+					interactProxy.Values.AimPoint = aimPoint;
+					
 					setHighlightColor(PLACEMENT_COLORS.Placable);
 					interactProxy.CanInteract = true;
 					interactProxy.Label = placeableLabel;

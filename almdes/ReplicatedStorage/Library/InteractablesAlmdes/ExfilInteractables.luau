@@ -23,6 +23,8 @@ function interactablePackage.init(super) -- Server/Client
 
         interactable.CanInteract = true;
         interactable.Label = `Signal Helicopter Exfil`;
+
+        config:SetAttribute("_Uses", 1);
     end
 
     function ExfilFlares.Activate(interactable: InteractableInstance, final: boolean?)
@@ -63,7 +65,11 @@ function interactablePackage.init(super) -- Server/Client
         
         ExfilFlares.Activate(interactable);
     end
-    
+
+    function ExfilFlares.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
+        
+    end
+
     super.registerPackage(ExfilFlares);
 
     --MARK: ExfilSubmarines

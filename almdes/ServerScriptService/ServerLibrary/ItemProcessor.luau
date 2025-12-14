@@ -288,7 +288,16 @@ function ItemProcessor:ProcessQueues(shouldSync)
         for _=1, #queue do
             local processData = queue[index];
             if index > concur then
+                processData.Start = nil;
                 continue;
+            end
+            if processData.Start ~= true then
+                local handler = self.Handlers[processData.Type];
+                if handler.BindProcessStart then
+                    handler:BindProcessStart(processData);
+                end
+                processData.Start = true;
+                shouldSync = true;
             end
             if processData.Complete ~= true then 
                 index = index+1;

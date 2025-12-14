@@ -1,3 +1,7 @@
+export type GAME_EVENT_KEY_ALMDES =
+    | "Interface_BindInventoryToggle"
+    ;
+
 export type DAMAGE_TYPE_ALMDES =
     | "Starvation"
     | "Dehydration"

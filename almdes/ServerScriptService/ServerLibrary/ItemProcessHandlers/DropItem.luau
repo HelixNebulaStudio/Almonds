@@ -54,6 +54,7 @@ function Handler:ClientRequest(action, packet, rPacket)
 			StorageItem = clonedStorageItem;
 			SpawnCFrame = (rootCFrame + rootCFrame.LookVector);
 			DespawnDuration = false;
+			DisableTouchPickup = true;
 		};
 		
 		rPacket.Success = true;

@@ -130,10 +130,10 @@ function modItemsLibrary.onRequire()
 		};
 	};
 	
-	new(storageBase, {Id="survivorsbackpack"; Name="Survivor's Backpack"; Description="Equip it in clothing to access an additional 12 slots."; Icon="rbxassetid://8948320931"; SlotColor=Color3.fromRGB(75, 50, 50);});
-	new(storageBase, {Id="dufflebag"; Name="Duffle Bag"; Description="Equip it in clothing to access an additional 6 slots."; Icon="rbxassetid://8827967921"; SlotColor=Color3.fromRGB(75, 75, 50);});
-	new(storageBase, {Id="ammopouch"; Name="Ammo Pouch"; Description="Equip it in clothing to access an additional 3 slots."; Icon="rbxassetid://7335420098"; SlotColor=Color3.fromRGB(50, 75, 50);});
-	new(storageBase, {Id="tacticalvest"; Name="Tactical Vest"; Description="Equip it in clothing to access an additional 3 slots."; Icon="rbxassetid://12060781576"; SlotColor=Color3.fromRGB(50, 75, 75);});
+	new(storageBase, {Id="survivorsbackpack"; Name="Survivor's Backpack"; Description="Equip it in clothing to access an additional 18 slots."; Icon="rbxassetid://8948320931"; SlotColor=Color3.fromRGB(75, 50, 50);});
+	new(storageBase, {Id="dufflebag"; Name="Duffle Bag"; Description="Equip it in clothing to access an additional 12 slots."; Icon="rbxassetid://8827967921"; SlotColor=Color3.fromRGB(75, 75, 50);});
+	new(storageBase, {Id="ammopouch"; Name="Ammo Pouch"; Description="Equip it in clothing to access an additional 6 slots."; Icon="rbxassetid://7335420098"; SlotColor=Color3.fromRGB(50, 75, 50);});
+	new(storageBase, {Id="tacticalvest"; Name="Tactical Vest"; Description="Equip it in clothing to access an additional 6 slots."; Icon="rbxassetid://12060781576"; SlotColor=Color3.fromRGB(50, 75, 75);});
 
 	--==========================================================[[ CRATES ]]==========================================================--
 	local crateBase = {
