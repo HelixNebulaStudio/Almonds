@@ -23,9 +23,13 @@ function interactablePackage.init(super) -- Server/Client
         local variant = interactable.Variant;
         local planterLib = modPlanter.PlanterLibrary[variant];
 
+        interactable.Values.LastWaterReceived = workspace:GetServerTimeNow();
         interactable.Values.Water = 0;
         interactable.Values.WaterCapacity = planterLib.WaterCapacity;
         interactable.Values.Crops = {};
+
+        if RunService:IsClient() then return end;
+        modPlanter.BindSetup(interactable);
     end
 
     -- When interactable pops up on screen.

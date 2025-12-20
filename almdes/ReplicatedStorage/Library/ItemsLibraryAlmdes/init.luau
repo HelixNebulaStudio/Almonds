@@ -200,6 +200,8 @@ function modItemsLibrary.onRequire()
 	new(structureBase, {Id="barbedwooden"; Name="Barbed Wooden Fence"; Icon="rbxassetid://5803776520"; Description="Placable barbed wooden fence that does 1% damage per second when touched.";});
 	
 	new(structureBase, {Id="furnace"; Name="Furnace"; Icon="rbxassetid://16124582573"; Description="Used for cooking and refining different resources.";});
+	
+	new(structureBase, {Id="waterdispenser"; Name="Water Dispenser"; Icon="rbxassetid://95126463444706"; Description="Used for water storage and watering planters.";});
 
 	
 	--==========================================================[[ Medical ]]==========================================================--

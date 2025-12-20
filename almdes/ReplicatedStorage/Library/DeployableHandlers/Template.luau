@@ -21,4 +21,8 @@ function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance?, pa
 
 end
 
+function deployablePackage.BindSetup(interactable: InteractableInstance)
+    
+end
+
 return deployablePackage;

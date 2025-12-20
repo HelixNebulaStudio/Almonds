@@ -389,6 +389,10 @@ elseif RunService:IsServer() then -- MARK: Server
 		end
 
 		local new = templatePlacementPrefab:Clone();
+		if configurations.UseToolModelItemId then
+			local handle = new:WaitForChild("Handle");
+			handle.Name = "PrimaryPart";
+		end
 		new.Name = `{itemId}$u{deployableCounter}`;
 		new:PivotTo(placeCf);
 		new:AddTag("Deployable");
@@ -432,6 +436,10 @@ elseif RunService:IsServer() then -- MARK: Server
 
 			newInteractable = modInteractables.getOrNew(interactConfig);
 		end
+
+		params.DeployableModel = new;
+		params.NewInteractable = newInteractable;
+		params.NewDestructible = newDestructible;
 
 		if configurations.InteractableName == "Storage" then
 			local storagePresetId = configurations.StoragePresetId;
@@ -480,11 +488,9 @@ elseif RunService:IsServer() then -- MARK: Server
 			deployableHandler = shared.require(deployableHandlerModule);
 		end
 		if deployableHandler and deployableHandler.BindSpawnDeployable then
-			params.DeployableModel = new;
-			params.NewInteractable = newInteractable;
-			params.NewDestructible = newDestructible;
-			deployableHandler.BindSpawnDeployable(nil, params);
+			deployableHandler.BindSpawnDeployable(toolHandler, params);
 		end
+		
 		
 		task.spawn(function()
 			local outsideExposureCFrame = nil;
@@ -514,6 +520,8 @@ elseif RunService:IsServer() then -- MARK: Server
 			
 			new:SetAttribute("OutsideExposureCFrame", outsideExposureCFrame);
 		end)
+
+		shared.modEventService:ServerInvoke("Deployable_BindSpawn", {ReplicateTo={}}, params);
 
 		return new;
 	end
