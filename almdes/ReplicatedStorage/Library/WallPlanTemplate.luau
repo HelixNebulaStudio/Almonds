@@ -1,6 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
-local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
+local RunService = game:GetService("RunService");
+
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
@@ -50,37 +51,36 @@ end
 
 function WallPlanTemplate:SetColor(c)
 	for _, obj in pairs(self.Model:GetChildren()) do
-		if obj:IsA("BasePart") then
-			if c == "red" then
-				c = RED_COLOR;
-			end
-			
-			obj.Color = c or BLUE_COLOR;
+		if not obj:IsA("BasePart") then continue end;
+		if c == "red" then
+			c = RED_COLOR;
 		end
+		
+		obj.Color = c or BLUE_COLOR;
 	end
 end
 
 function WallPlanTemplate:SetTransparency(v)
-	local ot = {Base=1; L=1; R=1; B=1; T=1;};
+	local ot = {PrimaryPart=1; L=1; R=1; B=1; T=1;};
 
 	if self.Type == "Wall" then
-		ot = {Base=0; L=1; R=1; B=1; T=1;};
+		ot = {PrimaryPart=0; L=1; R=1; B=1; T=1;};
 
 	elseif self.Type == "Doorway" then
-		ot = {Base=1; L=0; R=0; B=1; T=0;};
+		ot = {PrimaryPart=1; L=0; R=0; B=1; T=0;};
 
 	elseif self.Type == "WallFrame" then
-		ot = {Base=1; L=0; R=0; B=1; T=0;};
+		ot = {PrimaryPart=1; L=0; R=0; B=1; T=0;};
 
 	elseif self.Type == "WindowFrame" then
-		ot = {Base=1; L=0; R=0; B=0; T=0;};
+		ot = {PrimaryPart=1; L=0; R=0; B=0; T=0;};
 
 	end
 
 	for _, obj in pairs(self.Model:GetChildren()) do
-		if obj:IsA("BasePart") then
-			obj.Transparency = ot[obj.Name] == 1 and 1 or v;
-		end
+		if not obj:IsA("BasePart")then continue end;
+
+		obj.Transparency = ot[obj.Name] == 1 and 1 or v;
 	end
 end
 
@@ -95,24 +95,24 @@ function WallPlanTemplate:Build(baseId)
 	
 	local baseColor = Color3.fromRGB(132, 114, 93);
 	for _, obj in pairs(self.Model:GetChildren()) do
-		if obj:IsA("BasePart") then
-			obj.Material = Enum.Material.WoodPlanks;
-			obj.Color = baseColor;
-			
-			if obj.Transparency == 1 then
-				if obj.Name == "PrimaryPart" then
-					obj.CollisionGroup = "RaycastIgnore";
-					
-				else
-					game.Debris:AddItem(obj, 0);
-					
-				end
+		if not obj:IsA("BasePart") then continue end;
+
+		obj.Material = Enum.Material.WoodPlanks;
+		obj.Color = baseColor;
+		
+		if obj.Transparency == 1 then
+			if obj.Name == "PrimaryPart" then
+				obj.CollisionGroup = "RaycastIgnore";
 				
 			else
-				obj.CanCollide = true;
-				obj.CastShadow = true;
+				game.Debris:AddItem(obj, 0);
 				
 			end
+			
+		else
+			obj.CanCollide = true;
+			obj.CastShadow = true;
+			
 		end
 	end
 	
@@ -221,12 +221,14 @@ function WallPlanTemplate:Update()
 	local leftWallWidth = (leftEndPos-wallCFrame.Position).Magnitude;
 	local rightWallWidth = (rightEndPos-wallCFrame.Position).Magnitude;
 	
-	--local debugPt = Debugger:Point(leftEndPos);
-	--debugPt.Color = Color3.fromRGB(255, 111, 113)
-	--game.Debris:AddItem(debugPt, 0.5);
-	--local debugPt = Debugger:Point(rightEndPos);
-	--debugPt.Color = Color3.fromRGB(103, 255, 113)
-	--game.Debris:AddItem(debugPt, 0.5);
+	if RunService:IsStudio() then
+		local debugPt = Debugger:PointPart(leftEndPos);
+		debugPt.Color = Color3.fromRGB(255, 111, 113);
+		game.Debris:AddItem(debugPt, 0.5);
+		local debugPt2 = Debugger:PointPart(rightEndPos);
+		debugPt2.Color = Color3.fromRGB(103, 255, 113);
+		game.Debris:AddItem(debugPt2, 0.5);
+	end
 	
 	local newWallWidth = leftWallWidth+rightWallWidth;
 	local newWallCframe = wallCFrame + wallCFrame.RightVector * (leftWallWidth>rightWallWidth and (newWallWidth/2 - rightWallWidth) or -(newWallWidth/2 - leftWallWidth));

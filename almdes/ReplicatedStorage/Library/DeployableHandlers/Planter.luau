@@ -65,6 +65,7 @@ function deployablePackage.onRequire()
 end
 
 function deployablePackage.BindSetup(interactable: InteractableInstance)
+    Debugger:StudioWarn(`BindSetup {interactable.Config:GetFullName()}`);
     local configParent = interactable.Config.Parent;
 
     local destructibleConfig: Configuration = configParent:FindFirstChild("Destructible");

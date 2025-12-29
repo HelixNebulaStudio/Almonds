@@ -35,15 +35,14 @@ function interactablePackage.init(super) -- Server/Client
         local playerClass: PlayerClass = shared.modPlayers.get(info.Player);
         if playerClass == nil then return end;
 
-        if playerClass.WieldComp.ItemId ~= "buildingplan" then return end;
-        local toolHandler = playerClass.WieldComp.ToolHandler;
-
+        local foundationPart = interactable.Values.FoundationPart;
         local returnPacket = remoteBuildingPlan:InvokeServer("build", {
-            FoundationPart = interactable.Values.FoundationPart;
+            FoundationPart = foundationPart;
             SelectedGridPoint = interactable.Values.GridPoint;
         });
         if returnPacket and returnPacket.PlayerData then
-            toolHandler.Binds["UpdatePlaceholders"](returnPacket);
+            local buildingPlanToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler.BuildingPlan);
+            buildingPlanToolHandler.UpdatePlaceholderPlans(foundationPart:GetAttribute("Index"), returnPacket.PlayerData);
         end
     end
     

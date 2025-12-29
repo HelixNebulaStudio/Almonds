@@ -162,10 +162,14 @@ function BaseSystem.new(folder)
 	
 	setmetatable(self, BaseSystem);
 	
-	local structuresFolder = Instance.new("Folder");
-	structuresFolder.Name = "StructuresFolder";
-	structuresFolder.Parent = folder;
-	self.StructuresFolder = structuresFolder;
+	self.StructuresFolder = folder:FindFirstChild("StructuresFolder");
+	if self.StructuresFolder == nil then
+		local structuresFolder = Instance.new("Folder");
+		structuresFolder.Name = "StructuresFolder";
+		structuresFolder.Parent = folder;
+
+		self.StructuresFolder = structuresFolder;
+	end
 	
 	self.Bases[folder.Name] = self;
 	return self;

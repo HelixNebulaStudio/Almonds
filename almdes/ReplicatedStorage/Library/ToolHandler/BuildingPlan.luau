@@ -5,7 +5,6 @@ local RunService = game:GetService("RunService");
 local localPlayer = game.Players.LocalPlayer;
 local camera = workspace.CurrentCamera;
 
-local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
@@ -15,13 +14,12 @@ local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.Client
 local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
 
 
-local toolHandler: ToolHandler = modToolHandler.new();
+local toolHandler = modToolHandler.new();
 
 local raycastParams, foundationRayParams;
 --==
 
 function toolHandler.onRequire()
-    remoteToolInputHandler = modRemotesManager:Get("ToolInputHandler");
 	remoteBuildingPlan = modRemotesManager:Get("BuildingPlan");
 
 	local gameFoundations = workspace.Environment:WaitForChild("Game"):WaitForChild("Foundations");
@@ -56,6 +54,19 @@ end
 if RunService:IsClient() then -- MARK: Client
 	local foundationObjects = {};
 	local foundationRequested = {};
+
+	function toolHandler.UpdatePlaceholderPlans(foundationIndex, playerData)
+		local foundationData = foundationIndex and foundationObjects[foundationIndex] or nil;
+		foundationData.Players[localPlayer] = playerData;
+
+		local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
+		local wieldComp = playerClass.WieldComp;
+		if wieldComp.ItemId == "buildingplan" 
+		and wieldComp.ToolHandler
+		and wieldComp.ToolHandler.Binds.UpdatePlaceholders then
+			wieldComp.ToolHandler.Binds.UpdatePlaceholders();
+		end
+	end
 
 	function toolHandler.ClientEquip(handler: ToolHandlerInstance)
 		local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
@@ -142,29 +153,29 @@ if RunService:IsClient() then -- MARK: Client
 			local foundationCf = selectedFoundationPart.CFrame;
 			
 			local playerData = foundationData.Players[localPlayer];
-			if playerData then
-				clearPlaceholders();
-				
-				if playerData.Placeholder then
-					for _, holderData in pairs(playerData.Placeholder) do
-						local newWallPlan = modWallPlanTemplate.new();
-						for k, v in pairs(holderData.BuildingData) do
-							newWallPlan[k] = v;
-						end
-						newWallPlan.Model.Name = "PlaceholderWall";
-						newWallPlan:SetParent(workspace.Interactables);
-						newWallPlan:SetTransparency(0.5);
-						newWallPlan:Update();
-						
-						newWallPlan.FoundationPart = selectedFoundationPart;
-						newWallPlan.GridPoint = holderData.Point;
-						
-						placeholderCache[holderData.Point] = newWallPlan;
-						newWallPlan:AddInteractable();
+			if playerData == nil then return end;
+			clearPlaceholders();
+			
+			if playerData.Placeholder then
+				for _, holderData in pairs(playerData.Placeholder) do
+					local newWallPlan = modWallPlanTemplate.new();
+					for k, v in pairs(holderData.BuildingData) do
+						newWallPlan[k] = v;
 					end
+					newWallPlan.Model.Name = "PlaceholderWall";
+					newWallPlan:SetParent(workspace.Interactables);
+					newWallPlan:SetTransparency(0.5);
+					newWallPlan:Update();
+					
+					newWallPlan.FoundationPart = selectedFoundationPart;
+					newWallPlan.GridPoint = holderData.Point;
+					
+					placeholderCache[holderData.Point] = newWallPlan;
+					newWallPlan:AddInteractable();
 				end
 			end
 		end
+		handler.Binds["UpdatePlaceholders"] = updatePlaceholders;
 
 		local function clearActivePlaceholder()
 			if placeholderWall then
@@ -389,7 +400,7 @@ if RunService:IsClient() then -- MARK: Client
 				BuildingData=placeholderCache[selectedGridPoint];
 			});
 			if returnPacket and returnPacket.PlayerData then
-				foundationData.Players[localPlayer] = returnPacket.PlayerData;
+				toolHandler.UpdatePlaceholderPlans(foundationIndex, returnPacket.PlayerData);
 				updatePlaceholders();
 				
 			else
