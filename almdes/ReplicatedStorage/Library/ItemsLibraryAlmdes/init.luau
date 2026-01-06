@@ -12,6 +12,7 @@ function modItemsLibrary.onRequire()
 		Tradable = modItemsLibrary.Tradable.Nontradable;
 		Stackable = 200;
 	};
+    new(resourceBase, {Id="money"; Name="Money"; Icon="rbxassetid://86537766971763"; Stackable=10000; Description="$$$";});
 
 	new(resourceBase, {Id="metal"; Name="Metal Scraps"; Icon="rbxassetid://1551792125"; Description="Metallic scraps used in crafting metal objects.";});
 	new(resourceBase, {Id="glass"; Name="Glass Shards"; Icon="rbxassetid://1551792117"; Description="Glass shards and pieces used in crafting glass objects.";});
@@ -34,7 +35,7 @@ function modItemsLibrary.onRequire()
 		Type = modItemsLibrary.Types.Ammo;
 		Tradable = modItemsLibrary.Tradable.Tradable;
 		SyncOnAdd = true;
-	}
+	};
 	new(ammoBase, {Id="lightammo"; Name="Light Ammo"; Icon="rbxassetid://7242498697"; Stackable=64; Description="Ammunition for pistols, smgs and light weapons.";});
 	new(ammoBase, {Id="heavyammo"; Name="Heavy Ammo"; Icon="rbxassetid://7242509621"; Stackable=64; Description="Ammunition for rifles, lmgs and heavy weapons.";});
 	new(ammoBase, {Id="shotgunammo"; Name="Shotgun Ammo"; Icon="rbxassetid://7242511854"; Stackable=32; Description="Ammunition for shotguns.";});
@@ -49,7 +50,7 @@ function modItemsLibrary.onRequire()
 	}
 	
 	new(gunBase, {Id="p250"; Name="P250"; Icon="rbxassetid://5174775682"; Tags={"Pistol"}; Description="A handy pistol.";});
-	new(gunBase, {Id="cz75"; Name="CZ75-Auto"; Icon="rbxassetid://5166288452"; Tags={"Pistol"}; Description="High fire-rate automatic pistol. Has built in damage rev, which does more damage the lower your ammo count is in your magazine.";});
+	new(gunBase, {Id="cz75"; Name="CZ75-Auto"; Icon="rbxassetid://5166288452"; Tags={"Pistol"}; Description="High fire-rate automatic pistol.";});
 	new(gunBase, {Id="tec9"; Name="Tec-9"; Icon="rbxassetid://5166289439"; Tags={"Pistol"}; Description="High power, high firerate automatic pistol.";});
 	new(gunBase, {Id="deagle"; Name="Desert Eagle"; Icon="rbxassetid://5166288732"; Tags={"Pistol"}; Description="The hand cannon.";});
 	

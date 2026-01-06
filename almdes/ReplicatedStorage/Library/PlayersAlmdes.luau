@@ -98,6 +98,9 @@ end)
 
 
 shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClassAlmdes, character: Model)
+    local wieldComp = playerClass.WieldComp;
+    wieldComp.TargetableTags.Bandit = true;
+
     if RunService:IsClient() then return end;
 
     local properties: PropertiesVariable<{}> = playerClass.Properties;
