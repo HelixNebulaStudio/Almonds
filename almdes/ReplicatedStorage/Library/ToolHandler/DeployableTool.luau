@@ -614,8 +614,8 @@ elseif RunService:IsServer() then -- MARK: Server
 			placementPacket.CharacterClass = characterClass;
 			placementPacket.Configurations = configurations;
 			placementPacket.SocketInteractable = interactable;
-			local new = toolHandler.spawnDeployable(itemId, prefabName, placeCf, placementPacket);
-			if new == nil then
+			local newModel = toolHandler.spawnDeployable(itemId, prefabName, placeCf, placementPacket);
+			if newModel == nil then
 				Debugger:Warn(`Fail to spawn deployable {itemId}:{prefabName}.`);
 				return;
 			end
@@ -632,11 +632,18 @@ elseif RunService:IsServer() then -- MARK: Server
 				end
 				inventory:Remove(storageItem.ID, 1);
 				shared.Notify(player, `1 {itemLib.Name} removed from your Inventory.`, "Negative");
+
+				local interactConfig = newModel:FindFirstChild("Interactable");
+				local interactableInstance: InteractableInstance = interactConfig and modInteractables.getOrNew(interactConfig);
+				if interactableInstance then
+					interactableInstance:Sync({player});
+					interactableInstance:SyncPerms(player);
+				end
 			end
 
 			if configurations.CollectionTags then
 				for a=1, #configurations.CollectionTags do
-					new:AddTag(configurations.CollectionTags[a]);
+					newModel:AddTag(configurations.CollectionTags[a]);
 				end
 			end
 		end

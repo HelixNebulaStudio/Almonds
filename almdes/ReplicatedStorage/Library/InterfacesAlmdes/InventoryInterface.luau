@@ -25,17 +25,19 @@ local modStorageInterface = shared.require(game.ReplicatedStorage.Library.UI.Sto
 
 local modRecipeLibrary = shared.require(game.ReplicatedStorage.Library.RecipeLibrary);
 local modDeconstructLibrary = shared.require(game.ReplicatedStorage.Library.DeconstructLibrary);
+local modUIUtil = shared.require(game.ReplicatedStorage.Library.UI.UIUtil);
 
 local STORAGE_BUTTON_TWEENINFO = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
+local superBeginDragItem, superEndDragItem = modStorageInterface.BeginDragItem, modStorageInterface.StopDragItem;
 
 local interfacePackage = {
     Type = "Character";
 };
 --==
-
-
 function interfacePackage.newInstance(interface: InterfaceInstance)
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
+	modData.StoragesOnCharacter = {"Inventory"; "Clothing"; "keychain"};
+
 	local playerClass: PlayerClass = shared.modPlayers.get(localPlayer);
 
     local remoteUseStorageItem = modRemotesManager:Get("UseStorageItem");
@@ -50,7 +52,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local charWindow = interface:GetWindow("CharacterWindow");
     local mPanel = charWindow.Binds.MPanel;
-
 
     --MARK: Inventory
     local invFrame = script:WaitForChild("InventoryFrame"):Clone();
@@ -137,6 +138,93 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	quickButton.LayoutOrder = 2;
 	interface:ConnectQuickButton(quickButton, "KeyWindowInventory");
 
+	local titleLabel = invFrame:WaitForChild("Title");
+	local dropUIGradient = titleLabel:WaitForChild("DropUIGradient");
+	local dropItemLabel = titleLabel:WaitForChild("DropItemLabel");
+
+	local armorTitle = invFrame:WaitForChild("ArmorTitle");
+	local accessKeychain = armorTitle:WaitForChild("AccessKeychain");
+	local keychainFrame = invFrame:WaitForChild("KeychainFrame");
+	local keychainDropHint = accessKeychain:WaitForChild("DropHint");
+	local keychainStorageInterface = modStorageInterface.new("keychain", charWindow.Frame, {});
+	keychainStorageInterface.Name = "Keychain";
+
+	local function dropItemSlotFunc(itemSlot)
+		if itemSlot == nil then return end;
+		local interface = itemSlot.Interface;
+		
+		modStorageInterface.CloseOptionMenus();
+		
+		local returnPacket = remoteItemProcessor:InvokeServer("dropitemrequest", {
+			StorageItemId = itemSlot.ID;
+			StorageId = interface.StorageId;
+		});
+
+		if returnPacket.Success then
+			--Debugger:Log("Drop slot ", itemSlot, returnPacket);
+		end
+	end
+
+	function modStorageInterface:BeginDragItem(itemSlot)
+		titleLabel.BackgroundTransparency = 0;
+		dropUIGradient.Enabled = true;
+		dropItemLabel.Visible = true;
+		keychainDropHint.Visible = true;
+		superBeginDragItem(self, itemSlot);
+	end
+
+	function modStorageInterface:StopDragItem(itemSlot)
+		local dropSlotOverride = nil;
+
+		local isDropItem = modUIUtil.IsMouseOver(dropItemLabel);
+		if isDropItem and itemSlot then
+			dropItemSlotFunc(itemSlot);
+			dropSlotOverride = false;
+		end
+
+		local isMoveToKeyChain = modUIUtil.IsMouseOver(accessKeychain);
+		if isMoveToKeyChain and itemSlot then
+			local storage = modData.RequestStorage{
+				Action = "GetStorage";
+				StorageId = "keychain";
+			};
+			local size = storage.Size;
+
+			local slotFrames = {};
+			keychainFrame:ClearAllChildren();
+			for a=1, size do
+				local newSlot = templateItemSlot:Clone();
+				newSlot.LayoutOrder = a;
+				newSlot:SetAttribute("Index", newSlot.LayoutOrder);
+				newSlot.Name = newSlot.LayoutOrder;
+				newSlot.Parent = keychainFrame;
+				table.insert(slotFrames, newSlot);
+			end
+			keychainStorageInterface:UpdateSlotFrames(slotFrames);
+			keychainStorageInterface:Update();
+
+			local emptySlotData = keychainStorageInterface:GetEmptySlotData(itemSlot);
+			dropSlotOverride = emptySlotData;
+		end
+
+		superEndDragItem(self, itemSlot, dropSlotOverride);
+		titleLabel.BackgroundTransparency = 1;
+		dropUIGradient.Enabled = false;
+		dropItemLabel.Visible = false;
+		keychainDropHint.Visible = false;
+	end
+
+	accessKeychain.MouseButton1Click:Connect(function()
+        local externalStorageWindow: InterfaceWindow = interface:GetWindow("ExternalStorage");
+        if externalStorageWindow == nil or externalStorageWindow.Visible then return end;
+		
+        local storage = modData.RequestStorage{
+            Action = "GetStorage";
+            StorageId = "keychain";
+        };
+        if storage == nil then Debugger:Warn(`Missing keychain storage.`); return end;
+        externalStorageWindow:Open("keychain");
+	end)
 
     --MARK: StorageInterfaces
 	for a=1, 6 do
@@ -243,20 +331,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     modStorageInterface.ContextOptionDropItem = {
 		Text="Drop";
-		Click=function(itemSlot)
-			local interface = itemSlot.Interface;
-			
-			modStorageInterface.CloseOptionMenus();
-			
-			local returnPacket = remoteItemProcessor:InvokeServer("dropitemrequest", {
-				StorageItemId = itemSlot.ID;
-				StorageId = interface.StorageId;
-			});
-
-			if returnPacket.Success then
-				Debugger:Log("Drop slot ", itemSlot, returnPacket);
-			end
-		end;
+		Click=dropItemSlotFunc;
 		Order=2;
 	}
 	defaultStorageInterface:AddContextOption(modStorageInterface.ContextOptionDropItem);
@@ -307,7 +382,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			});
 
 			if returnPacket.Success then
-				Debugger:Log("Drop slot ", slotItem, returnPacket);
+				Debugger:Log("Unload Ammo ", slotItem, returnPacket);
 			end
 		end;
 		Order=2;

@@ -5,6 +5,7 @@ local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSa
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library.StoragePresetsLibraryAlmdes);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
 local modLoadoutSaves = shared.require(game.ServerScriptService.ServerLibrary.LoadoutSaves);
 local modStorage = shared.require(game.ServerScriptService.ServerLibrary.Storage);
@@ -102,6 +103,48 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 	gameSave.AppearanceData.UpdateReady = true;
 	gameSave.WorkbenchSeed = modSyncTime.TimeOfEndOfDay();
 	gameSave.LoadoutSaves = modLoadoutSaves.new(player, gameSave);
+
+	local storages = gameSave.Storages;
+
+	local keychainStorage: Storage = modStorage.new("keychain", "keychain", player);
+	storages.keychain = keychainStorage;
+	keychainStorage:ConnectCheck(function(packet)
+		local dragStorageItem = packet.DragStorageItem;
+		local targetStorageItem = packet.TargetStorageItem;
+		
+		if packet.DragStorage == storages.keychain then 
+			packet.Allowed = true;
+			return packet;
+		end;
+		if targetStorageItem and dragStorageItem.ItemId == targetStorageItem.ItemId then 
+			packet.Allowed = true;
+			return packet;
+		end; -- true if swapping with item of same id
+		
+		if dragStorageItem then
+			local isKeyItem = modItemsLibrary:HasTag(dragStorageItem.ItemId, "Key");
+			if isKeyItem then
+				packet.Allowed = true;
+				return packet;
+			end
+
+			packet.FailMsg = `{dragStorageItem.Library.Name} is not a key.`;
+		end
+		
+		packet.Allowed = false;
+		return packet;
+	end);
+	keychainStorage.OnChanged:Connect(function()
+		local itemCount = keychainStorage:Loop();
+
+		local lastSize = keychainStorage.Size;
+		keychainStorage.Size = math.max(5, 5+ math.ceil(itemCount/5)*5);
+		keychainStorage.MaxSize = keychainStorage.Size;
+		
+		if lastSize ~= keychainStorage.Size then
+			keychainStorage:Sync(player);
+		end
+	end)
 end)
 
 shared.coreBind(modGameSave, "_loaded", function(gameSave: GameSaveAlmdes)

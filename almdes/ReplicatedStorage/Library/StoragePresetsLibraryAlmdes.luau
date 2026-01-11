@@ -19,6 +19,18 @@ modStoragePresetsLibrary:Replace("Clothing", {
 });
 
 modStoragePresetsLibrary:Add{
+	Id = "keychain";
+    Name = "Key Chain";
+    Configuration = {
+        Persistent = true;
+        Size = 5;
+        Settings = {
+            ScaleByContent = true;
+        }
+    };
+};
+
+modStoragePresetsLibrary:Add{
 	Id = "deathpack";
     Name = "Death Pack";
     PublicStorage = true;

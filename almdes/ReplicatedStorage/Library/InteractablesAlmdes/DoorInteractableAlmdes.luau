@@ -56,7 +56,7 @@ function interactablePackage.init(super) -- Server/Client
         if keyId == nil then return end;
 
         local hasKey = false;
-        local allLockKeys = clientData.ListItemIdFromCharacter("lockkey");
+        local allLockKeys = clientData.ListItemIdOnCharacter("lockkey");
         for siid, lockKey: StorageItem in ipairs(allLockKeys) do
             if lockKey.Values.KeyId == keyId then
                 hasKey = true;

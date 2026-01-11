@@ -53,18 +53,22 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local itemsListCache = {};
     local itemIdsUsed = {};
 
-    function itemToolTip.CustomUpdate(toolTip, itemId)
+    function itemToolTip.CustomUpdate(toolTip, itemId, storageItem)
         local itemLib = modItemsLibrary:Find(itemId);
         
         toolTip.Frame.Size = UDim2.new(0, 240, 0, 0);
         toolTip.Frame.custom.Visible = true;
         
         local nameTag = toolTip.Frame:WaitForChild("NameTag");
-        nameTag.Text = itemLib.Name;
+        local nameStr = itemLib.Name;
         
         local descLabel = itemTooltipFrame:WaitForChild("descLabel");
         local descStr = `<font size="16">{itemLib.Description}</font>`;
 
+        local keyId = storageItem and storageItem.Values.KeyId;
+        if keyId then
+            nameStr = `{nameStr} #{keyId}`;
+        end
 
         local deconstructsList = itemTooltipFrame:WaitForChild("deconstructsList");
         local deconstructLib = modDeconstructLibrary:Find(itemId);
@@ -94,7 +98,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 imageButton.Name = dItemId;
                 imageButton.Size = UDim2.new(0, 60, 0, 60);
 
-                imageButton.QuantityLabel.Text = `{modFormatNumber.Beautify(dQty.Min)} ~ {modFormatNumber.Beautify(dQty.Max)}`;
+                if typeof(dQty) == "table" then
+                    imageButton.QuantityLabel.Text = `{modFormatNumber.Beautify(dQty.Min)} ~ {modFormatNumber.Beautify(dQty.Max)}`;
+                else
+                    imageButton.QuantityLabel.Text = `{modFormatNumber.Beautify(dQty)}`;
+                end
                 imageButton.QuantityLabel.TextSize = 14;
 
                 itemButtonObject:Update();
@@ -113,6 +121,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
         end
 
+        nameTag.Text = nameStr;
         descLabel.Text = descStr;
     end
 

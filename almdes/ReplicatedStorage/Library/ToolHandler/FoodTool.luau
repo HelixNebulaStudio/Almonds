@@ -174,8 +174,10 @@ elseif RunService:IsServer() then -- MARK: Server
 				end
 
 			end
-	
-			characterClass.WieldComp:Unequip();
+			
+			-- if handler.StorageItem.Quantity <= 1 then
+			-- 	characterClass.WieldComp:Unequip();
+			-- end
 
 			if characterClass.ClassName == "PlayerClass" then
 				local player = (characterClass :: PlayerClass):GetInstance();

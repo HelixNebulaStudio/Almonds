@@ -234,7 +234,7 @@ function modItemsLibrary.onRequire()
 	new(toolBase, {Id="cabbageseeds"; Name="Cabbage Seeds"; Icon="rbxassetid://12336988868"; BaseValues={Cap=4; MaxCap=4;}; Description="It is used to plant cabbages.";});
 	new(toolBase, {Id="keylock"; Name="Key Lock"; Icon="rbxassetid://12650377361"; Description="Attachable lock for doors. Interacting with a placed key locks to create a key.";});
 
-	new(toolBase, {Id="lockkey"; Name="Lock Key"; Icon="rbxassetid://13149516635"; Description="A key used for a specific lock.";});
+	new(toolBase, {Id="lockkey"; Name="Lock Key"; Icon="rbxassetid://13149516635"; Tags={"Key"}; Description="A key used for a specific lock.";});
 
 	new(toolBase, {Id="t1key"; Name="Tier 1 Key"; Icon="rbxassetid://1537254647"; Description="Used for unlocking Tier 1 Crate dropped from small bandit camps.";});
 	new(toolBase, {Id="matchbox"; Name="Matchbox"; Icon="rbxassetid://6269033605"; Stackable=10; Description="Can be deconstructed to get Sulfur.";});

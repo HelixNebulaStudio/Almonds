@@ -52,15 +52,16 @@ function deployablePackage.BindSpawnDeployable(handler: ToolHandlerInstance?, pa
     weld.C0 = primaryPart.CFrame:ToObjectSpace(attachPart.CFrame);
     weld.Parent = newModel;
     
-    deployablePackage.KeyCounter = deployablePackage.KeyCounter +1;
-
-    local keylockId = deployablePackage.KeyCounter;
 
     local interactable: InteractableInstance = packet.NewInteractable;
-    local ownerClass = packet.CharacterClass;
-    if ownerClass then
+    local ownerCharacterClass: CharacterClass = packet.CharacterClass;
+
+    deployablePackage.KeyCounter = deployablePackage.KeyCounter +1;
+    local keylockId = deployablePackage.KeyCounter;
+
+    if ownerCharacterClass then
         interactable.Values.KeylockId = keylockId;
-        interactable:SetUserPermissions(ownerClass.Name, "CanInteract", true);
+        interactable:SetUserPermissions(ownerCharacterClass.Name, "CanInteract", true);
     end
 
     local destructible: DestructibleInstance = packet.NewDestructible;

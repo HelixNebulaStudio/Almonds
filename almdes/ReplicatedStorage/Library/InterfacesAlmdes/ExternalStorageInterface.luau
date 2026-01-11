@@ -48,7 +48,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     --MARK: OnToggle
     window.OnToggle:Connect(function(visible, storageId, packet)
         if visible then
-            local interactable: InteractableInstance? = packet.Interactable;
+            local interactable: InteractableInstance? = packet and packet.Interactable or nil;
             if interactable and interactable.Type ~= "Storage" then
                 interactable = nil;
             end

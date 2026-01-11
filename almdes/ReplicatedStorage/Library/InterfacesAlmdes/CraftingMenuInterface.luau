@@ -233,7 +233,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     print("custom update")
                 end;
             else
-                local storageItemList = modData.ListItemIdFromCharacter(rItemId);
+                local storageItemList = modData.ListItemIdOnCharacter(rItemId);
                 local totalQuantity = 0;
                 for c=1, #storageItemList do
                     totalQuantity = totalQuantity + storageItemList[c].Quantity;
