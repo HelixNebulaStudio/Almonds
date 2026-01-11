@@ -253,8 +253,8 @@ library:Add{
 	Duration=10;
 
 	Workbench = workbenchTypes.BasicWorkbench;
-	Branch=treeBranches.HardRaid;
-	Rarity=0.01;
+	Branch = treeBranches.HardRaid;
+	Rarity = 0.01;
 }
 
 library:Add{
@@ -266,7 +266,7 @@ library:Add{
 	Duration=10;
 
 	Workbench = workbenchTypes.BasicWorkbench;
-	Branch=treeBranches.BasicStructure;
+	Branch = treeBranches.BasicStructure;
 	Rarity=1;
 }
 

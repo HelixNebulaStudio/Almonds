@@ -140,9 +140,36 @@ function library.onRequire()
 	
 	
 	library:Add{
+		Id="smallbanditcamp";
+		Rewards={
+			{Index=1; ItemId="cz75"; Quantity=1; Chance=1;};
+			{Index=1; ItemId="tec9"; Quantity=1; Chance=1;};
+			{Index=1; ItemId="mp5"; Quantity=1; Chance=1;};
+			{Index=1; ItemId="mp7"; Quantity=1; Chance=1;};
+			
+			{Index=2; ItemId="metal"; Quantity={Min=150; Max=200}; Chance=1;};
+			{Index=2; ItemId="glass"; Quantity={Min=150; Max=200}; Chance=1;};
+			{Index=2; ItemId="wood"; Quantity={Min=150; Max=200}; Chance=1;};
+			{Index=2; ItemId="cloth"; Quantity={Min=150; Max=200}; Chance=1;};
+
+			{Index=3; ItemId="matchbox"; Quantity={Min=3; Max=4}; Chance=0.5;};
+			{Index=3; ItemId="metal"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=3; ItemId="glass"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=3; ItemId="wood"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=3; ItemId="cloth"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=3; ItemId="cabbageseeds"; Quantity=1; Chance=1;};
+
+			{Index=4; ItemId="lightammo"; Quantity={Min=32; Max=64}; Chance=0.0875;};
+			{Index=4; ItemId="heavyammo"; Quantity={Min=32; Max=64}; Chance=0.0875;};
+			{Index=4; ItemId="shotgunammo"; Quantity={Min=16; Max=32}; Chance=0.0875;};
+		};
+	};
+	
+	
+	library:Add{
 		Id="carparkraid";
 		Rewards={
-			{Index=1; ItemId="explosives"; Quantity={Min=4; Max=8}; Chance=1;};
+			{Index=1; ItemId="explosives"; Quantity={Min=4; Max=8}; Chance=1;}; -- main reward;
 			
 			{Index=2; ItemId="metal"; Quantity={Min=100; Max=200}; Chance=1;};
 			{Index=2; ItemId="glass"; Quantity={Min=100; Max=200}; Chance=1;};
@@ -171,33 +198,34 @@ function library.onRequire()
 		};
 	};
 	
-	
+
 	library:Add{
-		Id="smallbanditcamp";
+		Id="athenahotelraid";
 		Rewards={
-			{Index=1; ItemId="cz75"; Quantity=1; Chance=1;};
-			{Index=1; ItemId="tec9"; Quantity=1; Chance=1;};
-			{Index=1; ItemId="mp5"; Quantity=1; Chance=1;};
-			{Index=1; ItemId="mp7"; Quantity=1; Chance=1;};
+			{Index=1; ItemId="waterdispenser"; Quantity=1; Chance=1;}; -- main reward;
 			
-			{Index=2; ItemId="metal"; Quantity={Min=150; Max=200}; Chance=1;};
-			{Index=2; ItemId="glass"; Quantity={Min=150; Max=200}; Chance=1;};
-			{Index=2; ItemId="wood"; Quantity={Min=150; Max=200}; Chance=1;};
-			{Index=2; ItemId="cloth"; Quantity={Min=150; Max=200}; Chance=1;};
-
-			{Index=3; ItemId="matchbox"; Quantity={Min=3; Max=4}; Chance=0.5;};
-			{Index=3; ItemId="metal"; Quantity={Min=100; Max=200}; Chance=1;};
-			{Index=3; ItemId="glass"; Quantity={Min=100; Max=200}; Chance=1;};
-			{Index=3; ItemId="wood"; Quantity={Min=100; Max=200}; Chance=1;};
-			{Index=3; ItemId="cloth"; Quantity={Min=100; Max=200}; Chance=1;};
-
+			{Index=2; ItemId="metal"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=2; ItemId="glass"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=2; ItemId="wood"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=2; ItemId="cloth"; Quantity={Min=100; Max=200}; Chance=1;};
+			{Index=2; ItemId="m4a4"; Quantity=1; Chance=0.1;};
+			{Index=2; ItemId="ak47"; Quantity=1; Chance=0.1;};
+			{Index=2; ItemId="awp"; Quantity=1; Chance=0.1;};
+			
+			{Index=3; ItemId="metal"; Quantity={Min=60; Max=120}; Chance=1;};
+			{Index=3; ItemId="glass"; Quantity={Min=60; Max=120}; Chance=1;};
+			{Index=3; ItemId="wood"; Quantity={Min=60; Max=120}; Chance=1;};
+			{Index=3; ItemId="cloth"; Quantity={Min=60; Max=120}; Chance=1;};
+			
+			{Index=4; ItemId="mk2grenade"; Quantity={Min=1; Max=2}; Chance=0.5;};
+			{Index=4; ItemId="stickygrenade"; Quantity={Min=1; Max=2}; Chance=0.5;};
 			{Index=4; ItemId="lightammo"; Quantity={Min=32; Max=64}; Chance=0.0875;};
 			{Index=4; ItemId="heavyammo"; Quantity={Min=32; Max=64}; Chance=0.0875;};
 			{Index=4; ItemId="shotgunammo"; Quantity={Min=16; Max=32}; Chance=0.0875;};
 		};
 	};
 	
-	
+
 	library:Add{
 		Id="bandit";
 		Rewards={

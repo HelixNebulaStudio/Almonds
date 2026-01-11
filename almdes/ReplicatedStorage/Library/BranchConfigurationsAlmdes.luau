@@ -2,6 +2,7 @@ local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.Br
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 
 function modBranchConfigurations.onRequire()
+    modConfigurations.Set("DisableInfoBubbles", false);
     modConfigurations.Set("SpectateEnabled", false);
     modConfigurations.Set("BaseWoundedDuration", 150);
     modConfigurations.Set("DisableInventory", false);

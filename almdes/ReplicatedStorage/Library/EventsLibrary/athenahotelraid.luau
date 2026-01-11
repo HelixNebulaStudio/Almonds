@@ -6,27 +6,27 @@ local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructib
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 local eventPackage = {
-	Id = "carparkraid";
-	Name = "Car Park Raid";
+	Id = "athenahotelraid";
+	Name = "Athena Hotel Raid";
 	
 	Type = "Raid";
 	CycleTimer = 120;
-	CooldownDuration = 60;
+	CooldownDuration = 120;
 	
 	MapMarkers = {
 		["CrateSpawn"] = {
-			Icon="rbxassetid://7304930076";
+			Icon="rbxassetid://95126463444706";
 		};
 	};
 	
-	RewardsId = "carparkraid";
+	RewardsId = "athenahotelraid";
 };
 --==
 
 function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	Debugger:Warn(`newInstance {eventPackage.Id}`);
 
-	local voidClips = game.ServerStorage.Prefabs.Events:WaitForChild("carparkraidVoid");
+	local voidClips = game.ServerStorage.Prefabs.Events:WaitForChild("athenahotelraidVoid");
 	voidClips.Parent = script;
 
 	local templateEventMap = eventInstance.TemplateEventMap;

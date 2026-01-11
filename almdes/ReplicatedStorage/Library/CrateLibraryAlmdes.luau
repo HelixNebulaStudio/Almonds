@@ -33,6 +33,15 @@ function modCrateLibrary.onRequire()
 	};
 
 	modCrateLibrary.New{
+		Id = "smallbanditcamp";
+		Name = "Loot";
+		Prefab = {
+			script:WaitForChild("CratePalletT1");
+        };
+		StoragePresetId = "rewardcrate";
+	};
+
+	modCrateLibrary.New{
 		Id = "carparkraid";
 		Name = "Loot";
 		Prefab = {
@@ -42,14 +51,14 @@ function modCrateLibrary.onRequire()
 	};
 
 	modCrateLibrary.New{
-		Id = "smallbanditcamp";
+		Id = "athenahotelraid";
 		Name = "Loot";
 		Prefab = {
-			script:WaitForChild("CratePalletT1");
+			script:WaitForChild("CratePalletT3");
         };
 		StoragePresetId = "rewardcrate";
 	};
-	
+
 end
 
 return modCrateLibrary;
