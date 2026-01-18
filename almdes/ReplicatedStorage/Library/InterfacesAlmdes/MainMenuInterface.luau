@@ -227,6 +227,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         else
             interface.VersionLabel.ZIndex = 0;
             interface:ToggleWindow("UpdateWindow", false);
+            interface:ToggleWindow("CodexWindow", false);
             return;
         end
 
@@ -235,8 +236,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         if curPage == "Root" then
             interface:ToggleWindow("UpdateWindow", true);
+            interface:ToggleWindow("CodexWindow", false);
         else
             interface:ToggleWindow("UpdateWindow", false);
+            interface:ToggleWindow("CodexWindow", false);
         end
 
         updatePages();
