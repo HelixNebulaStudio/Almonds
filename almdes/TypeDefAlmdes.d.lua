@@ -92,6 +92,7 @@ export type MapMarker = {
 
 -- MARK: Vehicle
 export type Vehicle = {
+    
     -- @properties
     Model: Model;
     Package: anydict;

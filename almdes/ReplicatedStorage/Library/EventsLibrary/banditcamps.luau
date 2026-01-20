@@ -137,6 +137,14 @@ function EnemyCamp:Activate()
 
 		crateModel, interactable, storage = modCrates.Create(rewardId, crateSpawnCFrame);
 
+		storage:SetPermissions("CanView", false);
+		storage:SetPermissions("CanAdd", false);
+		storage:SetPermissions("CanRemove", false);
+
+		interactable.Values.KeyRequired = `t1key`;
+		interactable:SetPermissions("CanInteract", false);
+		interactable:Sync();
+
 		if crateModel then
 			crateModel.Parent = self.MarkerAtt;
 			self.Garbage:Tag(crateModel);

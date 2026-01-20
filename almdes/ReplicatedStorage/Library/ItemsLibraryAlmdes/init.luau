@@ -221,7 +221,7 @@ function modItemsLibrary.onRequire()
 	local toolBase = {
 		Type = modItemsLibrary.Types.Tool;
 		Tradable = modItemsLibrary.Tradable.Tradable;
-	}
+	};
 	
 	new(toolBase, {Id="buildingplan"; Name="Building Plan"; Icon="rbxassetid://8894342011"; Description="Used to build wall plans on foundations. When on top of a foundation, left click to place/unplace wall plans.";});
 	new(toolBase, {Id="hammer"; Name="Hammer"; Icon="rbxassetid://11497379398"; Description="Used to inspect, modify and upgrade.";});
@@ -234,10 +234,16 @@ function modItemsLibrary.onRequire()
 	new(toolBase, {Id="cabbageseeds"; Name="Cabbage Seeds"; Icon="rbxassetid://12336988868"; BaseValues={Cap=4; MaxCap=4;}; Description="It is used to plant cabbages.";});
 	new(toolBase, {Id="keylock"; Name="Key Lock"; Icon="rbxassetid://12650377361"; Description="Attachable lock for doors. Interacting with a placed key locks to create a key.";});
 
-	new(toolBase, {Id="lockkey"; Name="Lock Key"; Icon="rbxassetid://13149516635"; Tags={"Key"}; Description="A key used for a specific lock.";});
-
-	new(toolBase, {Id="t1key"; Name="Tier 1 Key"; Icon="rbxassetid://1537254647"; Description="Used for unlocking Tier 1 Crate dropped from small bandit camps.";});
 	new(toolBase, {Id="matchbox"; Name="Matchbox"; Icon="rbxassetid://6269033605"; Stackable=10; Description="Can be deconstructed to get Sulfur.";});
+	
+	--==========================================================[[ KEYS ]]==========================================================--
+	local keyBase = {
+		Type = modItemsLibrary.Types.Tool;
+		Tradable = modItemsLibrary.Tradable.Tradable;
+		Tags = {"Key"};
+	};
+	new(keyBase, {Id="lockkey"; Name="Lock Key"; Icon="rbxassetid://13149516635"; Description="A key used for a specific lock.";});
+	new(keyBase, {Id="t1key"; Name="Tier 1 Key"; Icon="rbxassetid://1537254647"; Description="Used for unlocking Tier 1 Crate dropped from small bandit camps.";});
 
 	--==========================================================[[ FOOD ]]==========================================================--
 	local foodBase = {

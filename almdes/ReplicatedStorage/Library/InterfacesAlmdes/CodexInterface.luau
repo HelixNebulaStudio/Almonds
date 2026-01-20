@@ -33,7 +33,7 @@ local catInfoLib = {
 	["Utility Wear"]={Order=56; Title="Utility Wear";};
 	
 	Storage={Order=100;};
-	Crate={Order=110; Title="Crates";};
+	Structure={Order=110; Title="Structure";};
 	Component={Order=120; Title="Components";};
 	Commodity={Order=130; Title="Commodities";};
 	Food={Order=140; Title="Food";};
