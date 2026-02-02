@@ -4,15 +4,15 @@ local modStatusClass = shared.require(game.ReplicatedStorage.Library.StatusLibra
 local DamageData: DamageData = shared.require(game.ReplicatedStorage.Data.DamageData);
 
 local statusPackage = {
-    Id="Hunger";
-    Icon="rbxassetid://12017530629";
-    Name="Hunger";
-    Description="This is your hunger level, you will start losing health if this hits 0.\n\nYou can replenish this by eating.";
+    Id = "Hunger";
+    Icon = "rbxassetid://12017530629";
+    Name = "Hunger";
+    Description = "This is your hunger level, comfort will be affected if this goes below 50%, your thirst rate is double when this hits 0.\n\nYou can replenish this by eating.";
 
-    MetaStatus=true;
-    HudVisibleBelow=10;
+    MetaStatus = true;
+    HudVisibleBelow = 10;
     
-    Order=0;
+    Order = 0;
 };
 --==
 
@@ -37,13 +37,6 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
         
         statusClass:Sync();
     end;
-
-    if tickData.s5 == true and statusClass.Values.CurValue <= 0 then
-        healthComp:TakeDamage(DamageData.new{
-            Damage = 3;
-            DamageType = "Starvation";
-        });
-    end
 end
 
 return modStatusClass.new(statusPackage);

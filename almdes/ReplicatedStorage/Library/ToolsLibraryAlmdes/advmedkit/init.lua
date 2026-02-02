@@ -4,21 +4,21 @@ local modEquipmentClass = shared.require(game.ReplicatedStorage.Library.Equipmen
 --==
 
 local toolPackage = {
-	ItemId=script.Name;
-	Class="Tool";
-	HandlerType="HealTool";
+	ItemId = script.Name;
+	Class = "Tool";
+	HandlerType = "HealToolAlmdes";
 
-	Animations={
-		Core={Id=17114048278;};
-		Use={Id=17114051824;};
-		UseOthers={Id=5011194350;};
+	Animations = {
+		Core = {Id = 17114048278;};
+		Use = {Id =17114051824;};
+		UseOthers = {Id = 5011194350;};
 	};
-	Audio={};
-	Configurations={
+	Audio = {};
+	Configurations = {
 		HealAmount = 75;
 		UseDuration = 4.5;
 	};
-	Properties={};
+	Properties = {};
 };
 
 function toolPackage.newClass()

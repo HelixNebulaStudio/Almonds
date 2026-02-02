@@ -12,27 +12,20 @@ local modWallPlanTemplate = shared.require(game.ReplicatedStorage.Library.WallPl
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
-
+local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
 
 local toolHandler = modToolHandler.new();
 
-local raycastParams, foundationRayParams;
+local raycastParams;
 --==
 
 function toolHandler.onRequire()
 	remoteBuildingPlan = modRemotesManager:Get("BuildingPlan");
 
-	local gameFoundations = workspace.Environment:WaitForChild("Game"):WaitForChild("Foundations");
-
 	raycastParams = RaycastParams.new();
 	raycastParams.FilterType = Enum.RaycastFilterType.Include;
 	raycastParams.IgnoreWater = true;
 	raycastParams.CollisionGroup = "Raycast";
-
-	foundationRayParams = RaycastParams.new();
-	foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
-	foundationRayParams.IgnoreWater = true;
-	foundationRayParams.FilterDescendantsInstances = {gameFoundations};
 
 	if RunService:IsServer() then
 		
@@ -158,7 +151,9 @@ if RunService:IsClient() then -- MARK: Client
 			
 			if playerData.Placeholder then
 				for _, holderData in pairs(playerData.Placeholder) do
-					local newWallPlan = modWallPlanTemplate.new();
+					local newWallPlan = modWallPlanTemplate.new{
+						FoundationPart = selectedFoundationPart;
+					};
 					for k, v in pairs(holderData.BuildingData) do
 						newWallPlan[k] = v;
 					end
@@ -182,6 +177,12 @@ if RunService:IsClient() then -- MARK: Client
 				placeholderWall:SetParent(nil);
 			end
 		end
+
+
+		local foundationRayParams = RaycastParams.new();
+		foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
+		foundationRayParams.IgnoreWater = true;
+		foundationRayParams.FilterDescendantsInstances = modBuildingsSystem.getFoundations();
 
 		local prevBuildOption, prevSelectedPlaceholder;
 		RunService:BindToRenderStep("ToolRender", Enum.RenderPriority.Character.Value, function()
@@ -313,7 +314,9 @@ if RunService:IsClient() then -- MARK: Client
 				if curFoundationData == nil then return end;
 
 				if placeholderWall == nil then
-					placeholderWall = modWallPlanTemplate.new();
+					placeholderWall = modWallPlanTemplate.new{
+						FoundationPart = selectedFoundationPart;
+					};
 					placeholderWall:ToggleBillboard(true);
 				end
 				

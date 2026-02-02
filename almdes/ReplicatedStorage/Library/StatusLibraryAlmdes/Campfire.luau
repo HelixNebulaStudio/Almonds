@@ -34,17 +34,21 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
         return;
     end
 
-    if RunService:IsClient() then
-        if tickData.ms100 ~= true then return end;
+    if (RunService:IsClient() and tickData.ms100 ~= true)
+    or (RunService:IsServer() and tickData.ms100 ~= true) then 
+        return;
+    end;
 
-        local playerClass: PlayerClass = statusClass.StatusOwner;
+    local playerClass: PlayerClass = statusClass.StatusOwner;
 
-        local playerPos = playerClass.RootPart.Position;
-        local campfirePos = campfireModel:GetPivot().Position;
+    local playerPos = playerClass.RootPart.Position;
+    local campfirePos = campfireModel:GetPivot().Position;
 
-        local distance = (playerPos - campfirePos).Magnitude;
-        statusClass.Alpha = modMath.MapNum(distance, statusPackage.BuffDistance, 8, 0, 1, true);
+    local distance = (playerPos - campfirePos).Magnitude;
+    statusClass.Alpha = modMath.MapNum(distance, statusPackage.BuffDistance, 8, 0, 1, true);
 
+    if statusClass.Alpha then
+        statusClass.Values.CurValue = statusClass.Alpha * 100;
     end
 end
 

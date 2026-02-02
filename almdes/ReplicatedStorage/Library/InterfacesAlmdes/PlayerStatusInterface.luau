@@ -177,7 +177,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		if statusGuiObj.Button == nil then
 			statusGuiObj.Button = templateStatusItem:Clone();
 			statusGuiObj.Button.MouseButton1Click:Connect(function()
-				if modBranchConfigs.CurrentBranch.Name == "Dev" then
+				if RunService:IsStudio() or modBranchConfigs.CurrentBranch.Name == "Dev" then
 					Debugger:Warn("Status id:",statusId,"table:", statusClass);
 				end
 			end)

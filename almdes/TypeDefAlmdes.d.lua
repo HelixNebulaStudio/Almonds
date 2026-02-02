@@ -89,6 +89,24 @@ export type MapMarker = {
     MarkerName: string?;
 };
 
+-- MARK: Electrical
+export type Electrical = {
+
+    -- @properties
+    Name: string;
+
+    Config: Configuration;
+    IsOn: boolean;
+
+    -- @methods
+    ToggleOn: (Electrical, v: boolean)->nil;
+
+    -- @signals
+    OnPowerChanged: EventSignal<boolean>;
+
+    -- @binds
+    BindToggle: (Electrical, v: boolean)->nil;
+};
 
 -- MARK: Vehicle
 export type Vehicle = {

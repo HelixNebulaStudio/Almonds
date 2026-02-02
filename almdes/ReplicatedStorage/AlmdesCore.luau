@@ -8,17 +8,19 @@ local AlmdesCore = {};
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
 modGlobalVars.GameVersion = "0.0.1";
-modGlobalVars.GameBuild = "2";
+modGlobalVars.GameBuild = "3";
 modGlobalVars.ModeVerLabel = `Almonds {modGlobalVars.GameVersion}.{modGlobalVars.GameBuild} InDev $UpTime`;
 
 local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 if game.GameId == 1971060599 then
 	modBranchConfigs.CurrentBranch = modBranchConfigs.LiveBranch;
 elseif game.GameId == 5119363835 then
-	modBranchConfigs.CurrentBranch = modBranchConfigs.DevBranch;
+	modBranchConfigs.CurrentBranch = modBranchConfigs.LiveBranch; -- modBranchConfigs.DevBranch;
 end
 modBranchConfigs.BranchColor = Color3.fromRGB(92, 16, 255);
-
+modBranchConfigs.CurrentBranch.Worlds = {
+    Genesis = 14856784878;
+};
 ---==
 
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);

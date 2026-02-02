@@ -5,15 +5,13 @@ local RunService = game:GetService("RunService");
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
 
 local modWallPlan = shared.require(game.ReplicatedStorage.Library.WallPlanTemplate);
-
-local gameFoundations = workspace.Environment.Game.Foundations;
 
 local foundationRayParams = RaycastParams.new();
 foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
 foundationRayParams.IgnoreWater = true;
-foundationRayParams.FilterDescendantsInstances = {gameFoundations};
 
 --
 local BaseSystem = {};
@@ -44,7 +42,8 @@ function BaseSystem.onRequire()
             local foundationData = Foundation:Load(foundationPart);
             if foundationData == nil then return returnPacket end;
             
-            local baseObject = BaseSystem:Get(foundationPart.Parent);
+			local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
+            local baseObject = BaseSystem:Get(buildingModel);
             
             -- local territoryGroup = modTerritory:GetByFolder(foundationPart.Parent);
             -- if territoryGroup and territoryGroup.Cupboard then
@@ -70,15 +69,14 @@ function BaseSystem.onRequire()
 			if selectedGridPoint == nil then return end;
             Debugger:Log("build data ", foundationPart, selectedGridPoint);
 
-
+			local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
             local foundationData = Foundation:Load(foundationPart);
-            local baseObject = BaseSystem:Get(foundationPart.Parent);
+            local baseObject = BaseSystem:Get(buildingModel);
 
             -- local territoryGroup = modTerritory:GetByFolder(foundationPart.Parent);
             -- if territoryGroup and territoryGroup.Cupboard then
             -- 	if territoryGroup:GetPlayer(player) == nil then
             -- 		shared.Notify(player, "No building privilege in this territory.", "Negative");
-
             -- 		returnPacket.PlayerData = foundationData.Players[player];
             -- 		return returnPacket;
             -- 	end
@@ -114,12 +112,14 @@ function BaseSystem.onRequire()
                 shared.Notify(player, `{buildLib.Amount} {itemLib.Name} removed from your Inventory.`, "Negative");
             end
             
-            local newWallPlan = modWallPlan.new();
+            local newWallPlan = modWallPlan.new{
+				FoundationPart = foundationPart;
+			};
             for k, v in pairs(buildingData) do
                 newWallPlan[k] = v;
             end
             newWallPlan.Model.Name = "NewWall";
-            newWallPlan:SetParent(baseObject.StructuresFolder);
+            newWallPlan:SetParent(baseObject.PlayerStructures);
             local wallComponent = newWallPlan:Build(baseObject.Id);
             
             -- Save component to grid;
@@ -151,36 +151,36 @@ function BaseSystem.onRequire()
     end)
 end
 
-function BaseSystem.new(folder)
+function BaseSystem.new(buildingModel)
 	local self = {
-		Id = folder.Name;
+		Id = buildingModel.Name;
 		
-		Folder=folder;
+		Model = buildingModel;
 		Foundations = {};
 		Structures = {};
 	};
 	
 	setmetatable(self, BaseSystem);
 	
-	self.StructuresFolder = folder:FindFirstChild("StructuresFolder");
-	if self.StructuresFolder == nil then
+	self.PlayerStructures = buildingModel:FindFirstChild("PlayerStructures");
+	if self.PlayerStructures == nil then
 		local structuresFolder = Instance.new("Folder");
-		structuresFolder.Name = "StructuresFolder";
-		structuresFolder.Parent = folder;
+		structuresFolder.Name = "PlayerStructures";
+		structuresFolder.Parent = buildingModel;
 
-		self.StructuresFolder = structuresFolder;
+		self.PlayerStructures = structuresFolder;
 	end
 	
-	self.Bases[folder.Name] = self;
+	self.Bases[buildingModel.Name] = self;
 	return self;
 end
 
-function BaseSystem:Get(folder)
-	if folder == nil then return end;
-	if self.Bases[folder.Name] == nil then
-		BaseSystem.new(folder);
+function BaseSystem:Get(buildingModel)
+	if buildingModel == nil then return end;
+	if self.Bases[buildingModel.Name] == nil then
+		BaseSystem.new(buildingModel);
 	end
-	return self.Bases[folder.Name]
+	return self.Bases[buildingModel.Name]
 end
 
 --
@@ -224,7 +224,7 @@ function Foundation:GetGridPoint(point)
 end
 
 function Foundation:Load(foundationPart)
-	if not foundationPart:IsA("BasePart") or not foundationPart:IsDescendantOf(gameFoundations) then
+	if not foundationPart:IsA("BasePart") or modBuildingsSystem.isFoundation(foundationPart) then
 		return;
 	end
 	if foundationPart.Size.X <= 16 or foundationPart.Size.Z <= 16 then
@@ -239,7 +239,8 @@ function Foundation:Load(foundationPart)
 		return foundationObj;
 	end
 	
-	local baseObject = BaseSystem:Get(foundationPart.Parent);
+	local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
+	local baseObject = BaseSystem:Get(buildingModel);
 	local newFoundation = Foundation.new(foundationPart);
 	table.insert(baseObject.Foundations, newFoundation);
 	
@@ -391,6 +392,8 @@ function Foundation:SetPlaceholder(player, gridPoint, action, buildingData)
 		local foundationSize = self.Part.Size;
 		local worldGridPoint = foundationCf:PointToWorldSpace(gridPoint) + Vector3.new(0, foundationSize.Y/2, 0);
 		
+		foundationRayParams.FilterDescendantsInstances = modBuildingsSystem.getFoundations();
+
 		local floorRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, -4, 0), foundationRayParams);
 		local ceilRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, 18, 0), foundationRayParams);
 		

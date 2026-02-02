@@ -271,10 +271,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         
         local optionsScrollFrame = PlayPages.Options:WaitForChild("OptionsScrollFrame");
         local PlayOptions = {
+            Tutorial = optionsScrollFrame:WaitForChild("PlayOptionTutorial");
             Play = optionsScrollFrame:WaitForChild("PlayOptionPlay");
             Servers = optionsScrollFrame:WaitForChild("PlayOptionServers");
             Event = optionsScrollFrame:WaitForChild("PlayOptionEvent");
-            Tutorial = optionsScrollFrame:WaitForChild("PlayOptionTutorial");
         };
         
         local selectionName = PlayOptions.Play.Name;
@@ -284,9 +284,17 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             for key, optionsButton in pairs(PlayOptions) do
                 local isSelected = optionsButton.Name == selectionName;
 
+                local isLocked = optionsButton:GetAttribute("Locked");
+
+                local textLabel: TextLabel = optionsButton.TextLabel;
+                if textLabel:GetAttribute("Text") == nil then
+                    textLabel:SetAttribute("Text", textLabel.Text);
+                end
+                textLabel.Text = `{textLabel:GetAttribute("Text")}{isLocked and " (Locked)" or ""}`
+
                 local buttonImage: ImageLabel = optionsButton.ImageLabel;
                 if isSelected then
-                    if optionsButton:GetAttribute("Disabled") ~= true then
+                    if isLocked ~= true then
                         selectionHighlight.Parent = buttonImage;
                     end
                 elseif selectionName == nil then
@@ -305,7 +313,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     }):Play();
                 end
 
-                buttonImage.ImageColor3 = isSelected and Color3.fromRGB(255,255,255) or Color3.fromRGB(225,225,225);
+                if isLocked then
+                    buttonImage.ImageColor3 = Color3.fromRGB(100, 50, 50);
+                elseif isSelected then
+                    buttonImage.ImageColor3 = Color3.fromRGB(255,255,255);
+                else
+                    buttonImage.ImageColor3 = Color3.fromRGB(200,200,200);
+                end
             end
         end
 
@@ -403,25 +417,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
 
         for key, optionsButton: TextButton in pairs(PlayOptions) do
-            optionsButton:GetAttributeChangedSignal("Disabled"):Connect(function()
-                local isDisabled = optionsButton:GetAttribute("Disabled") == true;
-
-                local buttonImage: ImageLabel = optionsButton:FindFirstChild("ImageLabel") :: ImageLabel;
-                local textLabel: TextLabel = optionsButton:FindFirstChild("TextLabel") :: TextLabel;
-                local descLabel: TextLabel = optionsButton:FindFirstChild("DescLabel") :: TextLabel;
-
-                if isDisabled then
-                    buttonImage.ImageColor3 = Color3.fromRGB(100,100,100);
-                    textLabel.TextColor3 = Color3.fromRGB(100,100,100);
-                    descLabel.TextColor3 = Color3.fromRGB(100,100,100);
-                else
-                    buttonImage.ImageColor3 = Color3.fromRGB(255,255,255);
-                    textLabel.TextColor3 = Color3.fromRGB(255,255,255);
-                    descLabel.TextColor3 = Color3.fromRGB(255,255,255);
-                end
-            end)
             if isMenuWorld and key == "Play" then
-                optionsButton:SetAttribute("Disabled", true);
+                optionsButton:SetAttribute("Locked", true);
             end
 
             optionsButton.MouseEnter:Connect(function()
@@ -437,9 +434,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 updateSelectionHighlight();
             end)
             
+            updateSelectionHighlight();
             optionsButton.MouseButton1Click:Connect(function()
+                if optionsButton:GetAttribute("Locked") then return end;
+
                 interface:PlayButtonClick();
-                
+
                 if key == "Tutorial" then
                     Debugger:Warn(`Clicked Tutorial`);
 

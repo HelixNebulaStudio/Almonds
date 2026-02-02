@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService");
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
+local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
 local modMath = shared.require(game.ReplicatedStorage.Library.Util.Math);
 
 
@@ -22,27 +23,16 @@ WallPlanTemplate.__index = WallPlanTemplate;
 WallPlanTemplate.ClassName = "WallPlan";
 
 WallPlanTemplate.BuildingCost = {
-    Wall = {ItemId="wood"; Amount=5;};
-    Doorway = {ItemId="wood"; Amount=5;};
-    WallFrame = {ItemId="wood"; Amount=5;};
-    WindowFrame = {ItemId="wood"; Amount=5;};
+    Wall = {ItemId ="wood"; Amount = 5;};
+    Doorway = {ItemId = "wood"; Amount = 5;};
+    WallFrame = {ItemId = "wood"; Amount = 5;};
+    WindowFrame = {ItemId = "wood"; Amount = 5;};
 };
 --==
 
 function WallPlanTemplate.onRequire()
-    gameFoundations = workspace.Environment:WaitForChild("Game"):WaitForChild("Foundations");
     gameAttachments = workspace.Interactables:WaitForChild("StructureAttachments");
-	wallTemplate = game.ReplicatedStorage.Prefabs.Buildings:WaitForChild("WallTemplate");
-
-    envRayParams = RaycastParams.new();
-    envRayParams.FilterType = Enum.RaycastFilterType.Include;
-    envRayParams.IgnoreWater = true;
-    envRayParams.FilterDescendantsInstances = {workspace.Environment.Scene};
-
-    foundationRayParams = RaycastParams.new();
-    foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
-    foundationRayParams.IgnoreWater = true;
-    foundationRayParams.FilterDescendantsInstances = {gameFoundations};
+	templateWallModel = game.ReplicatedStorage.Prefabs.Buildings:WaitForChild("WallTemplate");
 end
 
 function WallPlanTemplate:SetType(t)
@@ -125,6 +115,7 @@ function WallPlanTemplate:Build(baseId)
 		if attachmentParent == nil then
 			attachmentParent = Instance.new("Folder");
 			attachmentParent.Name = baseId;
+			attachmentParent.Parent = gameAttachments;
 			attachmentParent:SetAttribute("TerritoryGroup", true);
 		end
 	end
@@ -205,6 +196,7 @@ function WallPlanTemplate:Destroy()
 end
 
 function WallPlanTemplate:Update()
+	local foundationPart = self.FoundationPart;
 	local model = self.Model;
 	model:PivotTo(self.CFrame);
 
@@ -212,6 +204,11 @@ function WallPlanTemplate:Update()
 	local wallCFrame = self.CFrame;
 	local rightGridSizeVec = wallCFrame.RightVector*gridSize/2;
 	
+    local envRayParams = RaycastParams.new();
+    envRayParams.FilterType = Enum.RaycastFilterType.Include;
+    envRayParams.IgnoreWater = true;
+    envRayParams.FilterDescendantsInstances = modBuildingsSystem.getBuildingScene(foundationPart);
+
 	local leftWidthRay = workspace:Raycast(wallCFrame.Position, rightGridSizeVec, envRayParams);
 	local rightWidthRay = workspace:Raycast(wallCFrame.Position, -rightGridSizeVec, envRayParams);
 	
@@ -321,7 +318,9 @@ function WallPlanTemplate:AddInteractable()
 end
 
 function WallPlanTemplate.new(data)
-	local self = {};
+	local self = {
+		FoundationPart = data.FoundationPart;
+	};
 
 	setmetatable(self, WallPlanTemplate);
 
@@ -331,11 +330,13 @@ function WallPlanTemplate.new(data)
 				self[k] = v;
 			end
 		end
+	end
 
-	else
-		self.Model = wallTemplate:Clone();
+	if self.Model == nil then
+		self.Model = templateWallModel:Clone();
+	end
+	if self.Base == nil then
 		self.Base = self.Model:WaitForChild("PrimaryPart");
-
 	end
 
 	return self;
