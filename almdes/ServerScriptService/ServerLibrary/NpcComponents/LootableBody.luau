@@ -17,7 +17,7 @@ function Component.new(npcClass: NpcClass)
         local interactable: InteractableInstance;
         local storage: Storage;
 
-        _, interactable, storage = modCrates.Create("npcinventory", nil, npcClass.Character);
+        _, interactable, storage = modCrates.create("npcinventory", nil, npcClass.Character);
         storage.Name = `{npcClass.Name}'s Inventory`;
         interactable.Config:SetAttribute("Label", `Loot {npcClass.Name}`);
 

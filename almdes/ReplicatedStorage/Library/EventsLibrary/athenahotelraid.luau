@@ -139,7 +139,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			local interactable: InteractableInstance;
 			local storage: Storage;
 
-			crateModel, interactable, storage = modCrates.Create(rewardsId, crateSpawnAtt.WorldCFrame);
+			crateModel, interactable, storage = modCrates.create(rewardsId, crateSpawnAtt.WorldCFrame);
 
 			if crateModel then
 				crateModel.Parent = activeMap;

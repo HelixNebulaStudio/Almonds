@@ -182,8 +182,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 			local interactable: InteractableInstance;
 			local storage: Storage;
 
-			crateModel, interactable, storage = modCrates.Create(
-				"envlootcrate", 
+			crateModel, interactable, storage = modCrates.create("envlootcrate", 
 				pickedSpawnAtt.WorldCFrame * CFrame.Angles(0, math.rad(180), 0)
 			);
 

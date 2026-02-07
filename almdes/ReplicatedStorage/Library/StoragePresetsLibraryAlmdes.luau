@@ -41,6 +41,7 @@ modStoragePresetsLibrary:Add{
             DestroyOnEmpty = false;
         }
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -55,6 +56,7 @@ modStoragePresetsLibrary:Add{
             ScaleByContent = true;
         }
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -69,6 +71,7 @@ modStoragePresetsLibrary:Add{
             ScaleByContent = true;
         }
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -83,6 +86,7 @@ modStoragePresetsLibrary:Add{
             ScaleByContent = true;
         }
     };
+    CreateStorage=true;
 };
 
 
@@ -96,6 +100,7 @@ modStoragePresetsLibrary:Add{
         Size = 6;
         MaxSize = 6;
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -107,6 +112,7 @@ modStoragePresetsLibrary:Add{
         Size = 12;
         MaxSize = 12;
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -118,6 +124,7 @@ modStoragePresetsLibrary:Add{
         Size = 18;
         MaxSize = 18;
     };
+    CreateStorage=true;
 };
 
 modStoragePresetsLibrary:Add{
@@ -129,6 +136,7 @@ modStoragePresetsLibrary:Add{
         Size = 6;
         MaxSize = 6;
     };
+    CreateStorage=true;
 };
 
 
@@ -141,6 +149,7 @@ modStoragePresetsLibrary:Replace("crate", {
         Size = 10;
         MaxSize = 10;
     };
+    CreateStorage=true;
 });
 
 modStoragePresetsLibrary:Replace("largecrate", {
@@ -151,6 +160,7 @@ modStoragePresetsLibrary:Replace("largecrate", {
         Size = 30;
         MaxSize = 30;
     };
+    CreateStorage=true;
 });
 
 modStoragePresetsLibrary:Add{
@@ -162,6 +172,7 @@ modStoragePresetsLibrary:Add{
         Size = 6;
         MaxSize = 6;
     };
+    CreateStorage=true;
 };
 
 

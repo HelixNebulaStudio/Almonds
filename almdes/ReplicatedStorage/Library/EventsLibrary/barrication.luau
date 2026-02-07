@@ -57,9 +57,13 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 
 
 	local function setupBarricades()
-		for _, interactConfig in pairs(CollectionService:GetTagged("Interactable")) do
+		local socketCounter = 0;
+		for _, interactConfig in ipairs(CollectionService:GetTagged("Interactable")) do
 			if interactConfig:GetAttribute("_Name") ~= "DeployableSocket" then continue end;
-            if interactConfig:GetAttribute("SkipPrebuild") then continue end;
+            if RunService:IsStudio() and interactConfig:GetAttribute("SkipPrebuild") then continue end;
+			socketCounter += 1;
+
+			if math.random(1, 100) <= 4 then continue end;
 
             local socketInteractable: InteractableInstance = modInteractables.getOrNew(interactConfig);
             if socketInteractable.Name ~= "DeployableSocket" then continue end;
@@ -111,6 +115,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
             });
         end;
 		
+		Debugger:Log(`Setup barricades for {socketCounter} interactables.`);
 	end
 
 

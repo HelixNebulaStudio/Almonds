@@ -44,7 +44,7 @@ function BuildingsSystem.getBuildingScene(foundationPart)
 
     local buildingModel = BuildingsSystem.getBuilding(foundationPart);
     
-    local buildingScene = buildingModel.Parent:WaitForChild("Scene");
+    local buildingScene = buildingModel.Scene;
     table.insert(buildingScenes, buildingScene);
 
     return buildingScenes; 

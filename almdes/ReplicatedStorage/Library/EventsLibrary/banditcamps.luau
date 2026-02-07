@@ -135,7 +135,7 @@ function EnemyCamp:Activate()
 		local interactable: InteractableInstance;
 		local storage: Storage;
 
-		crateModel, interactable, storage = modCrates.Create(rewardId, crateSpawnCFrame);
+		crateModel, interactable, storage = modCrates.create(rewardId, crateSpawnCFrame);
 
 		storage:SetPermissions("CanView", false);
 		storage:SetPermissions("CanAdd", false);

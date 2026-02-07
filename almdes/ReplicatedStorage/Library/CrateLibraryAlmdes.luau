@@ -12,6 +12,7 @@ function modCrateLibrary.onRequire()
             script:WaitForChild("Deathpack");
         };
 		StoragePresetId = "deathpack";
+		CreateStorage = true;
 	};
 
 	modCrateLibrary.New{
@@ -19,6 +20,7 @@ function modCrateLibrary.onRequire()
 		Name = "Inventory";
 		Prefab = {};
 		StoragePresetId = "npcinventory";
+		CreateStorage = true;
 	};
 
 	modCrateLibrary.New{
@@ -30,6 +32,7 @@ function modCrateLibrary.onRequire()
 			script:WaitForChild("EnvLootCrate3");
         };
 		StoragePresetId = "envlootcrate";
+		CreateStorage = true;
 	};
 
 	modCrateLibrary.New{
@@ -39,6 +42,7 @@ function modCrateLibrary.onRequire()
 			script:WaitForChild("CratePalletT1");
         };
 		StoragePresetId = "rewardcrate";
+		CreateStorage = true;
 	};
 
 	modCrateLibrary.New{
@@ -48,6 +52,7 @@ function modCrateLibrary.onRequire()
 			script:WaitForChild("CratePalletT3");
         };
 		StoragePresetId = "rewardcrate";
+		CreateStorage = true;
 	};
 
 	modCrateLibrary.New{
@@ -57,6 +62,7 @@ function modCrateLibrary.onRequire()
 			script:WaitForChild("CratePalletT3");
         };
 		StoragePresetId = "rewardcrate";
+		CreateStorage = true;
 	};
 
 end
