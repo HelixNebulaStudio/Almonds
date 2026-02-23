@@ -5,7 +5,6 @@ local CollectionService = game:GetService("CollectionService");
 
 local localPlayer = game.Players.LocalPlayer;
 
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
 local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
 local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
 local modRaycastUtil = shared.require(game.ReplicatedStorage.Library.Util.RaycastUtil);
@@ -65,7 +64,7 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
 
         local statusComp: StatusComp = playerClass.StatusComp;
 
-        if modBranchConfigs.CurrentBranch.Name == "Dev" then
+        if shared.gameConfig.BranchName == "Dev" then
             player:SetAttribute("DbTinkerCmds", true);
         end
 
@@ -100,6 +99,10 @@ end)
 shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClassAlmdes, character: Model)
     local wieldComp = playerClass.WieldComp;
     wieldComp.TargetableTags.Bandit = true;
+
+
+    local characterComp = playerClass.CharacterComp;
+    characterComp.DefaultFlatFriction = 1.1;
 
     if RunService:IsClient() then return end;
 

@@ -1,7 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local ZScript = {};
 
 function ZScript.Load(zScr, zEnv)
@@ -9,7 +9,7 @@ function ZScript.Load(zScr, zEnv)
 
     Almonds.GameVersion = modGlobalVars.GameVersion;
     Almonds.GameBuild = modGlobalVars.GameBuild;
-    Almonds.BranchColor = modBranchConfigs.BranchColor;
+    Almonds.BranchColor = modBranchConfigurations.BranchColor;
 
     zEnv.Almonds = Almonds;
 end

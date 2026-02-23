@@ -168,9 +168,9 @@ function treePackage.SelfHeal(npcClass: NpcClass)
 end
 
 function treePackage.Patrol(npcClass: NpcClass)
-    if npcClass:DistanceFromCharacter(npcClass.SpawnPoint.Position) > 5 then
+    if npcClass:DistanceFromCharacter(npcClass.SpawnCFrame.Position) > 5 then
         npcClass.Move:SetMoveSpeed("set", "walk", 8, 2, 2);
-        npcClass.Move:MoveTo(npcClass.SpawnPoint.Position);
+        npcClass.Move:MoveTo(npcClass.SpawnCFrame.Position);
     else
         npcClass.Move:Stop();
     end

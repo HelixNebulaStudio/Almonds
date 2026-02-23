@@ -8,13 +8,13 @@ local camera = workspace.CurrentCamera;
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
-local modWallPlanTemplate = shared.require(game.ReplicatedStorage.Library.WallPlanTemplate);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
+local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
-local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
-local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
 
 local toolHandler = modToolHandler.new();
+
+local BuildOptionInfo = modBuildingPlans.BuildOptionInfo;
 
 local raycastParams;
 --==
@@ -26,12 +26,17 @@ function toolHandler.onRequire()
 	raycastParams.FilterType = Enum.RaycastFilterType.Include;
 	raycastParams.IgnoreWater = true;
 	raycastParams.CollisionGroup = "Raycast";
+	
+	templateGenericBillboard = game.ReplicatedStorage.Prefabs.Misc:WaitForChild("GenericBillboard");
 
 	if RunService:IsServer() then
 		
 	elseif RunService:IsClient() then
 		modData = shared.require(game.Players.LocalPlayer:WaitForChild("DataModule") :: ModuleScript);
 
+		alignHitboxFolder = Instance.new("Folder");
+		alignHitboxFolder.Name = "AlignHitboxes";
+		alignHitboxFolder.Parent = workspace.CurrentCamera;
 	end
 end
 
@@ -124,19 +129,21 @@ if RunService:IsClient() then -- MARK: Client
 	
 		local function clearPlaceholders()
 			for _, obj in pairs(camera:GetChildren()) do
-				if obj:IsA("Model") and obj.Name == "PlaceholderWall" then
+				if obj:IsA("Model") and obj.Name == "PlaceholderModel" then
 					game.Debris:AddItem(obj, 0);
 				end
 			end
 			for _, obj in pairs(workspace.Interactables:GetChildren()) do
-				if obj:IsA("Model") and obj.Name == "PlaceholderWall" then
+				if obj:IsA("Model") and obj.Name == "PlaceholderModel" then
 					game.Debris:AddItem(obj, 0);
 				end
 			end
+			alignHitboxFolder:ClearAllChildren();
 		end
 		clearPlaceholders();
 
-		local placeholderWall = nil;
+		local activePlaceholder = nil;
+		
 		local selectedFoundationPart, selectedGridPoint;
 		local function updatePlaceholders()
 			if selectedFoundationPart == nil or selectedFoundationPart:GetAttribute("Index") == nil then return end;
@@ -151,38 +158,66 @@ if RunService:IsClient() then -- MARK: Client
 			
 			if playerData.Placeholder then
 				for _, holderData in pairs(playerData.Placeholder) do
-					local newWallPlan = modWallPlanTemplate.new{
+					local buildOptionInfo = BuildOptionInfo[holderData.BuildingData.Type];
+					if buildOptionInfo == nil then continue end;
+
+					local placeholderTemplate = BuildOptionInfo[holderData.BuildingData.Type].Template;
+					
+					local newPlan = placeholderTemplate.new{
 						FoundationPart = selectedFoundationPart;
 					};
 					for k, v in pairs(holderData.BuildingData) do
-						newWallPlan[k] = v;
+						newPlan[k] = v;
 					end
-					newWallPlan.Model.Name = "PlaceholderWall";
-					newWallPlan:SetParent(workspace.Interactables);
-					newWallPlan:SetTransparency(0.5);
-					newWallPlan:Update();
+					newPlan.Model.Name = "PlaceholderModel";
+					newPlan:SetParent(workspace.Interactables);
+					newPlan:SetTransparency(0.5);
+					newPlan:Update();
 					
-					newWallPlan.FoundationPart = selectedFoundationPart;
-					newWallPlan.GridPoint = holderData.Point;
+					newPlan.FoundationPart = selectedFoundationPart;
+					newPlan.GridPoint = holderData.Point;
 					
-					placeholderCache[holderData.Point] = newWallPlan;
-					newWallPlan:AddInteractable();
+					placeholderCache[holderData.Point] = newPlan;
+					newPlan:AddInteractable();
 				end
 			end
 		end
 		handler.Binds["UpdatePlaceholders"] = updatePlaceholders;
 
 		local function clearActivePlaceholder()
-			if placeholderWall then
-				placeholderWall:SetParent(nil);
+			if activePlaceholder then
+				activePlaceholder:SetParent(nil);
 			end
 		end
 
+		local highlighterPart = Instance.new("Part");
+		highlighterPart.Name = "HighlighterPart";
+		highlighterPart.Anchored = true;
+		highlighterPart.CanCollide = false;
+		highlighterPart.CanQuery = false;
+		highlighterPart.Transparency = 1
+		highlighterPart.Color = Color3.fromRGB(124, 161, 200);
+		highlighterPart.Size = Vector3.new(0.5, 0.5, 0.5);
+		highlighterPart.Material = Enum.Material.Neon;
+		highlighterPart.TopSurface = Enum.SurfaceType.Smooth;
+		highlighterPart.BottomSurface = Enum.SurfaceType.Smooth;
+		highlighterPart.Parent = script;
+
+		local templateAlignHitbox = highlighterPart:Clone();
+		local highlightInfoBillboard = templateGenericBillboard:Clone();
+		highlightInfoBillboard.Adornee = highlighterPart;
+		highlightInfoBillboard.ExtentsOffsetWorldSpace = Vector3.new(0, 3, 0);
+		highlightInfoBillboard.Parent = highlighterPart;
+
+		local highlightLabel = highlightInfoBillboard:WaitForChild("TextLabel");
+		highlightLabel.Text = "";
+
+		handler.Binds.HighlighterPart = highlighterPart;
 
 		local foundationRayParams = RaycastParams.new();
 		foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
 		foundationRayParams.IgnoreWater = true;
-		foundationRayParams.FilterDescendantsInstances = modBuildingsSystem.getFoundations();
+		foundationRayParams.FilterDescendantsInstances = modBuildingPlans.getFoundations();
 
 		local prevBuildOption, prevSelectedPlaceholder;
 		RunService:BindToRenderStep("ToolRender", Enum.RenderPriority.Character.Value, function()
@@ -196,7 +231,11 @@ if RunService:IsClient() then -- MARK: Client
 			local aimDirection = characterProperties.InteractAimDirection;
 
 			local cameraDistance = localPlayer:DistanceFromCharacter(characterProperties.InteractAimOrigin);
-			local raycastResult = workspace:Raycast(characterProperties.InteractAimOrigin, aimDirection*(cameraDistance+10), raycastParams)
+			local raycastResult = workspace:Raycast(
+				characterProperties.InteractAimOrigin, 
+				aimDirection * (cameraDistance+10), 
+				raycastParams
+			);
 			local rayHit, rayPoint;
 			
 			if raycastResult then 
@@ -207,11 +246,17 @@ if RunService:IsClient() then -- MARK: Client
 			end;
 
 			local targetPoint = Vector3.new(rayPoint.X, handle.Position.Y, rayPoint.Z);
-			
-			local targetFloor = workspace:Raycast(targetPoint, Vector3.new(0, -14, 0), foundationRayParams);
-			if targetFloor == nil then return; end;
+			local targetFloorRayResult = workspace:Raycast(targetPoint, Vector3.new(0, -14, 0), foundationRayParams);
 
-			local foundationPart = targetFloor.Instance;
+			local foundationPart;
+			if targetFloorRayResult then
+				foundationPart = targetFloorRayResult.Instance;
+			else
+				foundationPart = handler.Binds.ActiveFoundation;
+			end
+			if foundationPart == nil then return; end;
+			handler.Binds.ActiveFoundation = foundationPart;
+
 			local foundationIndex = foundationPart:GetAttribute("Index");
 			local foundationData = foundationIndex and foundationObjects[foundationIndex] or nil;
 			
@@ -231,20 +276,15 @@ if RunService:IsClient() then -- MARK: Client
 					
 					local foundationObj = remoteBuildingPlan:InvokeServer("loadfoundation", {FoundationPart=foundationPart});
 					if foundationObj then
+						clearPlaceholders();
 						foundationObjects[foundationObj.Index] = foundationObj;
 						foundationRequested[foundationPart] = nil;
+						updatePlaceholders();
 					end
 				end
 				return;
 			end
 			
-			if handler.Binds["UpdatePlaceholders"] == nil then
-				handler.Binds["UpdatePlaceholders"] = function(returnPacket)
-					foundationData.Players[localPlayer] = returnPacket.PlayerData;
-					updatePlaceholders();
-				end;
-			end
-
 			selectedFoundationPart = foundationPart;
 
 			if selectedFoundationPart and not loadedPlaceholderCache then
@@ -253,37 +293,106 @@ if RunService:IsClient() then -- MARK: Client
 			end
 			
 			local foundationCf = foundationPart.CFrame;
+			if foundationPart:GetAttribute("GridOffset") then
+				foundationCf = foundationCf + foundationPart:GetAttribute("GridOffset");
+			end
+
 			local halfGrid = foundationData.GridSize/2;
-			
-			local objSpace = foundationCf:PointToObjectSpace(targetFloor.Position);
-			local gridPoint = Vector3.new(math.round(objSpace.X/halfGrid)*halfGrid, 0, math.round(objSpace.Z/halfGrid)*halfGrid);
-			
-			local gridPointData = nil
+			local gridPointData = nil;
+
+
+			--MARK: Load hitboxes
+			local buildOption = buildingPlanWindow and buildingPlanWindow.Binds.ActiveBuildId or "Wall";
+
+			local buildOptionInfo = BuildOptionInfo[buildOption];
+			if buildOptionInfo == nil then return end;
+
+			local foundationSurfaceY = foundationPart.Size.Y/2;
+			local aimCf = CFrame.lookAlong(playerClass:GetCFrame().Position, aimDirection);
 			for a=1, #foundationData.GridData do
 				local data = foundationData.GridData[a];
-				
-				if data.Point == gridPoint then
-					gridPointData = data;
-					break;
+				if data.GridHitbox then
+					local compatibleType = table.find(buildOptionInfo.GridTypes, data.Type) ~= nil;
+
+					local dir = (data.GridHitbox.Position - aimCf.Position).Unit;
+					local isInFront = aimCf.LookVector:Dot(dir) > 0;
+
+					local isValid = compatibleType and isInFront;
+					data.GridHitbox.Transparency = isValid and 1 or 1;
+					data.GridHitbox.CanQuery = isValid;
+				end
+				if data.GridHitbox and alignHitboxFolder:IsAncestorOf(data.GridHitbox) then continue end;
+
+				local gridType = data.Type;
+				local worldGridPoint = foundationCf:PointToWorldSpace(data.Point + Vector3.new(0, foundationSurfaceY, 0));
+
+				local alignHitbox = templateAlignHitbox:Clone();
+				alignHitbox.CFrame = CFrame.new(worldGridPoint) * foundationCf.Rotation;
+				alignHitbox.Name = gridType;
+				if gridType == 1 then
+					alignHitbox.Color = Color3.fromRGB(150, 150, 150);
+					alignHitbox.Size = Vector3.new(halfGrid*2, 0.5, halfGrid*2);
+
+				elseif gridType == 2 then
+					alignHitbox.Color = Color3.fromRGB(70, 81, 129);
+					alignHitbox.Size = Vector3.new(halfGrid*2, halfGrid, 0.5);
+					alignHitbox.CFrame *= CFrame.new(0, halfGrid, 0);
+
+				elseif gridType == 3 then
+					alignHitbox.Color = Color3.fromRGB(124, 54, 54);
+					alignHitbox.Size = Vector3.new(0.5, halfGrid, halfGrid*2);
+					alignHitbox.CFrame *= CFrame.new(0, halfGrid, 0);
+
+				else
+					alignHitbox.Color = Color3.fromRGB(50, 50, 50);
+					alignHitbox.Size = Vector3.one * 0.1;
+
+				end
+
+				alignHitbox.Parent = alignHitboxFolder;
+				data.GridHitbox = alignHitbox;
+			end
+			
+
+			local gridHitboxRayParams = RaycastParams.new();
+			gridHitboxRayParams.FilterType = Enum.RaycastFilterType.Include;
+			gridHitboxRayParams.IgnoreWater = true;
+			gridHitboxRayParams.FilterDescendantsInstances = {alignHitboxFolder};
+
+			local gridHitboxRaycastResult = workspace:Raycast(
+				characterProperties.InteractAimOrigin, 
+				aimDirection * (cameraDistance+10), 
+				gridHitboxRayParams
+			);
+			local aimPoint = gridHitboxRaycastResult and gridHitboxRaycastResult.Position;
+			if aimPoint == nil then
+				aimPoint = characterProperties.InteractAimOrigin + aimDirection*(cameraDistance+16);
+			end
+
+			if gridHitboxRaycastResult then
+				local hitInstance = gridHitboxRaycastResult.Instance;
+				for a=1, #foundationData.GridData do
+					local data = foundationData.GridData[a];
+					if data.GridHitbox == hitInstance then
+						gridPointData = data;
+						break;
+					end
 				end
 			end
-			
+
+
 			if gridPointData == nil then return end;
-			gridPoint = gridPointData.Point;
+			local gridPoint = gridPointData.Point;
+			selectedGridPoint = gridPoint;
+
+			local worldGridPoint = foundationCf:PointToWorldSpace(gridPoint + Vector3.new(0, foundationSurfaceY, 0));
 			local gridType = gridPointData.Type;
 
-			if gridType == 2 then
-				selectedGridPoint = gridPoint;
-
-			elseif gridType == 3 then
-				selectedGridPoint = gridPoint;
-
-			else
-				selectedGridPoint = nil;
-
-			end
+			highlighterPart.CFrame = CFrame.new(worldGridPoint);
+			highlighterPart.Parent = camera;
+			highlightLabel.Text = `GridType {gridType}`;
 			
-			local placeholderData = selectedGridPoint and placeholderCache[selectedGridPoint] or nil;
+			local placeholderData = placeholderCache[selectedGridPoint] or nil;
 			if prevSelectedPlaceholder ~= placeholderData then
 				for _, phD in pairs(placeholderCache) do
 					phD:SetColor();
@@ -291,83 +400,76 @@ if RunService:IsClient() then -- MARK: Client
 			end
 			prevSelectedPlaceholder = placeholderData;
 			
-			if selectedGridPoint == nil then clearActivePlaceholder(); return end;
-			
 			if placeholderData then
 				placeholderData:SetColor("red");
 				clearActivePlaceholder();
 				return;
 			end;
 			
-			local worldGridPoint = foundationCf:PointToWorldSpace(gridPoint + Vector3.new(0, objSpace.Y, 0));
-			
-			local floorRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, -4, 0), foundationRayParams);
-			local ceilRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, 18, 0), foundationRayParams);
+			local isValidPlace = false;
+			local scanInfo = {
+				FoundationPart = nil;
+			};
 
-			if floorRay and ceilRay then
-				--local dirAngle = math.round(math.deg(-math.atan2(camera.CFrame.LookVector.X, -camera.CFrame.LookVector.Z))/45)*45;
-				
-				local curFoundationPart = floorRay.Instance;
-				local curFoundationIndex = curFoundationPart:GetAttribute("Index");
+			local placeholderTemplate = buildOptionInfo.Template;
+
+			if placeholderTemplate.CheckPlaceholder then
+				local buildingScene = modBuildingPlans.getBuildingScene(selectedFoundationPart);
+
+				local checkResult = placeholderTemplate:CheckPlaceholder{
+					BuildingScene = buildingScene;
+					GridSize = foundationData.GridSize;
+					WorldGridPoint = worldGridPoint;
+					FoundationCFrame = foundationCf;
+					FoundationSize = selectedFoundationPart.Size;
+				};
+
+				if checkResult.IsValid then
+					isValidPlace = true;
+					scanInfo = checkResult.ScanInfo;
+				end
+			end
+
+			if isValidPlace then
+				local curFoundationIndex = selectedFoundationPart:GetAttribute("Index");
 				local curFoundationData = curFoundationIndex and foundationObjects[curFoundationIndex] or nil;
-				
 				if curFoundationData == nil then return end;
 
-				if placeholderWall == nil then
-					placeholderWall = modWallPlanTemplate.new{
+				local placeholder = activePlaceholder;
+				if placeholder == nil or placeholder.ClassName ~= placeholderTemplate.ClassName then
+					if placeholder then
+						placeholder:Destroy();
+					end
+					placeholder = placeholderTemplate.new{
 						FoundationPart = selectedFoundationPart;
 					};
-					placeholderWall:ToggleBillboard(true);
+					activePlaceholder = placeholder;
+					placeholder:ToggleBillboard(true);
 				end
-				
-				local buildOption = buildingPlanWindow and buildingPlanWindow.Binds.ActiveBuildId or "Wall";
 				
 				if prevBuildOption ~= buildOption then
 					prevBuildOption = buildOption;
-					placeholderWall:SetType(buildOption);
-					placeholderWall:SetTransparency(0.5);
+					placeholder:SetType(buildOption);
+					placeholder:SetTransparency(0.5);
 				end
 				
-				local floorPoint = floorRay.Position;
-				local ceilPoint = ceilRay.Position;
-				local wallHeight = ceilPoint.Y-floorPoint.Y;
-				
-				local wallPosition = floorPoint + Vector3.new(0, wallHeight/2, 0);
-				
-				placeholderWall.FloorPoint = floorPoint;
-				placeholderWall.Size = Vector3.new(curFoundationData.GridSize, math.ceil(wallHeight*10)/10, 2.01);
-				
-				if gridType == 2 then
-					placeholderWall:SetParent(camera);
-					placeholderWall.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(0), 0));
-					
-				elseif gridType == 3 then
-					placeholderWall:SetParent(camera);
-					placeholderWall.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(90), 0));
-
-				else
-					placeholderWall:SetParent(nil);
+				if scanInfo.FoundationPart == nil then
+					scanInfo.FoundationPart = selectedFoundationPart;
 				end
-				
-				local wallCframe = placeholderWall.CFrame;
-				
-				local innerClampA = wallCframe + wallCframe.RightVector * halfGrid;
-				local innerClampB = wallCframe + wallCframe.RightVector * -halfGrid;
-				local innerTarget = modVector.PointBetweenAB(innerClampA.Position, innerClampB.Position, targetFloor.Position);
+				scanInfo.FoundationCFrame = foundationCf;
+				scanInfo.FoundationSize = selectedFoundationPart.Size;
+				scanInfo.GridSize = curFoundationData.GridSize;
+				scanInfo.GridType = gridType;
+				scanInfo.AimPoint = aimPoint;
+				scanInfo.WorldGridPoint = worldGridPoint;
 
-				placeholderWall.RPoint = innerClampA;
-				placeholderWall.LPoint = innerClampB;
-				
-				--Inputs;
-				placeholderWall.TargetFloor = targetFloor.Position;
-				placeholderWall.InnerPoint = innerTarget;
-				placeholderWall.MouseYDeg = math.deg(mouseProperties.Y);
-				
-				placeholderWall:Update();
-				
+				placeholder:UpdatePlaceholder(scanInfo);
+				placeholder:SetParent(camera);
+				placeholder:Update();
+
+
 			else
 				clearActivePlaceholder();
-				
 			end
 		end);
 
@@ -383,7 +485,7 @@ if RunService:IsClient() then -- MARK: Client
 
 			local setValue;
 			if placeholderData == nil then
-				placeholderCache[selectedGridPoint] = placeholderWall:Clone("PlaceholderWall");
+				placeholderCache[selectedGridPoint] = activePlaceholder:Clone("PlaceholderModel");
 				placeholderCache[selectedGridPoint]:SetParent(workspace.Interactables);
 				setValue = "set";
 				
@@ -397,10 +499,10 @@ if RunService:IsClient() then -- MARK: Client
 			end
 			
 			local returnPacket = remoteBuildingPlan:InvokeServer("setplaceholder", {
-				FoundationPart=selectedFoundationPart; 
-				GridPoint=selectedGridPoint;
-				SetValue=setValue;
-				BuildingData=placeholderCache[selectedGridPoint];
+				FoundationPart = selectedFoundationPart; 
+				GridPoint = selectedGridPoint;
+				SetValue = setValue;
+				BuildingData = placeholderCache[selectedGridPoint];
 			});
 			if returnPacket and returnPacket.PlayerData then
 				toolHandler.UpdatePlaceholderPlans(foundationIndex, returnPacket.PlayerData);
@@ -416,7 +518,10 @@ if RunService:IsClient() then -- MARK: Client
 		handler.Garbage:Tag(function()
 			clearPlaceholders();
 			
-			if placeholderWall then placeholderWall:Destroy(); end
+			if activePlaceholder then
+				activePlaceholder:Destroy();
+				activePlaceholder = nil;
+			end
 			for key, cachePart in pairs(placeholderCache) do
 				placeholderCache[key] = nil;
 			end
@@ -424,7 +529,8 @@ if RunService:IsClient() then -- MARK: Client
 	end
 
 	function toolHandler.ClientUnequip(handler: ToolHandlerInstance)
-		
+		handler.Binds.ActiveFoundation = nil;
+		handler.Binds.HighlighterPart.Parent = script;
 	end
 
 

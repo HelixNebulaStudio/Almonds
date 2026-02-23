@@ -5,7 +5,7 @@ local CollectionService = game:GetService("CollectionService");
 
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 local modScheduler = shared.require(game.ReplicatedStorage.Library.Scheduler);
-local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
+local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 
 local deployablePackage = {
     Type = "WaterDispenser";
@@ -123,7 +123,7 @@ function deployablePackage.onRequire()
 
                             local raycastParams = RaycastParams.new();
                             raycastParams.FilterType = Enum.RaycastFilterType.Include;
-                            raycastParams.FilterDescendantsInstances = modBuildingsSystem.getFoundations();
+                            raycastParams.FilterDescendantsInstances = modBuildingPlans.getFoundations();
 
                             local wpPosition = waypoint.Position;
                             local floorRayResult = workspace:Raycast(wpPosition, -Vector3.yAxis, raycastParams);

@@ -11,7 +11,7 @@ local camera = workspace.CurrentCamera;
 
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);

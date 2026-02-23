@@ -5,7 +5,7 @@ local TweenService = game:GetService("TweenService");
 
 local camera = workspace.CurrentCamera;
 
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);

@@ -15,7 +15,7 @@ local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
 
 local interface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClass).new(script.Parent);

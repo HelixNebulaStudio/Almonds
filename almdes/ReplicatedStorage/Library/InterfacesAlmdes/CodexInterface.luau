@@ -9,13 +9,13 @@ local localPlayer = game.Players.LocalPlayer;
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 
 local organizedItemsList;
-local isDevBranch = modBranchConfigs.CurrentBranch.Name == "Dev";
+local isDevBranch = shared.gameConfig.BranchName == "Dev";
 
 local catInfoLib = {
 	Resource={Order=10; Title="Resources";};

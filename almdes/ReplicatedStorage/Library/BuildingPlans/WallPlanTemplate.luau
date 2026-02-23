@@ -5,9 +5,9 @@ local RunService = game:GetService("RunService");
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);
 local modDestructibles = shared.require(game.ReplicatedStorage.Entity.Destructibles);
-local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
 local modMath = shared.require(game.ReplicatedStorage.Library.Util.Math);
-
+local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
+local modBuildingPlans;
 
 local BLUE_COLOR = Color3.fromRGB(124, 161, 200);
 local RED_COLOR = Color3.fromRGB(200, 124, 124);
@@ -22,15 +22,13 @@ local WallPlanTemplate = {};
 WallPlanTemplate.__index = WallPlanTemplate;
 WallPlanTemplate.ClassName = "WallPlan";
 
-WallPlanTemplate.BuildingCost = {
-    Wall = {ItemId ="wood"; Amount = 5;};
-    Doorway = {ItemId = "wood"; Amount = 5;};
-    WallFrame = {ItemId = "wood"; Amount = 5;};
-    WindowFrame = {ItemId = "wood"; Amount = 5;};
-};
+local foundationRayParams;
 --==
 
-function WallPlanTemplate.onRequire()
+function WallPlanTemplate.onRequire(BuildingPlans)
+	modBuildingPlans = BuildingPlans;
+
+	templateGenericBillboard = game.ReplicatedStorage.Prefabs.Misc:WaitForChild("GenericBillboard");
     gameAttachments = workspace.Interactables:WaitForChild("StructureAttachments");
 	templateWallModel = game.ReplicatedStorage.Prefabs.Buildings:WaitForChild("WallTemplate");
 end
@@ -176,7 +174,7 @@ end
 
 function WallPlanTemplate:ToggleBillboard(v)
 	if v == true then
-		local newBillboard = script:WaitForChild("DetailsBillboard"):Clone();
+		local newBillboard = templateGenericBillboard:Clone();
 		newBillboard.Parent = self.Model;
 		newBillboard.Adornee = self.Base;
 
@@ -195,6 +193,71 @@ function WallPlanTemplate:Destroy()
 	self.Base = nil;
 end
 
+function WallPlanTemplate:CheckPlaceholder(inputs)
+	local isValidPlace = false;
+	local scanInfo = {};
+
+	local worldGridPoint = inputs.WorldGridPoint;
+	local floorRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, -4, 0), foundationRayParams);
+	local ceilRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, 18, 0), foundationRayParams);
+
+	if floorRay and ceilRay then
+		isValidPlace = true;
+		scanInfo.FoundationPart = floorRay.Instance;
+
+		scanInfo.FloorRay = floorRay;
+		scanInfo.CeilRay = ceilRay;
+	end;
+
+	return {
+		IsValid = isValidPlace;
+		ScanInfo = scanInfo;
+	};
+end
+
+function WallPlanTemplate:UpdatePlaceholder(data)
+	local foundationCf = data.FoundationCFrame;
+
+	local gridSize = data.GridSize;
+	local gridType = data.GridType;
+	local aimPoint = data.AimPoint;
+
+	local floorPoint = data.FloorRay.Position;
+	local ceilPoint = data.CeilRay.Position;
+
+
+	local halfGrid = gridSize/2;
+
+	local wallHeight = ceilPoint.Y-floorPoint.Y;
+	local wallPosition = floorPoint + Vector3.new(0, wallHeight/2, 0);
+	
+	self.FloorPoint = floorPoint;
+	self.Size = Vector3.new(gridSize, math.ceil(wallHeight*10)/10, 2.01);
+	
+	if gridType == 2 then
+		self.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(0), 0));
+	elseif gridType == 3 then
+		self.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(90), 0));
+	end
+	
+	local wallCframe = self.CFrame;
+	
+	local sideClampA = wallCframe + wallCframe.RightVector * halfGrid;
+	local sideClampB = wallCframe + wallCframe.RightVector * -halfGrid;
+	local sideTarget = modVector.PointBetweenAB(sideClampA.Position, sideClampB.Position, aimPoint);
+
+	self.RPoint = sideClampA;
+	self.LPoint = sideClampB;
+
+
+	local upClampA = wallCframe + wallCframe.UpVector * halfGrid;
+	local upClampB = wallCframe + wallCframe.UpVector * -halfGrid;
+
+	self.InnerPoint = sideTarget;
+	self.AimPoint = aimPoint;
+	self.YPoint = math.clamp(aimPoint.Y, upClampB.Y, upClampA.Y) - upClampB.Y;
+end
+
 function WallPlanTemplate:Update()
 	local foundationPart = self.FoundationPart;
 	local model = self.Model;
@@ -207,7 +270,7 @@ function WallPlanTemplate:Update()
     local envRayParams = RaycastParams.new();
     envRayParams.FilterType = Enum.RaycastFilterType.Include;
     envRayParams.IgnoreWater = true;
-    envRayParams.FilterDescendantsInstances = modBuildingsSystem.getBuildingScene(foundationPart);
+    envRayParams.FilterDescendantsInstances = modBuildingPlans.getBuildingScene(foundationPart);
 
 	local leftWidthRay = workspace:Raycast(wallCFrame.Position, rightGridSizeVec, envRayParams);
 	local rightWidthRay = workspace:Raycast(wallCFrame.Position, -rightGridSizeVec, envRayParams);
@@ -277,7 +340,7 @@ function WallPlanTemplate:Update()
 	elseif self.Type == "WindowFrame" then
 		local windowHeight = 7;
 
-		local offset = modMath.MapNum(self.MouseYDeg-10, -35, 35, 0, self.Size.Y);
+		local offset = self.YPoint;
 		offset = math.clamp(math.floor(offset*5)/5, 1, math.floor((self.Size.Y-1-windowHeight) *10)/10);
 
 		model.B.Size = Vector3.new(self.Size.X, offset, WALL_THICKNESS);
@@ -300,13 +363,14 @@ function WallPlanTemplate:Update()
 		if self.Billboard and self.Billboard.TextLabel then
 			self.Billboard.TextLabel.Text = offset;
 		end
+
 	end
 end
 
 function WallPlanTemplate:AddInteractable()
     if self.Model:FindFirstChild("Interactable") then return end;
 
-    local new = modInteractables.createInteractable("WallPlan", self.Type);
+    local new = modInteractables.createInteractable("ConstructBuilding", self.Type);
     new.Parent = self.Model;
 
 	local interactable: InteractableInstance = modInteractables.getOrNew(new);
@@ -318,6 +382,11 @@ function WallPlanTemplate:AddInteractable()
 end
 
 function WallPlanTemplate.new(data)
+	foundationRayParams = RaycastParams.new();
+	foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
+	foundationRayParams.IgnoreWater = true;
+	foundationRayParams.FilterDescendantsInstances = modBuildingPlans.getFoundations();
+
 	local self = {
 		FoundationPart = data.FoundationPart;
 	};

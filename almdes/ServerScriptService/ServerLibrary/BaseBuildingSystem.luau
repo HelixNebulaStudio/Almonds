@@ -5,9 +5,7 @@ local RunService = game:GetService("RunService");
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
-local modBuildingsSystem = shared.require(game.ReplicatedStorage.Library.BuildingsSystem);
-
-local modWallPlan = shared.require(game.ReplicatedStorage.Library.WallPlanTemplate);
+local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 
 local foundationRayParams = RaycastParams.new();
 foundationRayParams.FilterType = Enum.RaycastFilterType.Include;
@@ -42,7 +40,7 @@ function BaseSystem.onRequire()
             local foundationData = Foundation:Load(foundationPart);
             if foundationData == nil then return returnPacket end;
             
-			local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
+			local buildingModel = modBuildingPlans.getBuilding(foundationPart);
             local baseObject = BaseSystem:Get(buildingModel);
             
             -- local territoryGroup = modTerritory:GetByFolder(foundationPart.Parent);
@@ -69,7 +67,7 @@ function BaseSystem.onRequire()
 			if selectedGridPoint == nil then return end;
             Debugger:Log("build data ", foundationPart, selectedGridPoint);
 
-			local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
+			local buildingModel = modBuildingPlans.getBuilding(foundationPart);
             local foundationData = Foundation:Load(foundationPart);
             local baseObject = BaseSystem:Get(buildingModel);
 
@@ -92,7 +90,7 @@ function BaseSystem.onRequire()
             local placeholderData = playerData.Placeholder[gridPoint];
             local buildingData = placeholderData.BuildingData;
             
-            local buildLib = modWallPlan.BuildingCost[buildingData.Type];
+            local buildLib = modBuildingPlans.BuildingCost[buildingData.Type];
             Debugger:Log("compLib", buildLib);
             
             local profile = shared.modProfile:Get(player);
@@ -112,20 +110,25 @@ function BaseSystem.onRequire()
                 shared.Notify(player, `{buildLib.Amount} {itemLib.Name} removed from your Inventory.`, "Negative");
             end
             
-            local newWallPlan = modWallPlan.new{
+			local buildOptionInfo = modBuildingPlans.BuildOptionInfo[buildingData.Type];
+			if buildOptionInfo == nil then return end;
+
+			local placeholderTemplate = buildOptionInfo.Template;
+
+            local newPlan = placeholderTemplate.new{
 				FoundationPart = foundationPart;
 			};
             for k, v in pairs(buildingData) do
-                newWallPlan[k] = v;
+                newPlan[k] = v;
             end
-            newWallPlan.Model.Name = "NewWall";
-            newWallPlan:SetParent(baseObject.PlayerStructures);
-            local wallComponent = newWallPlan:Build(baseObject.Id);
+            newPlan.Model.Name = "BuildingPart";
+            newPlan:SetParent(baseObject.PlayerStructures);
+            local newBuild = newPlan:Build(baseObject.Id);
             
             -- Save component to grid;
-            gridData.Component = wallComponent.Id;
+            gridData.Component = newBuild.Id;
             
-            wallComponent.Model.Destroying:Connect(function()
+            newBuild.Model.Destroying:Connect(function()
                 gridData.Component = nil;
                 Debugger:Log("Clearing wallComponent from grid", gridData);
             end)
@@ -224,10 +227,10 @@ function Foundation:GetGridPoint(point)
 end
 
 function Foundation:Load(foundationPart)
-	if not foundationPart:IsA("BasePart") or modBuildingsSystem.isFoundation(foundationPart) then
+	if not foundationPart:IsA("BasePart") or modBuildingPlans.isFoundation(foundationPart) then
 		return;
 	end
-	if foundationPart.Size.X <= 16 or foundationPart.Size.Z <= 16 then
+	if foundationPart.Size.X <= 16 and foundationPart.Size.Z <= 16 then
 		Debugger:Log("Foundation too small.");
 		return;
 	end
@@ -239,7 +242,7 @@ function Foundation:Load(foundationPart)
 		return foundationObj;
 	end
 	
-	local buildingModel = modBuildingsSystem.getBuilding(foundationPart);
+	local buildingModel = modBuildingPlans.getBuilding(foundationPart);
 	local baseObject = BaseSystem:Get(buildingModel);
 	local newFoundation = Foundation.new(foundationPart);
 	table.insert(baseObject.Foundations, newFoundation);
@@ -247,7 +250,14 @@ function Foundation:Load(foundationPart)
 	local foundationSize = foundationPart.Size - Vector3.new(1, 0, 1);
 	local foundationTopY = foundationSize.Y/2;
 	local rootCFrame = foundationPart.CFrame + Vector3.new(0, foundationTopY, 0);
-	
+
+	if foundationPart:GetAttribute("GridOffset") then
+		rootCFrame = rootCFrame + foundationPart:GetAttribute("GridOffset");
+	end
+	if foundationPart:GetAttribute("GridPadding") then
+		foundationSize = foundationSize - foundationPart:GetAttribute("GridPadding");
+	end
+
 	local gridArea = Vector3.new(math.ceil((foundationSize.X)/2)*2, 0, math.ceil((foundationSize.Z)/2)*2);
 	
 	local gridSize = Foundation.GridSize;
@@ -388,55 +398,54 @@ function Foundation:SetPlaceholder(player, gridPoint, action, buildingData)
             return;
         end;
 		
-		local foundationCf = self.Part.CFrame;
-		local foundationSize = self.Part.Size;
+		local foundationPart = self.Part;
+		local foundationCf = foundationPart.CFrame;
+		if foundationPart:GetAttribute("GridOffset") then
+			foundationCf = foundationCf + foundationPart:GetAttribute("GridOffset");
+		end
+		
+		local foundationSize = foundationPart.Size;
+		if foundationPart:GetAttribute("GridPadding") then
+			foundationSize = foundationSize - foundationPart:GetAttribute("GridPadding");
+		end
 		local worldGridPoint = foundationCf:PointToWorldSpace(gridPoint) + Vector3.new(0, foundationSize.Y/2, 0);
 		
-		foundationRayParams.FilterDescendantsInstances = modBuildingsSystem.getFoundations();
+		foundationRayParams.FilterDescendantsInstances = modBuildingPlans.getFoundations();
 
-		local floorRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, -4, 0), foundationRayParams);
-		local ceilRay = workspace:Raycast(worldGridPoint+Vector3.new(0, 1, 0), Vector3.new(0, 18, 0), foundationRayParams);
-		
-		Debugger:Log("floorRay", floorRay, "ceilRay", ceilRay);
-		if floorRay and ceilRay then
-			local wallHeight = ceilRay.Position.Y-floorRay.Position.Y;
-			
-			local floorPoint = floorRay.Position;
-			local ceilPoint = ceilRay.Position;
-			local wallHeight = ceilPoint.Y-floorPoint.Y;
+		local buildOptionInfo = modBuildingPlans.BuildOptionInfo[buildingData.Type];
+		if buildOptionInfo == nil then return end;
 
-			local wallPosition = floorPoint + Vector3.new(0, wallHeight/2, 0);
-			
-			local placeholderWall = {};
-			
-			placeholderWall.FloorPoint = floorPoint;
-			placeholderWall.Size = Vector3.new(gridSize, math.ceil(wallHeight*10)/10, 2.01);
+		local buildingScene = modBuildingPlans.getBuildingScene(foundationPart);
 
-			if gridType == 2 then
-				placeholderWall.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(0), 0));
+		local placeholderTemplate = buildOptionInfo.Template;
+		local checkResult = placeholderTemplate:CheckPlaceholder{
+			BuildingScene = buildingScene;
+			FoundationCFrame = foundationCf;
+			FoundationSize = foundationSize;
+			GridSize = gridSize;
+			WorldGridPoint = worldGridPoint;
+		};
+		if not checkResult.IsValid then Debugger:Warn("Invalid placement."); return end;
 
-			elseif gridType == 3 then
-				placeholderWall.CFrame = CFrame.new(wallPosition) * foundationCf.Rotation:ToWorldSpace(CFrame.Angles(0, math.rad(90), 0));
-				
-			end
+		local scanInfo = checkResult.ScanInfo;
 
-			local wallCframe = placeholderWall.CFrame;
+		local placeholder = {
+			Type = buildingData.Type;
+		};
 
-			local innerClampA = wallCframe + wallCframe.RightVector * halfGrid;
-			local innerClampB = wallCframe + wallCframe.RightVector * -halfGrid;
-			local innerTarget = modVector.PointBetweenAB(innerClampA.Position, innerClampB.Position, buildingData.TargetFloor);
+		scanInfo.FoundationCFrame = foundationCf;
+		scanInfo.GridSize = gridSize;
+		scanInfo.GridType = gridType;
+		scanInfo.AimPoint = buildingData.AimPoint;
+		scanInfo.WorldGridPoint = worldGridPoint;
+		placeholderTemplate.UpdatePlaceholder(placeholder, scanInfo);
 
-			placeholderWall.RPoint = innerClampA;
-			placeholderWall.LPoint = innerClampB;
-			
-			placeholderWall.Type = buildingData.Type;
-			placeholderWall.TargetFloor = buildingData.TargetFloor;
-			placeholderWall.InnerPoint = buildingData.InnerPoint;
-			placeholderWall.MouseYDeg = math.clamp(buildingData.MouseYDeg, -35, 35);
-			
-			playerData.Placeholder[gridPoint] = {Point=gridPoint; BuildingData=placeholderWall; Index=dataIndex};
-			Debugger:Log("Placeholder Set",playerData.Placeholder[gridPoint]);
-		end
+		playerData.Placeholder[gridPoint] = {
+			Point = gridPoint; 
+			BuildingData = placeholder; 
+			Index = dataIndex;
+		};
+		Debugger:Log("Placeholder Set", playerData.Placeholder[gridPoint]);
 		
 	elseif action == "unset" then
 		playerData.Placeholder[gridPoint] = nil;

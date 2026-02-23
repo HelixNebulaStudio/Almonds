@@ -6,7 +6,7 @@ local TweenService = game:GetService("TweenService");
 local localPlayer = game.Players.localPlayer;
 
 local modStatusLibrary = shared.require(game.ReplicatedStorage.Library.StatusLibrary);
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
@@ -177,7 +177,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		if statusGuiObj.Button == nil then
 			statusGuiObj.Button = templateStatusItem:Clone();
 			statusGuiObj.Button.MouseButton1Click:Connect(function()
-				if RunService:IsStudio() or modBranchConfigs.CurrentBranch.Name == "Dev" then
+				if RunService:IsStudio() or shared.gameConfig.BranchName == "Dev" then
 					Debugger:Warn("Status id:",statusId,"table:", statusClass);
 				end
 			end)

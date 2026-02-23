@@ -9,7 +9,7 @@ local camera = workspace.CurrentCamera;
 local localPlayer = game.Players.LocalPlayer;
 
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
-local modBranchConfigs = shared.require(game.ReplicatedStorage.Library.BranchConfigurations);
+local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
 local modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
@@ -258,7 +258,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         if PAGES.PlayPage._loaded then return end;
         PAGES.PlayPage._loaded = true;
 
-        local isMenuWorld = modBranchConfigs.IsWorld("Genesis");
+        local isMenuWorld = modBranchConfigurations.IsWorld("Genesis");
         local isTutorialFinished = modData:GetEvent("tutorialFinished");
 
         local playPageFrame = PAGES.PlayPage.Frame;
@@ -358,12 +358,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 local pingLabel = newListing:WaitForChild("ServerPing");
                 local descLabel = newListing:WaitForChild("ServerDesc");
                 
-                local worldName = modBranchConfigs.GetWorldName(serverInfo.PlaceId);
+                local worldName = modBranchConfigurations.GetWorldName(serverInfo.PlaceId);
                 
                 titleLabel.Name = "Official Server #".. serverInfo.JobId;
                 playersLabel.Text = #serverInfo.Players .." / ".. serverInfo.MaxPlayers;
                 pingLabel.Text = serverInfo.RegionCode;
-                descLabel.Text = "Official vanilla almonds server. World: ".. modBranchConfigs.GetWorldDisplayName(worldName); 
+                descLabel.Text = "Official vanilla almonds server. World: ".. modBranchConfigurations.GetWorldDisplayName(worldName); 
                 
                 updatedJobId[newListing.Name] = true;
             end

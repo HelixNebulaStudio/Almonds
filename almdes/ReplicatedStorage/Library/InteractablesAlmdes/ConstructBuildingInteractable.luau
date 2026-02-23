@@ -1,8 +1,8 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
-local modWallPlanTemplate = shared.require(game.ReplicatedStorage.Library.WallPlanTemplate);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 
 local interactablePackage = {};
 --==
@@ -10,16 +10,16 @@ local interactablePackage = {};
 function interactablePackage.init(super) -- Server/Client
 	local remoteBuildingPlan = modRemotesManager:Get("BuildingPlan");
 
-    local WallPlan = {
-		Name = "WallPlan";
-        Type = "WallPlan";
+    local ConstructBuilding = {
+		Name = "ConstructBuilding";
+        Type = "ConstructBuilding";
 
         IndicatorPresist = false;
         InteractableRange = 10;
         InteractDuration = 1;
     };
 
-    function WallPlan.new(interactable: InteractableInstance, npcName: string)
+    function ConstructBuilding.new(interactable: InteractableInstance, npcName: string)
         local config = interactable.Config;
         local variant = interactable.Variant;
 
@@ -28,7 +28,7 @@ function interactablePackage.init(super) -- Server/Client
     end
 
     -- When interacting with interactable.
-    function WallPlan.BindInteract(interactable: InteractableInstance, info: InteractInfo)
+    function ConstructBuilding.BindInteract(interactable: InteractableInstance, info: InteractInfo)
         if info.Player == nil then return end;
         if info.Action ~= info.ActionSource.Client then return end;
 
@@ -47,15 +47,15 @@ function interactablePackage.init(super) -- Server/Client
     end
     
     -- When interactable pops up on screen.
-    function WallPlan.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
-        local compLib = modWallPlanTemplate.BuildingCost[interactable.Variant];
+    function ConstructBuilding.BindPrompt(interactable: InteractableInstance, info: InteractInfo)
+        local compLib = modBuildingPlans.BuildingCost[interactable.Variant];
         local itemLib = modItemsLibrary:Find(compLib.ItemId);
 
         interactable.CanInteract = true;
         interactable.Label = `Construct {interactable.Variant} ({compLib.Amount} {itemLib.Name})`;
     end
 
-    super.registerPackage(WallPlan);
+    super.registerPackage(ConstructBuilding);
 end
 
 return interactablePackage;
