@@ -54,10 +54,11 @@ end
 
 shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmdes)
     local healthComp: HealthComp = playerClass.HealthComp;
-    healthComp:SetCanBeHurtBy();
+	healthComp.DefaultCanBeHurtByBoolString = "";
+	healthComp:SetCanBeHurtBy(healthComp.DefaultCanBeHurtByBoolString);
     
     local player: Player = playerClass:GetInstance();
-    local properties: PropertiesVariable<{}> = playerClass.Properties;
+    local properties: PropertiesVariable<anydict> = playerClass.Properties;
 
     if RunService:IsServer() then
         local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
@@ -98,15 +99,14 @@ end)
 
 shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: PlayerClassAlmdes, character: Model)
     local wieldComp = playerClass.WieldComp;
-    wieldComp.TargetableTags.Bandit = true;
 
-
+    
     local characterComp = playerClass.CharacterComp;
     characterComp.DefaultFlatFriction = 1.1;
 
     if RunService:IsClient() then return end;
 
-    local properties: PropertiesVariable<{}> = playerClass.Properties;
+    local properties: PropertiesVariable<anydict> = playerClass.Properties;
     local player = playerClass:GetInstance();
     
     local humanoid: Humanoid = playerClass.Humanoid;

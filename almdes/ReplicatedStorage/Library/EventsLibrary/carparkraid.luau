@@ -32,7 +32,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 	local templateEventMap = eventInstance.TemplateEventMap;
 
 	local scheduler: Scheduler = eventInstance.Scheduler;
-	local properties: PropertiesVariable<{}> = eventInstance.Properties;
+	local properties: PropertiesVariable<anydict> = eventInstance.Properties;
 	local garbageHandler: GarbageHandler = eventInstance.Garbage;
 	local publicData = eventInstance.Public;
 

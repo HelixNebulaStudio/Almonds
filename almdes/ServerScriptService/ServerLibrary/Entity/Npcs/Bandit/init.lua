@@ -30,10 +30,6 @@ function npcPackage.Spawning(npcClass: NpcClass)
     local maxHealth = 200;
     healthComp.MaxHealth = maxHealth;
     healthComp.CurHealth = maxHealth;
-    
-    wieldComp.TargetableTags.Player = true;
-    wieldComp.TargetableTags.Human = true;
-    wieldComp.TargetableTags.Bandit = false;
 
     local rngGun = {
         "machete";
@@ -54,8 +50,8 @@ function npcPackage.Spawning(npcClass: NpcClass)
             modifier.SetValues.Damage = math.random(3, 5);
             equipmentClass.Configurations:AddModifier(modifier, true);
 
-            equipmentClass.Properties.Ammo = equipmentClass.Configurations.MagazineSize
-            equipmentClass.Properties.MaxAmmo = equipmentClass.Configurations.MagazineSize * math.random(1, 3);
+            equipmentClass.Properties.Ammo = equipmentClass.Configurations.AmmoLimit 
+            equipmentClass.Properties.MaxAmmo = equipmentClass.Configurations.AmmoLimit  * math.random(1, 3);
             storageItem:SetValues("A", equipmentClass.Properties.Ammo);
             storageItem:SetValues("MA", equipmentClass.Properties.MaxAmmo);
 
@@ -63,6 +59,7 @@ function npcPackage.Spawning(npcClass: NpcClass)
             local modifier = equipmentClass.Configurations.newModifier("BanditMelee");
             modifier.SetValues.Damage = math.random(10, 15);
             equipmentClass.Configurations:AddModifier(modifier, true);
+
         end
     end
 end

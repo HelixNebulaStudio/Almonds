@@ -7,9 +7,9 @@ local AlmdesCore = {};
 --==
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
-modGlobalVars.GameVersion = "0.0.1";
-modGlobalVars.GameBuild = "4";
-modGlobalVars.ModeVerLabel = `Almonds {modGlobalVars.GameVersion}.{modGlobalVars.GameBuild} InDev $UpTime`;
+modGlobalVars.GameVersion = "0.0";
+modGlobalVars.GameBuild = "5";
+modGlobalVars.ModeVerLabel = `$Fps fps\t$UpTime\tAlmonds $GameVersion $BranchName $IsMobile`;
 
 --==
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);

@@ -76,7 +76,10 @@ function modStorage.RequestUnlock(params, rPacket)
 
     Debugger:StudioLog(`RequestUnlock(params, rPacket)`, params, rPacket)
 
-    if storage.InteractConfig == nil then Debugger:Warn(`{storageId} is missing InteractConfig.`); return end;
+    if storage.InteractConfig == nil then 
+        Debugger:Warn(`{storageId} is missing InteractConfig.`); 
+        return rPacket; 
+    end;
     local interactable: InteractableInstance = modInteractables.getOrNew(storage.InteractConfig);
 
     local function setSucessful()
@@ -90,7 +93,7 @@ function modStorage.RequestUnlock(params, rPacket)
     local keyRequired = interactable.Values.KeyRequired;
     if keyRequired == nil then 
         setSucessful();
-        return;
+        return rPacket;
     end;
 
     local profile: ProfileAlmdes = shared.modProfile:Get(player);
@@ -98,7 +101,9 @@ function modStorage.RequestUnlock(params, rPacket)
     local inventory = gameSave.Inventory;
     
     local total, itemList = inventory:ListQuantity(keyRequired, 1);
-    if total <= 0 then return end;
+    if total <= 0 then
+        return rPacket;
+    end;
 
     inventory:Remove(itemList[1].ID, 1);
 
@@ -112,6 +117,8 @@ function modStorage.RequestUnlock(params, rPacket)
     interactable:Sync();
     
     setSucessful();
+    
+    return rPacket;
 end
 
 shared.coreBind(modStorage, "_new", function(storage: Storage)

@@ -19,7 +19,7 @@ function toolHandler.onRequire()
 			local newHealAmount = healAmount;
 
 			local comfortStatus: StatusClassInstance = statusComp:GetOrDefault("Comfort");
-			if comfortStatus.Values.CurValue < 50 then
+			if comfortStatus and comfortStatus.Values.CurValue < 50 then
 				local comfortRatio = math.clamp(comfortStatus.Values.CurValue / 50, 0, 1);
 				newHealAmount = newHealAmount * comfortRatio;
 			end

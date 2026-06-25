@@ -359,8 +359,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	modStorageInterface.ContextOptionUnloadAmmo = {
 		Text="Unload Ammo";
 		Check=function(slotItem)
-			local modWeaponModule = modData:GetItemClass(slotItem.ID);
-			local configurations = modWeaponModule and modWeaponModule.Configurations;
+			local equipmentClass: EquipmentClass? = playerClass.WieldComp:GetEquipmentClass(slotItem.ID);
+			local configurations = equipmentClass and equipmentClass.Configurations;
 			
 			if configurations == nil or configurations.AmmoType == nil then
 				return false;

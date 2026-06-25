@@ -65,7 +65,7 @@ function interactablePackage.init(super) -- Server/Client
             local storageValues = storage.Values;
             
             storageValues.Ignited = not storageValues.Ignited;
-            storage:SyncValues();
+            storage:SyncProperties();
 
             local storageShrink = storage:Shrink();
 
@@ -217,7 +217,7 @@ function interactablePackage.init(super) -- Server/Client
             storageValues.ActiveCook = activeCook;
             storageValues.ActiveMix = activeMix;
             
-            storage:SyncValues();
+            storage:SyncProperties();
         end)
         
         storage.Garbage:Tag(furnaceScheduler.OnStepped:Connect(function()

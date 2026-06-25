@@ -76,7 +76,7 @@ if RunService:IsClient() then -- MARK: Client
 		local animations = toolPackage.Animations;
 
 		local configurations: ConfigVariable = equipmentClass.Configurations;
-		local properties: PropertiesVariable<{}> = equipmentClass.Properties;
+		local properties: PropertiesVariable<anydict> = equipmentClass.Properties;
 		local binds = handler.Binds;
 
 		characterProperties.HideCrosshair = true;

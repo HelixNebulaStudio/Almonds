@@ -8,7 +8,7 @@ local modRewardsLibrary = shared.require(game.ReplicatedStorage.Library.RewardsL
 local Component = {};
 
 function Component.new(npcClass: NpcClass)
-    npcClass.Character:SetAttribute("SkipLocalDespawn", true);
+    npcClass.Character:SetAttribute("SkipDespawn", true);
     local healthComp: HealthComp = npcClass.HealthComp;
 
     healthComp.OnIsDeadChanged:Connect(function(isDead)

@@ -45,8 +45,8 @@ local toolPackage = {
 		Damage=20;
 		PotentialDamage=290;
 		
-		MagazineSize=16;
-		AmmoCapacity=(16*4);
+		AmmoLimit =16;
+		MaxAmmoLimit =(16*4);
 	
 		Rpm=400;
 		ReloadTime=3;
@@ -86,7 +86,7 @@ function toolPackage.DoSpecialLoad(handler: ToolHandlerInstance)
 	local configurations = equipmentClass.Configurations;
 	local itemValues = handler.StorageItem.Values;
 	
-	if itemValues.MA and itemValues.MA <= configurations.AmmoCapacity then
+	if itemValues.MA and itemValues.MA <= configurations.MaxAmmoLimit  then
 		return "SpecialLoad";
 	end
 	return "Load";

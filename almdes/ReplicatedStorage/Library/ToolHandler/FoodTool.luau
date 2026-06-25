@@ -61,7 +61,7 @@ if RunService:IsClient() then -- MARK: Client
 
 	
 		local configurations: ConfigVariable = equipmentClass.Configurations;
-		local properties: PropertiesVariable<{}> = equipmentClass.Properties;
+		local properties: PropertiesVariable<anydict> = equipmentClass.Properties;
 	
 		characterProperties.HideCrosshair = true;
 		characterProperties.UseViewModel = false;
