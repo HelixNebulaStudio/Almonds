@@ -12,6 +12,7 @@ local camera = workspace.CurrentCamera;
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
@@ -94,7 +95,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	hotbarWindow.Layers = {"CharacterHud"; "CharacterInterface"};
 	hotbarWindow.IgnoreHideAll = true;
 	hotbarWindow.ReleaseMouse = false;
-	hotbarWindow:Open();
+
+	if modConfigurations.SafehomeMode ~= true then
+		hotbarWindow:Open();
+	end
 
     
     --MARK: OnToggle
@@ -133,10 +137,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             modStorageInterface.CloseOptionMenus();
         end
     end)
-	modKeyBindsHandler:SetDefaultKey("KeyWindowInventory", Enum.KeyCode.Tab);
-	local quickButton = interface:NewQuickButton("Inventory", "Inventory", "rbxassetid://2169843985");
-	quickButton.LayoutOrder = 2;
-	interface:ConnectQuickButton(quickButton, "KeyWindowInventory");
+
+	if modConfigurations.SafehomeMode ~= true then
+		modKeyBindsHandler:SetDefaultKey("KeyWindowInventory", Enum.KeyCode.Tab);
+		local quickButton = interface:NewQuickButton("Inventory", "Inventory", "rbxassetid://2169843985");
+		quickButton.LayoutOrder = 2;
+		interface:ConnectQuickButton(quickButton, "KeyWindowInventory");
+	end
 
 	local titleLabel = invFrame:WaitForChild("Title");
 	local dropUIGradient = titleLabel:WaitForChild("DropUIGradient");

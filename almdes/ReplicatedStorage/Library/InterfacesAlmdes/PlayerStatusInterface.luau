@@ -6,7 +6,7 @@ local TweenService = game:GetService("TweenService");
 local localPlayer = game.Players.localPlayer;
 
 local modStatusLibrary = shared.require(game.ReplicatedStorage.Library.StatusLibrary);
-local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
@@ -41,8 +41,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	playerHudWindow.Layers = {"CharacterHud"};
 	playerHudWindow.IgnoreHideAll = true;
 	playerHudWindow.ReleaseMouse = false;
-	playerHudWindow:Open();
 
+	if modConfigurations.SafehomeMode ~= true then
+		playerHudWindow:Open();
+	end
 
 	local barsFrame = playerHudFrame:WaitForChild("HealthBars");
 	local healthBar = barsFrame:WaitForChild("HealthBar");

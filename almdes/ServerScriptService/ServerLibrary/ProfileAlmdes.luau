@@ -2,8 +2,12 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local CollectionService = game:GetService("CollectionService");
 
-local modProfile = shared.require(game.ServerScriptService.ServerLibrary.Profile);
+local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
+
+local modProfile = shared.require(game.ServerScriptService.ServerLibrary.Profile);
+local modServerManager = shared.require(game.ServerScriptService.ServerLibrary.ServerManager);
+local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingService);
 
 --==
 local function OnPlayerAdded(player: Player)
@@ -70,12 +74,38 @@ function modProfile.onRequire()
         local replyPacket = {};
         
         if action == "playtutorial" then
-            playerClass:Spawn();
+
+			local reserveAccessCode = modServerManager:CreatePrivateServer("Genesis");
+            local teleportData = modServerManager:CreateTeleportData();
+            teleportData.Tutorial = true;
+            Debugger:Warn("hqAccessCode", reserveAccessCode);
+            modServerManager:TeleportToPrivateServer("Genesis", reserveAccessCode, {player}, teleportData);
+
             replyPacket.Success = true;
             
         elseif action == "quickplay" then
-            playerClass:Spawn();
-            replyPacket.Success = true;
+
+            local userId = player.UserId;
+            local partyObj = {
+                Region = modMatchMakingService:GetServerRegion(player);
+                QueueType = "Default";
+                Players = {userId};
+                Values = {
+                    LocalSearchTimeLimit=30
+                };
+            };
+            local sucess, partyId = modMatchMakingService:QueueParty(partyObj);
+            
+            if sucess then
+                player:SetAttribute("IsInQueue", partyId);
+                replyPacket.Success = true;
+                replyPacket.NewState = modMatchMakingService:GetPlayerState(userId);
+
+            else
+                player:SetAttribute("IsInQueue", nil);
+                replyPacket.Failmsg = "Failed to queue";
+
+            end
 
         elseif action == "rescuerequest" then
             if playerClass.Properties.LastRescueRequest and tick() - playerClass.Properties.LastRescueRequest < 30 then
@@ -111,6 +141,13 @@ function modProfile.onRequire()
         return replyPacket;
     end
 
+    modMatchMakingService.OnPlayerStateUpdate:Connect(function(userId, newState)
+        local player = game.Players:GetPlayerByUserId(userId);
+        if player == nil then return end;
+
+        local profile = shared.modProfile:Get(player);
+        profile:GuiAction("queueupdate", newState);
+    end)
 end
 
 return modProfile;

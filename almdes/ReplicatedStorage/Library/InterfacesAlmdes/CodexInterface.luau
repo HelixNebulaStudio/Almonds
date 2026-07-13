@@ -84,7 +84,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local contentFrame = codexWindow:WaitForChild("Content");
     local contentUiCorner = contentFrame:WaitForChild("UICorner");
-    local contentDropShadow = contentFrame:WaitForChild("_dropShadow");
     local navListScrollFrame = contentFrame:WaitForChild("NavList");
     local itemsListScrollFrame = contentFrame:WaitForChild("ItemsList");
 
@@ -104,7 +103,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 local rPanel = charWindow.Binds.RPanel;
                 codexWindow.Parent = rPanel;
                 contentUiCorner.CornerRadius = UDim.new(0, 5);
-                contentDropShadow.Visible = false;
                 contentFrame.Position = UDim2.new(1, 0, 1, -70);
                 contentFrame.Size = UDim2.new(1, 0, 1, -140);
                 contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20);
@@ -117,7 +115,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             else
                 codexWindow.Parent = interface.ScreenGui;
                 contentUiCorner.CornerRadius = UDim.new(0, 0);
-                contentDropShadow.Visible = true;
                 contentFrame.Position = UDim2.new(0.5, 0, 0.9, -20);
                 contentFrame.Size = UDim2.new(0.6, 0, 0.8, -20);
                 contentFrame.BackgroundColor3 = Color3.fromRGB(35, 24, 40);

@@ -8,6 +8,7 @@ local CollectionService = game:GetService("CollectionService");
 local localPlayer = game.Players.LocalPlayer;
 
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
 local modUIElements = shared.require(game.ReplicatedStorage.Library.UI.UIElements);
@@ -61,11 +62,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local binds = window.Binds;
 
 	local keyId = "KeyWindowMap";
-	modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Backquote);
 	
-	local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
-	mapQuickButton.LayoutOrder = 3;
-	interface:ConnectQuickButton(mapQuickButton, keyId);
+    if modConfigurations.SafehomeMode ~= true then
+		modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Backquote);
+		
+		local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
+		mapQuickButton.LayoutOrder = 3;
+		interface:ConnectQuickButton(mapQuickButton, keyId);
+	end
 
     --MARK: OnToggle
 	window.OnToggle:Connect(function(visible)

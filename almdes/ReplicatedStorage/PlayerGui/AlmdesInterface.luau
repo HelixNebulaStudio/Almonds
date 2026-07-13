@@ -23,6 +23,7 @@ local interface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClas
 function interface.onRequire()
     remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
     remoteMainMenuRemote = modRemotesManager:Get("MainMenuRemote");
+
 end
 
 function interface.clientGuisLoad()
@@ -61,6 +62,7 @@ function interface.clientGuisLoad()
     end
     --==
 
+    
     interface:Init();
     interface.Properties.ActiveHotbarKeys = 6;
 
@@ -70,8 +72,8 @@ function interface.clientGuisLoad()
         end;
 
     else
-        local mainMenuWindow: InterfaceWindow = interface:GetWindow("MainMenu");
-        mainMenuWindow:Open();
+        -- local mainMenuWindow: InterfaceWindow = interface:GetWindow("MainMenu");
+        -- mainMenuWindow:Open();
 
     end
 

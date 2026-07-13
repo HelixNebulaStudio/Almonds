@@ -3,6 +3,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local TweenService = game:GetService("TweenService");
 
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modMarkupFormatter = shared.require(game.ReplicatedStorage.Library.MarkupFormatter);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
@@ -26,8 +27,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	titleLabel.Text = "InDev "..versionStr.." Update";
 	
 	local window: InterfaceWindow = interface:NewWindow("UpdateWindow", frameButton);
-	window:SetClosePosition(UDim2.new(1.5, -20, 0.9, -20));
 	modKeyBindsHandler:SetDefaultKey("KeyWindowUpdateWindow", Enum.KeyCode.F1);
+
+    if modConfigurations.SafehomeMode then
+        local insetHeight = interface.Properties.TopbarInset.Height+35;
+        window:SetClosePosition(UDim2.new(1.5, -20, 0, insetHeight), UDim2.new(1, -20, 0, insetHeight));
+    else
+        window:SetClosePosition(UDim2.new(1.5, -20, 0, -20));
+    end
 
     local expanded = false;
 	window.OnToggle:Connect(function(visible)
@@ -44,7 +51,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     window.OnUpdate:Connect(function()
         if expanded then
             TweenService:Create(frameButton, tweenInfo, {
-                Size = UDim2.new(1, -40, 0.9, -interface.Properties.TopbarInset.Height -30);
+                Size = UDim2.new(1, -40, 1, -(frameButton.Position.Y.Offset+10));
             }):Play();
         else
             TweenService:Create(frameButton, tweenInfo, {
@@ -65,8 +72,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     frameButton.MouseButton1Click:Connect(function()
         expanded = not expanded;
         window:Update();
+
     end)
-    
 end
 
 return interfacePackage;

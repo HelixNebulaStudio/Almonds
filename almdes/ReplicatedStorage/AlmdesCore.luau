@@ -8,11 +8,12 @@ local AlmdesCore = {};
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
 modGlobalVars.GameVersion = "0.0";
-modGlobalVars.GameBuild = "5";
+modGlobalVars.GameBuild = "6";
 modGlobalVars.ModeVerLabel = `$Fps fps\t$UpTime\tAlmonds $GameVersion $BranchName $IsMobile`;
 
 --==
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library:WaitForChild("BranchConfigurationsAlmdes"));
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library:WaitForChild("KeyBindsHandlerAlmdes"));
 local modOnEventsHandlers = shared.require(game.ReplicatedStorage.Library:WaitForChild("OnEventHandlersAlmdes"));
@@ -35,13 +36,16 @@ if RunService:IsServer() then
     local modProfile = shared.require(game.ServerScriptService.ServerLibrary.ProfileAlmdes);
     local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSaveAlmdes);
     local modStorage = shared.require(game.ServerScriptService.ServerLibrary.StorageAlmdes);
+    local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingService);
     local modApiRequestLibrary = shared.require(game.ServerScriptService.ServerLibrary.ApiRequestLibraryAlmdes);
     local modBaseBuildingSystem = shared.require(game.ServerScriptService.ServerLibrary.BaseBuildingSystem);
     local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
+    local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingServiceAlmdes);
 end
 
 function AlmdesCore.OnPlayerAdded(player)
     if RunService:IsServer() then
+
     elseif RunService:IsClient() then
     end
 end

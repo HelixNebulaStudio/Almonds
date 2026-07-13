@@ -10,14 +10,19 @@ local localPlayer = game.Players.LocalPlayer;
 
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
 local modClientLighting = shared.require(game.ReplicatedStorage.PlayerScripts.ClientLighting);
+local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
+local modTimeDownUI = shared.require(game.ReplicatedStorage.Library.UI.TimeDownUI);
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 local modScreenRelativeTextSize = shared.require(game.ReplicatedStorage.Library.UI.ScreenRelativeTextSize);
 
 local BASIC_TWEENINFO = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
+local QUEUE_PROCESS_FREQ = 60;
 
 local interfacePackage = {
     Type = "Player";
@@ -41,8 +46,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local menuMusic: Sound = frame:WaitForChild("MenuMusic");
 
-
     local window: InterfaceWindow = interface:NewWindow("MainMenu", frame);
+    window.BoolStringWhenActive = {String="!CharacterHud"; Priority=2;};
     window.IgnoreHideAll = true;
     window.UseMenuBlur = true;
     window.UseTween = false;
@@ -50,12 +55,37 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local binds = window.Binds;
 
-    
+    local navBar = frame:WaitForChild("NavBar")
+    local navBarContent = navBar:WaitForChild("Content");
+    local hudFrame;
+
+    if modConfigurations.SafehomeMode then
+        hudFrame = script:WaitForChild("MenuHudFrame"):Clone();
+        hudFrame.Parent = interface.ScreenGui;
+
+        if modConfigurations.CompactInterface then
+            hudFrame.AnchorPoint = Vector2.new(0, 0);
+            hudFrame.Position = UDim2.new(0, 10, 0, interface.Properties.TopbarInset.Height+25);
+        end
+
+        local keyId = `KeyWindow{window.Name}`;
+        modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Tab);
+        
+        local codexQuickButton = interface:NewQuickButton(window.Name, "MainMenu", "rbxassetid://121177091124921");
+        codexQuickButton.LayoutOrder = 0;
+        interface:ConnectQuickButton(codexQuickButton, keyId);
+
+        hudFrame.Visible = true;
+    end
+
+    local navButtonCooldown = tick();
+
     --MARK: OnToggle
     window.OnToggle:Connect(function(visible)
         if visible then
             curPage = "Root";
             frame.Position = UDim2.new(0,0,0,0);
+
             if localPlayer.Character == nil then
                 game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
                 
@@ -83,8 +113,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             interface:HideAll();
             window:Update();
             frame.Visible = true;
+            hudFrame.Visible = false;
 
         else
+
+            hudFrame.Visible = true;
+            interface:ToggleWindow("UpdateWindow", false);
             modClientLighting:SetAtmosphere("Spawn");
 
             modCameraGraphics:Unbind("menucamera");
@@ -107,38 +141,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         game.Debris:AddItem(menuMusic, 0);
     end)
 
-    local navBar = frame:WaitForChild("NavBar"):WaitForChild("Content");
-    local navButtons = navBar:GetChildren();
-    local navCooldown = tick();
-    for a=1, #navButtons do
-        local button = navButtons[a];
-        if not button:IsA("GuiObject") then continue end;
-
-        button.MouseButton1Click:Connect(function()
-            if tick()-navCooldown <= 0.1 then return end;
-            navCooldown = tick();
-            interface:PlayButtonClick();
-            curPage = button.Name;
-            window:Update();
-        end)
-
-        if button:FindFirstChild("SelectedHighlight") then
-            local selectedHighlight = button.SelectedHighlight;
-            button.MouseEnter:Connect(function()
-                selectedHighlight.Visible = true;
-            end)
-            button.MouseLeave:Connect(function()
-                selectedHighlight.Visible = false;
-            end)
-        end
-    end
-
-
-    local menuButton = frame:WaitForChild("NavBar"):WaitForChild("MenuButton");
+    local menuButton = navBar:WaitForChild("MenuButton");
     local function menuButtonOnClick()
-        if tick()-navCooldown <= 0.1 then return end;
-        navCooldown = tick();
+        if tick()-navButtonCooldown <= 0.1 then return end;
+        navButtonCooldown = tick();
         interface:PlayButtonClick();
+
         curPage = "Root";
         window:Update();
     end
@@ -154,7 +162,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             if guiObj:IsA("ImageLabel") then
                 TweenService:Create(guiObj, BASIC_TWEENINFO, {
-                    Size = isOn and UDim2.new(1.7, 0, 1.7, 0) or UDim2.new(1.6, 0, 1.6, 0);
+                    Size = isOn and UDim2.new(1.3, 0, 1.3, 0) or UDim2.new(1.2, 0, 1.2, 0);
                     ImageColor3 = isOn and interface.Colors.Branch or Color3.fromRGB(255, 255, 255);
                 }):Play();
 
@@ -167,15 +175,33 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
         end
     end
-    menuButton.MouseEnter:Connect(function() toggleMenuButtonMouseEvent(true); end);
-    menuButton.MouseLeave:Connect(function() toggleMenuButtonMouseEvent(false); end);
+    menuButton:GetPropertyChangedSignal("GuiState"):Connect(function()
+        if menuButton.GuiState == Enum.GuiState.Hover then
+            toggleMenuButtonMouseEvent(true);
+        else
+            toggleMenuButtonMouseEvent(false);
+        end
+    end)
 
+    local playButton = navBar:WaitForChild("Content"):WaitForChild("PlayPage");
+    local playLoading = playButton:WaitForChild("LoadingImage");
 
     local PAGES = {
+        ["QueuePage"] = {
+            _loaded = false;
+
+            Frame = bodyFrame.QueuePage;
+            Button = nil;
+
+            -- @functions
+            Load = nil;
+            Update = nil;
+        };
         ["PlayPage"] = {
             _loaded = false;
 
             Frame = bodyFrame.PlayPage;
+            Button = playButton;
 
             -- @functions
             Load = nil;
@@ -185,6 +211,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             _loaded = false;
 
             Frame = bodyFrame.LoadoutsPage;
+            Button = nil;
 
             -- @functions
             Load = nil;
@@ -193,6 +220,18 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     };
 
     local function updatePages()
+        local queueState = modData.QueueState;
+        if queueState ~= nil then
+            playButton.Text = "Unqueue";
+
+        else
+            playButton.Text = "Play";
+
+        end
+
+        if queueState and curPage == "PlayPage" then
+            curPage = "QueuePage";
+        end
         for pageId, pageContent in pairs(PAGES) do
             if pageId == curPage then
                 if pageContent.Load then
@@ -220,14 +259,47 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end
 
+    local navButtons = navBarContent:GetChildren();
+    for a=1, #navButtons do
+        local button = navButtons[a];
+        if not button:IsA("GuiObject") then continue end;
+
+        button.MouseButton1Click:Connect(function()
+            if tick()-navButtonCooldown <= 0.1 then return end;
+            navButtonCooldown = tick();
+            interface:PlayButtonClick();
+
+            curPage = button.Name;
+            window:Update();
+        end)
+
+        if button:FindFirstChild("SelectedHighlight") then
+            local selectedHighlight = button.SelectedHighlight;
+
+            button:GetPropertyChangedSignal("GuiState"):Connect(function()
+                if button.GuiState == Enum.GuiState.Hover then
+                    selectedHighlight.Visible = true;
+                else
+                    selectedHighlight.Visible = false;
+                end
+            end)
+        end
+        if PAGES[button.Name] then
+            PAGES[button.Name].Button = button;
+        end
+    end
+
     --MARK: OnUpdate
     window.OnUpdate:Connect(function()
         if window.Visible then
+            menuButtonTitle.Visible = interface.ActiveScale > 0.8;
             interface.VersionLabel.ZIndex = 2;
+
         else
             interface.VersionLabel.ZIndex = 0;
             interface:ToggleWindow("UpdateWindow", false);
             interface:ToggleWindow("CodexWindow", false);
+
             return;
         end
 
@@ -245,12 +317,94 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         updatePages();
     end)
 
-    local function updateBodySize(k, v, ov)
+    local function onTopBarInsetChanged(k, v, ov)
         if k ~= "TopBarInset" then return end;
-        bodyFrame.Size = UDim2.new(1, 0, 0.9, -interface.Properties.TopbarInset.Height);
+
+        local padding = 15;
+        if interface.ActiveScale <= 0.5 then
+            padding = 0;
+        end
+
+        navBar.Size = UDim2.new(1.4, 0, 0, interface.Properties.TopbarInset.Height+padding);
+        bodyFrame.Size = UDim2.new(1, 0, 1, -interface.Properties.TopbarInset.Height-padding);
+
+        if hudFrame then
+            hudFrame.Size = UDim2.new(1, 0, 1, -interface.Properties.TopbarInset.Height-padding);
+        end
     end
-    interface.Properties.OnChanged:Connect(updateBodySize)
-    updateBodySize("TopBarInset");
+    interface.Properties.OnChanged:Connect(onTopBarInsetChanged)
+    onTopBarInsetChanged("TopBarInset");
+
+
+
+    --MARK: Queue Page
+    PAGES.QueuePage.Load = function()
+        if PAGES.QueuePage._loaded then return end;
+        PAGES.QueuePage._loaded = true;
+    end
+    PAGES.QueuePage.Update = function()
+        local queueState = modData.QueueState;
+
+        Debugger:Warn("Queue state", queueState);
+
+        local queuePageFrame = PAGES.QueuePage.Frame;
+        local queueInfoDialog = queuePageFrame.QueueInfo;
+        local queueLabel = queueInfoDialog.QueueLabel;
+
+        local queueTimeDown = window.Binds.QueueTimeDown or modTimeDownUI.new();
+        window.Binds.QueueTimeDown = queueTimeDown;
+
+        if queueState == nil then
+            queueTimeDown.Frame.Visible = false;
+            queueLabel.Text = `You are not in a queue.`;
+
+            return; 
+        end
+
+        queueTimeDown.Frame.Visible = true;
+        queueTimeDown.Frame.Parent = interface.ScreenGui;
+        queueTimeDown.Frame.AnchorPoint = Vector2.new(0.5, 0);
+        queueTimeDown.Frame.Position = UDim2.new(0.5, 0, 0, interface.Properties.TopbarInset.Height + 30);
+        queueTimeDown.Frame.Size = UDim2.new(0.1, 0, 0.1, 0);
+
+        local ftFrame = queueTimeDown.Frame.FtFrame;
+        ftFrame.BackgroundColor3 = interface.Colors.ActivePrimary;
+
+        local nextQueueProccessTick = queueState.JoinTimestamp + (queueState.Values.LocalSearchTimeLimit or 30);
+        if queueState.GlobalEnteredAt then
+            nextQueueProccessTick = queueState.GlobalEnteredAt;
+        end
+        nextQueueProccessTick = math.ceil(nextQueueProccessTick / QUEUE_PROCESS_FREQ) * QUEUE_PROCESS_FREQ;
+        nextQueueProccessTick += 7;
+
+        local changeStr = nil;
+        if queueState.CIndex == 1 then
+            changeStr = `Queued into nearby queue..`;
+        elseif queueState.CIndex == 2 then
+            changeStr = `Requeued into global queue..`;
+        end
+        queueState.CIndex = nil;
+
+        queueTimeDown.BindOnTick = function(self, timeLeft)
+            if timeLeft > 10 then return end;
+            queueTimeDown.Frame.Size = UDim2.new(0.15, 0, 0.15, 0);
+        end;
+        queueTimeDown:Set{
+            EndTime = nextQueueProccessTick;
+            Text = changeStr;
+        };
+
+
+        local queueTypes = {
+            Default = "Quick Play";
+        };
+        queueLabel.Text = `Queueing {
+            queueState.Queue == "LOCAL" and "nearby" or "global"
+        } for {
+            queueTypes[queueState.QueueType]
+        }`;
+    end
+
 
 
     --== MARK: Play Page
@@ -258,7 +412,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         if PAGES.PlayPage._loaded then return end;
         PAGES.PlayPage._loaded = true;
 
-        local isMenuWorld = modBranchConfigurations.IsWorld("Genesis");
+        local isMenuWorld = shared.WorldName == "Genesis";
         local isTutorialFinished = modData:GetEvent("tutorialFinished");
 
         local playPageFrame = PAGES.PlayPage.Frame;
@@ -360,10 +514,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 
                 local worldName = modBranchConfigurations.GetWorldName(serverInfo.PlaceId);
                 
-                titleLabel.Name = "Official Server #".. serverInfo.JobId;
-                playersLabel.Text = #serverInfo.Players .." / ".. serverInfo.MaxPlayers;
+                titleLabel.Name = `Official Server #{serverInfo.JobId}`;
+                playersLabel.Text = `{#serverInfo.Players} / {serverInfo.MaxPlayers}`;
                 pingLabel.Text = serverInfo.RegionCode;
-                descLabel.Text = "Official vanilla almonds server. World: ".. modBranchConfigurations.GetWorldDisplayName(worldName); 
+                descLabel.Text = `Official vanilla almonds server. World: {modBranchConfigurations.GetWorldDisplayName(worldName)}`;
                 
                 updatedJobId[newListing.Name] = true;
             end
@@ -400,19 +554,53 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             end
         end
 
+        local loadingTween: Tween;
+        playLoading:GetPropertyChangedSignal("Visible"):Connect(function()
+            if loadingTween then
+                loadingTween:Cancel();
+            end
+
+            if not playLoading.Visible then return end;
+
+            loadingTween = TweenService:Create(
+                playLoading, 
+                TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1), 
+                {
+                    Rotation = 360;
+                }
+            );
+            loadingTween:Play();
+        end)
 
         local function deploy(action)
-            TweenService:Create(frame, BASIC_TWEENINFO, {Position=UDim2.new(0,0,0.2,0)}):Play();
-
             if remoteMainMenu:Debounce() then return end;
 
-            local replyPacket = remoteMainMenu:InvokeServer(action) or {};
-            if replyPacket.Success then
+            if action == "playtutorial" 
+            or action == "quickplay" then
+                playLoading.Visible = true;
+                playButton.Text = "";
+            end
+            local rPacket = remoteMainMenu:InvokeServer(action) or {};
+            playLoading.Visible = false;
+            
+            if rPacket.Success then
+                if rPacket.NewState then
+                    modData.QueueState = rPacket.NewState;
+                    modData.QueueState.CIndex = 1;
+                                
+                    curPage = "QueuePage";
+                    PAGES.QueuePage.Update();
+                    window:Update();
+                end
 
             else
+                if rPacket.FailMsg then
+                    modClientGuis.promptWarning(rPacket.FailMsg or "Please try again!");
+                end
+
                 curPage = "Root";
-                TweenService:Create(frame, BASIC_TWEENINFO, {Position=UDim2.new(0,0,0,0)}):Play();
                 window:Open();
+
             end
         end
 
@@ -421,20 +609,19 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 optionsButton:SetAttribute("Locked", true);
             end
 
-            optionsButton.MouseEnter:Connect(function()
-                selectionName = optionsButton.Name;
-                updateSelectionHighlight();
+
+            optionsButton:GetPropertyChangedSignal("GuiState"):Connect(function()
+                if optionsButton.GuiState == Enum.GuiState.Hover then
+                    selectionName = optionsButton.Name;
+                    updateSelectionHighlight();
+                else
+                    selectionName = nil;
+                    updateSelectionHighlight();
+                end
             end)
-            optionsButton.MouseMoved:Connect(function()
-                selectionName = optionsButton.Name;
-                updateSelectionHighlight();
-            end)
-            optionsButton.MouseLeave:Connect(function()
-                selectionName = nil;
-                updateSelectionHighlight();
-            end)
-            
             updateSelectionHighlight();
+
+
             optionsButton.MouseButton1Click:Connect(function()
                 if optionsButton:GetAttribute("Locked") then return end;
 
@@ -471,9 +658,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end
 
-    local templateLoadoutSlot = script:WaitForChild("LoadoutSlot");
+
 
     --== MARK: Loadouts Page
+    local templateLoadoutSlot = script:WaitForChild("LoadoutSlot");
     PAGES.LoadoutsPage.Load = function()
         if PAGES.LoadoutsPage._loaded then return end;
         PAGES.LoadoutsPage._loaded = true;
@@ -723,6 +911,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         end
     end;
 
+    interface:BindEvent("queueupdate", function()
+        PAGES.QueuePage.Update();
+    end)
 end
 
 return interfacePackage;
