@@ -17,6 +17,8 @@ local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configur
 local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modCameraGraphics = shared.require(game.ReplicatedStorage.PlayerScripts.CameraGraphics);
+local modTimeDownUI = shared.require(game.ReplicatedStorage.Library.UI.TimeDownUI);
+local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
 local interface = shared.require(game.ReplicatedStorage.Library.UI.InterfaceClass).new(script.Parent);
 --==
@@ -81,6 +83,31 @@ function interface.clientGuisLoad()
         local rPacket = remoteItemProcessor:InvokeServer("sync");
 		interface:FireEvent("DataItemProcessorUpdate", rPacket);
 	end);
+    
+    --MARK: GuiRemote binds;
+    local interfaceProperties: PropertiesVariable<anydict> = interface.Properties;
+
+    local generalTimeDown = modTimeDownUI.new();
+    interfaceProperties.GeneralTimeDown = generalTimeDown;
+    interface.Garbage:Tag(generalTimeDown);
+    generalTimeDown.Frame.Name = "GeneralTimeDown";
+    generalTimeDown.Frame.Parent = interface.ScreenGui;
+    generalTimeDown.Frame.AnchorPoint = Vector2.new(0.5, 0);
+    generalTimeDown.Frame.Position = UDim2.new(0.5, 0, 0, interface.Properties.TopbarInset.Height + 30);
+    generalTimeDown.Frame.Size = UDim2.new(0.1, 0, 0.1, 0);
+    
+    local ftFrame = generalTimeDown.Frame.FtFrame;
+    ftFrame.BackgroundColor3 = interface.Colors.ActivePrimary;
+
+    local lastStartTime = nil;
+    modClientGuis.bindGuiRemote("onconnecttimedown", function(startTime)
+        if lastStartTime and startTime - lastStartTime <= 10 then return end;
+        lastStartTime = startTime;
+
+        generalTimeDown:Set{
+            EndTime = startTime;
+        };
+    end)
 end
 
 return interface;

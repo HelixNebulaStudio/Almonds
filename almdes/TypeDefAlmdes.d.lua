@@ -10,7 +10,7 @@ export type DAMAGE_TYPE_ALMDES =
 
 --MARK: ProfileAlmdes
 export type ProfileAlmdes = Profile & {
-
+    SpawnCFrame: CFrame;
 };
 
 --MARK: PlayerClassAlmdes

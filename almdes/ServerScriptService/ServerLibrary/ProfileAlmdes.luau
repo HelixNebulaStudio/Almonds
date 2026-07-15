@@ -8,6 +8,7 @@ local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesM
 local modProfile = shared.require(game.ServerScriptService.ServerLibrary.Profile);
 local modServerManager = shared.require(game.ServerScriptService.ServerLibrary.ServerManager);
 local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingService);
+local modServerCoordinator = shared.require(game.ServerScriptService.ServerLibrary.ServerCoordinator);
 
 --==
 local function OnPlayerAdded(player: Player)
@@ -45,7 +46,8 @@ local function OnPlayerAdded(player: Player)
     end)
 end
 
-shared.coreBind(modProfile, "_new", function(profile: ProfileAlmdes, player: Player)
+shared.coreBind(modProfile, "_new", function(profile: ProfileAlmdes, profileMeta: anydict, player: Player)
+    profileMeta.SpawnCFrame = CFrame.identity;
     
 end)
 
@@ -75,10 +77,21 @@ function modProfile.onRequire()
         
         if action == "playtutorial" then
 
-			local reserveAccessCode = modServerManager:CreatePrivateServer("Genesis");
+			local reserveAccessCode, privateServerId = modServerManager:CreatePrivateServer("Genesis");
+            modServerCoordinator:NewServer(privateServerId, {
+				Parties = {
+					{
+						PartyId = "test-party1";
+						UserIds = {player.UserId};
+					};
+                };
+                UserIds = {player.UserId};
+                Values = {
+                    IsTutorial = true;
+                };
+            });
+
             local teleportData = modServerManager:CreateTeleportData();
-            teleportData.Tutorial = true;
-            Debugger:Warn("hqAccessCode", reserveAccessCode);
             modServerManager:TeleportToPrivateServer("Genesis", reserveAccessCode, {player}, teleportData);
 
             replyPacket.Success = true;
@@ -136,6 +149,7 @@ function modProfile.onRequire()
         elseif action == "returnmenu" then
             playerClass:Despawn();
             replyPacket.Success = true;
+            modServerManager:Travel(player, "MainMenu");
 
         end
         return replyPacket;
