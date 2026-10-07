@@ -24,7 +24,7 @@ statusPackage.ComfortWeights = ComfortWeights;
 function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData: TickData)
     if RunService:IsClient() then return end;
 
-    local statusComp: StatusComp = statusClass.StatusOwner.StatusComp;
+    local statusComp: StatusComp = statusClass.StatusOwner.StatusComp :: StatusComp;
 
     if tickData.ms100 == true then
         local newComfort = 0;
@@ -36,6 +36,9 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
             local curValue = statusClass.Values.CurValue;
             local ratio = math.clamp(curValue / weightData.Threshold, 0, 1) * weightData.Weight;
             newComfort += ratio;
+        end
+        if shared.WorldName == "MainMenu" then
+            newComfort += 0.5;
         end
 
         newComfort = math.clamp(newComfort, 0, 1) * 100;

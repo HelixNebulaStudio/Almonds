@@ -2,6 +2,7 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
 local HttpService = game:GetService("HttpService");
+local ConfigService = game:GetService("ConfigService");
 
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
@@ -11,6 +12,13 @@ local modCrossServerSignals = shared.require(game.ServerScriptService.ServerLibr
 local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingService);
 local modServerManager = shared.require(game.ServerScriptService.ServerLibrary.ServerManager);
 local modServerCoordinator = shared.require(game.ServerScriptService.ServerLibrary.ServerCoordinator);
+
+
+local SERVER_TYPES = {
+	Default = {
+		CanJoinInProgress = true;
+	};
+};
 --==
 
 function modMatchMakingService.onRequire()
@@ -37,13 +45,40 @@ function modMatchMakingService.onRequire()
 		end
 	end)
 
+	local function GetExtractionInfilGracePeriod()
+		local graceSeconds = 300;
+		local s, e = pcall(function()
+			local config = ConfigService:GetConfigAsync();
+			local value = config:GetValue("ExtractionInfilGracePeriod");
+			if type(value) == "number" then
+				graceSeconds = value;
+			end
+		end);
+		if not s then
+			Debugger:Warn("Failed to read ExtractionInfilGracePeriod config", e);
+		end
+		return graceSeconds;
+	end
+
 	modMatchMakingService:BindLobbyFormed(function(gameLobby)
 		Debugger:Warn(`Preparing server`);
-		
+
 		local reserveAccessCode, privateServerId = modServerManager:CreatePrivateServer("Genesis");
 
 		gameLobby.AccessCode = reserveAccessCode;
-		gameLobby.Values = {};
+		gameLobby.Values = gameLobby.Values or {};
+
+		local queueType = gameLobby.QueueType;
+		local config = SERVER_TYPES[queueType];
+		if config and config.CanJoinInProgress then
+			gameLobby.Values.GraceUntil = os.time() + GetExtractionInfilGracePeriod();
+			gameLobby.Values.StartTime = os.time();
+			gameLobby.Values.CanJoinInProgress = true;
+
+		else
+			gameLobby.Values.CanJoinInProgress = false;
+		end
+		gameLobby.Values.JoinedCount = 0;
 
 		modServerCoordinator:NewServer(privateServerId, gameLobby);
 
@@ -121,6 +156,13 @@ function modMatchMakingService.onRequire()
 		};
     };
 
+end
+
+function modMatchMakingService:SetCanJoinInProgress(gameLobby, value)
+	gameLobby.Values.CanJoinInProgress = value;
+	if value == false then
+		modServerCoordinator:RemoveServer();
+	end
 end
 
 return modMatchMakingService;

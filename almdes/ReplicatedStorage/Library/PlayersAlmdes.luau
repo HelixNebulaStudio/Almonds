@@ -6,7 +6,7 @@ local CollectionService = game:GetService("CollectionService");
 local localPlayer = game.Players.LocalPlayer;
 
 local modPlayers = shared.require(game.ReplicatedStorage.Library.Players);
-local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modRaycastUtil = shared.require(game.ReplicatedStorage.Library.Util.RaycastUtil);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
@@ -112,33 +112,28 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
     local humanoid: Humanoid = playerClass.Humanoid;
     humanoid.HealthDisplayDistance = 0;
 
-    if properties.PlayRunSession then
-        properties.PlayRunSession:Destroy();
-    end
-    properties.PlayRunSession = modPlayRunSession.new(playerClass);
-
     --MARK: Meta Status
     local statusComp: StatusComp = playerClass.StatusComp;
 
-    --Hunger
-    local hungerStatusCompApplyParam: StatusCompApplyParam = {
-        Values = {
-            CurValue = 100;
-            MaxValue = 100;
-        };
-    }
-    statusComp:Apply("Hunger", hungerStatusCompApplyParam);
+    -- --Hunger
+    -- local hungerStatusCompApplyParam: StatusCompApplyParam = {
+    --     Values = {
+    --         CurValue = 100;
+    --         MaxValue = 100;
+    --     };
+    -- }
+    -- statusComp:Apply("Hunger", hungerStatusCompApplyParam);
 
-    --Thirst
-    local thirstStatusCompApplyParam: StatusCompApplyParam = {
-        Values = {
-            CurValue = 100;
-            MaxValue = 100;
-        };
-    }
-    statusComp:Apply("Thirst", thirstStatusCompApplyParam);
+    -- --Thirst
+    -- local thirstStatusCompApplyParam: StatusCompApplyParam = {
+    --     Values = {
+    --         CurValue = 100;
+    --         MaxValue = 100;
+    --     };
+    -- }
+    -- statusComp:Apply("Thirst", thirstStatusCompApplyParam);
 
-    --Comfort
+    -- --Comfort
     local comfortStatusCompApplyParam: StatusCompApplyParam = {
         Values = {
             CurValue = 100;
@@ -146,16 +141,6 @@ shared.coreBind(modPlayers.Player, "_character_added", function(playerClass: Pla
         };
     }
     statusComp:Apply("Comfort", comfortStatusCompApplyParam);
-
-    local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
-    local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
-
-	for storageId, storage: Storage in pairs(gameSave.Storages) do
-		storage:Wipe();
-		Debugger:Warn(`Wiped storage: {storageId}`);
-	end
-    gameSave.LoadoutSaves:LoadActiveLoadout();
-
 end);
 
 shared.coreBind(modPlayers.Player, "_status_tick_update", function(playerClass: PlayerClassAlmdes, tickData: TickData)

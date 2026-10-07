@@ -3,8 +3,13 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local RunService = game:GetService("RunService");
 local CollectionService = game:GetService("CollectionService");
 
+local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
+local modMatchMakingService;
+
 if RunService:IsServer() then
     modServerCoordinator = shared.require(game.ServerScriptService.ServerLibrary.ServerCoordinator);
+    modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingServiceAlmdes);
+    modNpcSpawner = shared.require(game.ServerScriptService.ServerLibrary.NpcSpawner);
 
 end
 
@@ -59,6 +64,14 @@ function WorldCore.onRequire()
             end
             local gameLobby = serverInfo;
 
+            gameLobby.UserIds = gameLobby.UserIds or {};
+            if table.find(gameLobby.UserIds, player.UserId) == nil then
+                table.insert(gameLobby.UserIds, player.UserId);
+            end
+            gameLobby.Values = gameLobby.Values or {};
+            gameLobby.Values.JoinedCount = #gameLobby.UserIds;
+            modServerCoordinator:SyncServerUpdate();
+
             local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
             modWorldEvents.GlobalProperties.Tutorial = gameLobby.Values.IsTutorial == true;
 
@@ -107,6 +120,23 @@ function WorldCore.onRequire()
             playerClass:Spawn();
 
         end, 999);
+
+        task.spawn(function()
+            local serverInfo = modServerCoordinator:GetCurrentServerInfo(30);
+            if serverInfo == nil then return end;
+            local gameLobby = serverInfo;
+
+            if gameLobby.Values == nil or gameLobby.Values.CanJoinInProgress ~= true then
+                return;
+            end
+
+            modSyncTime.GetClock():GetPropertyChangedSignal("Value"):Connect(function()
+                if not gameLobby.Values.GraceUntil or workspace:GetServerTimeNow() < gameLobby.Values.GraceUntil then return end
+
+                local liveLobby = modServerCoordinator.CurServerInfo or serverInfo;
+                modMatchMakingService.SetCanJoinInProgress(liveLobby, false);
+            end);
+        end);
     end
 
     shared.modEventService:OnInvoked("Interactables_BindButtonInteract", function(eventPacket: EventPacket, ...)

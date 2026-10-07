@@ -11,7 +11,7 @@ jobs:
         uses: Sniddl/discord-commits@v1.6
         with:
           webhook: ${{ secrets.Discord_Webhook }}
-          message: 'New updates on **Almonds**'
+          message: 'New changes in repo: **Almonds**'
           embed: '{
             "title": "{{ commit.title }}",
             "description": "{{ commit.description }}\n\n[Almonds](https://helixnebulastudio.github.io/Almonds/)",

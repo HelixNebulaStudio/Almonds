@@ -8,13 +8,31 @@ export type DAMAGE_TYPE_ALMDES =
     | "Dehydration"
     ;
 
---MARK: ProfileAlmdes
+-- MARK: ProfileAlmdes
 export type ProfileAlmdes = Profile & {
     SpawnCFrame: CFrame;
 };
 
---MARK: PlayerClassAlmdes
+-- MARK: PlayerClassAlmdes
 export type PlayerClassAlmdes = PlayerClass & {
+};
+
+-- MARK: PlayRunSession
+export type PlayRunSession = {
+    Status: "Active" | "Success" | "Failed";
+    StartTime: number;
+
+    JobId: string?; -- server id;
+
+    EndTime: number?;
+    EndReason: string?;
+    Stats: anydict;
+
+    -- @methods
+    GetSummary: (PlayRunSession) -> anydict;
+    EndRun: (PlayRunSession, runStatus: string, reason: string) -> nil;
+    AddStat: (PlayRunSession, key: string, val: number) -> nil;
+    Wipe: (PlayRunSession) -> nil;
 };
 
 -- MARK: GameSaveAlmdes
@@ -22,25 +40,9 @@ export type GameSaveAlmdes = GameSave & {
     -- @properties
     WorkbenchSeed: number;
     ItemProcessor: anydict;
-    LoadoutSaves: LoadoutSaves;
 
+    Session: anydict;
     -- @methods
-};
-
--- MARK: LoadoutSaves
-export type LoadoutSaves = {
-    -- @properties
-    Player: Player;
-    GameSave: GameSaveAlmdes;
-
-    ActiveLoadout: number;
-    MaxLoadouts: number;
-    Loadouts: {[number]: anydict};
-
-    -- @methods
-    SaveActiveLoadout: (LoadoutSaves, saveStorages: boolean) -> nil;
-    LoadActiveLoadout: (LoadoutSaves) -> nil;
-    Shrink: (LoadoutSaves) -> anydict;
 };
 
 -- MARK: WorldEvents

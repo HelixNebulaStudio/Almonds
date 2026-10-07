@@ -3,50 +3,70 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 local PlayRunSession = {};
 PlayRunSession.__index = PlayRunSession;
 
-function PlayRunSession.new(playerClass: PlayerClass)
+local SESSION_STATS = {
+    StorageOpened = 0;
+    NpcKills = 0;
+    PlayerKills = 0;
+    ContractsCompleted = 0;
+    MissionsCompleted = 0;
+};
+
+function PlayRunSession.new(player: Player)
     local meta = {
-        PlayerClass = playerClass;
+        Player = player;
     };
     meta.__index = meta;
 
     local self = {
-        Status = "Active";
-        StartTime = workspace:GetServerTimeNow();
-        EndTime = nil;
-        EndReason = nil;
-
-        Stats = {
-            StorageOpened = 0;
-            NpcKills = math.random(1, 999);
-            PlayerKills = math.random(1, 999);
-            ContractsCompleted = math.random(1, 999);
-            MissionsCompleted = math.random(1, 999);
-        };
+        Stats = {};
     };
 
     setmetatable(meta, PlayRunSession);
     setmetatable(self, meta);
 
-    self.PlayerClass.Properties.PlayRunStatus = "Active";
+    self:Wipe();
 
     return self;
 end
 
+function PlayRunSession:Load(data)
+    for k, v in pairs(data) do
+        self[k] = v;
+    end
+
+    return self;
+end
+
+function PlayRunSession:Wipe()
+    self.Status = "Active";
+    self.StartTime = workspace:GetServerTimeNow();
+
+    self.JobId = nil; -- server id;
+
+    self.EndTime = nil;
+    self.EndReason = nil;
+
+    table.clear(self.Stats);
+    for k, v in pairs(SESSION_STATS) do
+        self.Stats[k] = v;
+    end
+end
+
 function PlayRunSession:EndRun(runStatus: string, reason: string)
     if self.Status ~= "Active" then return end;
+
+    local playerClass: PlayerClass = shared.modPlayers.get(self.Player);
+
     Debugger:Warn(`EndRun {runStatus} Reason: {reason}`);
-    self.PlayerClass.Properties.PlayRunStatus = runStatus;
+    playerClass.Properties.PlayRunStatus = runStatus;
 
     self.EndTime = workspace:GetServerTimeNow();
 
     self.Status = runStatus;
     self.EndReason = reason;
 
-    local player: Player = self.PlayerClass:GetInstance();
-    local profile: ProfileAlmdes = shared.modProfile:Get(player);
+    local profile: ProfileAlmdes = shared.modProfile:Get(self.Player) :: ProfileAlmdes;
     local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
-
-    gameSave.LoadoutSaves:SaveActiveLoadout(runStatus == "Success");
 
     profile:Save();
 end

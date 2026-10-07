@@ -53,6 +53,8 @@ function modBranchConfigurations.onRequire()
     local curWorldName = modBranchConfigurations.WorldName;
     local curWorldInfo = modBranchConfigurations.WorldInfo;
 
+    modConfigurations.Set("DisableInventory", false);
+
     if curWorldInfo.WorldType == WORLD_TYPES.MainMenu then
         modConfigurations.Set("SafehomeMode", true);
         
@@ -61,7 +63,6 @@ function modBranchConfigurations.onRequire()
         modConfigurations.Set("DisableInfoBubbles", false);
         modConfigurations.Set("SpectateEnabled", false);
         modConfigurations.Set("BaseWoundedDuration", 150);
-        modConfigurations.Set("DisableInventory", false);
         modConfigurations.Set("CanQuickEquip", true);
         modConfigurations.Set("PvpMode", true);
         modConfigurations.Set("DisableItemDrops", false);

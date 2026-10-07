@@ -1,13 +1,96 @@
+local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
+--==
 local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library.StoragePresetsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
+local modStorageItem = shared.require(game.ReplicatedStorage.Library.StorageItem);
 
-modStoragePresetsLibrary:Replace("Inventory", {
+local modBoolString = shared.require(game.ReplicatedStorage.Library.Util.BoolString);
+
+--MARK: Inventory Storage Preset
+local inventoryStoragePreset = {
 	Name = "Inventory";
     Configuration = {
         Persistent=true;
         Size = 12;
         MaxSize = 12;
     };
-});
+    GunSlot = {1;2;};
+    DesignatedSlots = {
+        [1] = {TagBoolString = "Gun"; FailMsg = "Gun slot is only for guns.";};
+        [2] = {TagBoolString = "Gun"; FailMsg = "Gun slot is only for guns.";};
+        [3] = {TagBoolString = "Melee"; FailMsg = "Melee slot is only for melees.";};
+        ["*"] = {TagBoolString = "!(Gun|Melee)"; FailMsg = "Weapons does not fit in your inventory.";};
+    };
+};
+
+function inventoryStoragePreset.BindStorageCheck(packet)
+	local dragStorageItem = packet.DragStorageItem;
+	local targetIndex = packet.TargetIndex;
+
+    local designatedSlotInfo = inventoryStoragePreset.DesignatedSlots[targetIndex]
+                            or inventoryStoragePreset.DesignatedSlots["*"];
+    if designatedSlotInfo then
+        local checkBsFunc = designatedSlotInfo.TagBsCheckFunc;
+        if checkBsFunc == nil then
+            checkBsFunc = modBoolString.newTestFunction(designatedSlotInfo.TagBoolString);
+            designatedSlotInfo.TagBsCheckFunc = checkBsFunc;
+        end
+    
+        local itemLib = modItemsLibrary:Find(dragStorageItem.ItemId);
+        local isAllowed = checkBsFunc(itemLib.Tags or {});
+
+        if isAllowed then
+            packet.Allowed = true;
+			return packet;
+        else
+            packet.FailMsg = designatedSlotInfo.FailMsg or `Not allowed ({designatedSlotInfo.TagBoolString}).`;
+        end
+
+    else
+        packet.Allowed = true;
+        return packet;
+    end
+
+	packet.Allowed = false;
+	return packet;
+end
+
+function inventoryStoragePreset.BindGetEmptySlotData(selfStorageInterface: StorageInterface, itemSlotB: ItemSlot?)
+    local itemLib = itemSlotB and itemSlotB.Library;
+    if itemLib == nil then
+        return nil;
+    end;
+
+	for index=selfStorageInterface.StartIndex, selfStorageInterface.EndIndex do
+        local slot = selfStorageInterface.Slots[index];
+        if slot.ItemSlot ~= nil or slot.Frame == nil or slot.Frame.Visible == false then continue end;
+
+        local designatedSlotInfo = inventoryStoragePreset.DesignatedSlots[index]
+                                or inventoryStoragePreset.DesignatedSlots["*"];
+        if designatedSlotInfo then
+            local checkBsFunc = designatedSlotInfo.TagBsCheckFunc;
+            if checkBsFunc == nil then
+                checkBsFunc = modBoolString.newTestFunction(designatedSlotInfo.TagBoolString);
+                designatedSlotInfo.TagBsCheckFunc = checkBsFunc;
+            end
+
+            local isAllowed = checkBsFunc(itemLib.Tags or {});
+            if not isAllowed then
+                continue;
+            end
+        end
+		
+        return slot;
+	end
+
+    return;
+end
+
+function inventoryStoragePreset.BindInit(storage: Storage)
+    Debugger:Warn(`Init inventory`);
+end
+modStoragePresetsLibrary:Replace("Inventory", inventoryStoragePreset);
+
 
 modStoragePresetsLibrary:Replace("Clothing", {
 	Name = "Clothing";
@@ -173,6 +256,26 @@ modStoragePresetsLibrary:Add{
         MaxSize = 6;
     };
     CreateStorage=true;
+};
+
+modStoragePresetsLibrary:Add{
+	Id = "centralweapons";
+	Name = "Weapons Locker";
+    Configuration = {
+        Persistent = true;
+        Size = 10;
+        MaxSize = 10;
+    };
+};
+
+modStoragePresetsLibrary:Add{
+	Id = "centralgeneral";
+	Name = "Stash";
+    Configuration = {
+        Persistent = true;
+        Size = 40;
+        MaxSize = 40;
+    };
 };
 
 

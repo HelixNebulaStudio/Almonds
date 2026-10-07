@@ -11,7 +11,6 @@ function modRemotesManager.onRequire()
         --== Menu
         modRemotesManager:NewFunctionRemote("MainMenuRemote", 1);
         modRemotesManager:NewFunctionRemote("LiveServersRemote", 1);
-        modRemotesManager:NewFunctionRemote("LoadoutSaves", 1);
 
         --== Systmes;
         modRemotesManager:NewFunctionRemote("PortableStorage", 0.1).Secure = true;

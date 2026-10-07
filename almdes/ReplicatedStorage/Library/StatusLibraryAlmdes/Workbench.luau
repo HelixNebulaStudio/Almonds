@@ -28,7 +28,7 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
         return;
     end;
     
-    local dist = statusClass.StatusOwner:DistanceFromCharacter(workbenchInteractable.Part.Position);
+    local dist = statusClass.StatusOwner:DistanceFrom(workbenchInteractable.Part.Position);
     if dist <= 10 then 
         return;
     end;

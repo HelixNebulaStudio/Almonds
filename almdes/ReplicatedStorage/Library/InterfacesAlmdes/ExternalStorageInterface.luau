@@ -91,6 +91,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 binds.ActiveStorageInterface:Destroy();
                 binds.ActiveStorageInterface = nil;
             end;
+
+            interface:ToggleWindow("Inventory", false);
         end
     end)
 

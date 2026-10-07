@@ -14,8 +14,8 @@ function modStorage.onRequire()
         if player == nil then return end;
 
         local playerClass: PlayerClassAlmdes = shared.modPlayers.get(player);
-        Debugger:Log("Storage_OnOpen", storage.Id, player, storage.Cache.EnvLootCrate);
         if storage.Cache.EnvLootCrate == nil then return end;
+        Debugger:Log("Storage_OnOpen", storage.Id, player, storage.Cache.EnvLootCrate);
 
         local firstOpenCache = storage.Cache.FirstOpen;
         if firstOpenCache == nil then
@@ -27,8 +27,13 @@ function modStorage.onRequire()
         if firstOpenCache[playerName] == nil then
             firstOpenCache[playerName] = true;
 
-            local playerRunSession = playerClass.Properties.PlayRunSession;
-            playerRunSession:AddStat("StorageOpened", 1);
+			local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+			local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+
+			local playRunSession: PlayRunSession = gameSave.Session;
+			if playRunSession then 
+                playRunSession:AddStat("StorageOpened", 1);
+            end;
         end
 
     end);
@@ -63,7 +68,9 @@ function modStorage.InsertRequestHandler(storage: Storage, rPacket)
 			DespawnDuration = false;
 		};
 
-        shared.Notify(storage.Player, "Inventory is full, "..quantity.." "..itemLib.Name.." was dropped!", "Negative");
+        shared.Notify(storage.Player, `Inventory is full, {quantity} {itemLib.Name} was dropped!`, "Negative");
+
+        rPacket.Failed = 3; -- engine pickupable destroy
     end
     
     return rPacket;
@@ -96,7 +103,7 @@ function modStorage.RequestUnlock(params, rPacket)
         return rPacket;
     end;
 
-    local profile: ProfileAlmdes = shared.modProfile:Get(player);
+    local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
     local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
     local inventory = gameSave.Inventory;
     

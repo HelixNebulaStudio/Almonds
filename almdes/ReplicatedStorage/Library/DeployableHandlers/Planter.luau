@@ -34,7 +34,7 @@ function deployablePackage.onRequire()
             local planterInteractable: InteractableInstance = modInteractables.getOrNew(planterData.InteractableConfig);
 
             local cropsList = planterInteractable.Values.Crops;
-            modTables.Shuffle(cropsList);
+            modTables.shuffle(cropsList);
 
             for a=#cropsList, 1, -1 do
                 if planterInteractable.Values.Water <= 0 then continue end;
@@ -65,8 +65,22 @@ function deployablePackage.onRequire()
 end
 
 function deployablePackage.BindSetup(interactable: InteractableInstance)
-    Debugger:StudioWarn(`BindSetup {interactable.Config:GetFullName()}`);
-    local configParent = interactable.Config.Parent;
+    local interactConfig = interactable.Config;
+    
+    Debugger:StudioWarn(`BindSetup {interactConfig:GetFullName()}`);
+    local configParent = interactConfig.Parent;
+
+    interactConfig.Destroying:Connect(function()
+        for a=#deployablePackage.ActiveList, 1, -1 do
+            local activeDeploy = deployablePackage.ActiveList[a];
+            if activeDeploy and workspace:IsAncestorOf(activeDeploy.InteractableConfig) then
+                continue;
+            end
+            
+            table.remove(deployablePackage.ActiveList, a);
+        end
+    end)
+
 
     local destructibleConfig: Configuration = configParent:FindFirstChild("Destructible");
     local destructible: DestructibleInstance = modDestructibles.getOrNew(destructibleConfig);
@@ -84,8 +98,8 @@ function deployablePackage.BindSetup(interactable: InteractableInstance)
     end)
 
     table.insert(deployablePackage.ActiveList, {
-        InteractableConfig = interactable.Config;
-        DestructibleConfig = destructible.Config;
+        InteractableConfig = interactConfig;
+        DestructibleConfig = destructibleConfig;
     });
 end
 

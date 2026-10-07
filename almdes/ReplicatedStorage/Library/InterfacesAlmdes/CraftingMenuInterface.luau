@@ -20,6 +20,8 @@ local interfacePackage = {
 --==
 
 function interfacePackage.newInstance(interface: InterfaceInstance)
+    if true then return end;
+
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
     local remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
 

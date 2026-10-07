@@ -5,6 +5,8 @@ local localPlayer = game.Players.LocalPlayer;
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 
+local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterfaceAlmdes);
+
 local ClientHandler = {};
 --==
 

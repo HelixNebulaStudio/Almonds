@@ -51,6 +51,11 @@ function deployablePackage.onRequire()
 
     local function onTick(tickData: TickData)
         for _, dispenserData in pairs(deployablePackage.ActiveList) do
+            local interactConfig = dispenserData.InteractableConfig;
+            -- if not workspace:IsAncestorOf(interactConfig) then
+            --     continue;
+            -- end
+
             local dispenserInteractable: InteractableInstance = modInteractables.getOrNew(dispenserData.InteractableConfig);
             local planterConfigs = dispenserInteractable.Values.PlanterConfigs;
 
@@ -262,10 +267,22 @@ function deployablePackage.BindDeployablePlacement(handler: ToolHandlerInstance,
 end
 
 function deployablePackage.BindSetup(interactable: InteractableInstance)
-    Debugger:StudioWarn(`BindSetup {interactable.Config:GetFullName()}`);
+    local interactConfig = interactable.Config;
+    Debugger:StudioWarn(`BindSetup {interactConfig:GetFullName()}`);
     table.insert(deployablePackage.ActiveList, {
         InteractableConfig = interactable.Config;
     });
+
+    interactConfig.Destroying:Connect(function()
+        for a=#deployablePackage.ActiveList, 1, -1 do
+            local activeDeploy = deployablePackage.ActiveList[a];
+            if activeDeploy and workspace:IsAncestorOf(activeDeploy.InteractableConfig) then
+                continue;
+            end
+            
+            table.remove(deployablePackage.ActiveList, a);
+        end
+    end)
 
     task.wait(1);
     deployablePackage.UpdatePlanterConfigs(interactable);

@@ -49,9 +49,11 @@ function ExfilSystem:ExfilPlayer(player: Player, exfilType: string)
     Debugger:Warn(`ExfilPlayer {player.Name}`);
 
     local playerClass: PlayerClass = shared.modPlayers.get(player);
-    
-    local playRunSession = playerClass.Properties.PlayRunSession;
 
+    local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+    local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+
+    local playRunSession: PlayRunSession = gameSave.Session;
     playRunSession:EndRun("Success", exfilType);
 
     task.spawn(function()
@@ -61,6 +63,7 @@ function ExfilSystem:ExfilPlayer(player: Player, exfilType: string)
         Debugger:Warn(`ExfilPlayer {player.Name}`, typeof(rPacket), rPacket);
     end)
 
+    profile:Save();
     playerClass:Despawn();
 end
 

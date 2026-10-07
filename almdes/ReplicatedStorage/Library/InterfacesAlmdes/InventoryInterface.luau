@@ -36,6 +36,8 @@ local interfacePackage = {
 };
 --==
 function interfacePackage.newInstance(interface: InterfaceInstance)
+	local properties = interface.Properties;
+
     local modData = shared.require(localPlayer:WaitForChild("DataModule"));
 	modData.StoragesOnCharacter = {"Inventory"; "Clothing"; "keychain"};
 
@@ -48,7 +50,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	local templateProgressBar = script:WaitForChild("progressBar");
 
 
-    local defaultStorageInterface: StorageInterface, clothingStorageInterface: StorageInterface;
+    local defaultStorageInterface: StorageInterface, 
+		clothingStorageInterface: StorageInterface,
+		weaponInvStorageInterface: StorageInterface;
 	local portableStorageInterfaces: {[string]: StorageInterface} = {};
 
     local charWindow = interface:GetWindow("CharacterWindow");
@@ -58,7 +62,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local invFrame = script:WaitForChild("InventoryFrame"):Clone();
     invFrame.Parent = mPanel;
     
-	local invList = invFrame:WaitForChild("InvList");
+	local genInvFrame = invFrame:WaitForChild("GeneralInv");
 	local clothingList = invFrame:WaitForChild("ClothingList");
 
     local invWindow: InterfaceWindow = interface:NewWindow("Inventory", invFrame);
@@ -82,21 +86,26 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
     end)
 
-    local invListUIGridLayout = invList:WaitForChild("UIGridLayout");
+    local invListUIGridLayout = genInvFrame:WaitForChild("UIGridLayout");
     invListUIGridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        invList.Size = UDim2.new(1, 0, 0, invListUIGridLayout.AbsoluteContentSize.Y+10);
+        genInvFrame.Size = UDim2.new(1, 0, 0, invListUIGridLayout.AbsoluteContentSize.Y+10);
     end)
 
     --MARK: Hotbar
 	local newHotbarFrame = script:WaitForChild("Hotbar"):Clone();
 	newHotbarFrame.Parent = interface.ScreenGui;
+
+	local hotbarUISizeConstraint = newHotbarFrame:WaitForChild("UISizeConstraint");
+	local hotbarUIListLayout = hotbarUISizeConstraint:WaitForChild("UIListLayout");
+
     
 	local hotbarWindow: InterfaceWindow = interface:NewWindow("Hotbar", newHotbarFrame);
 	hotbarWindow.Layers = {"CharacterHud"; "CharacterInterface"};
 	hotbarWindow.IgnoreHideAll = true;
 	hotbarWindow.ReleaseMouse = false;
 
-	if modConfigurations.SafehomeMode ~= true then
+	local isSafehomeMode = modConfigurations.SafehomeMode;
+	if isSafehomeMode ~= true then
 		hotbarWindow:Open();
 	end
 
@@ -104,10 +113,15 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     --MARK: OnToggle
     invWindow.OnToggle:Connect(function(visible)
         if visible then
+			if isSafehomeMode then
+				hotbarWindow:Open();
+			end
 			newHotbarFrame.Parent = invFrame;
+			hotbarUIListLayout.Parent = newHotbarFrame;
+
 			defaultStorageInterface.OnItemButton1Click = defaultStorageInterface.BeginDragItem;
             
-            interface.Properties.CharacterInterfaceVisible = true;
+            properties.CharacterInterfaceVisible = true;
             invFrame.Visible = true;
             
             modStorageInterface.QueueRefreshStorage({"Inventory", "Clothing"});
@@ -122,9 +136,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 
         else
+			if isSafehomeMode then
+				hotbarWindow:Close();
+			end
 			newHotbarFrame.Parent = interface.ScreenGui;
+			hotbarUIListLayout.Parent = hotbarUISizeConstraint;
 			
-            interface.Properties.CharacterInterfaceVisible = false;
+            properties.CharacterInterfaceVisible = false;
             invFrame.Visible = false;
 
 			defaultStorageInterface:ToggleDescriptionFrame(false);
@@ -135,15 +153,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             interface:ToggleWindow("CraftingMenu", false);
 			shared.modEventService:ClientInvoke("Interface_BindInventoryToggle", {SendBy = localPlayer}, false);
             modStorageInterface.CloseOptionMenus();
+
         end
     end)
 
-	if modConfigurations.SafehomeMode ~= true then
-		modKeyBindsHandler:SetDefaultKey("KeyWindowInventory", Enum.KeyCode.Tab);
-		local quickButton = interface:NewQuickButton("Inventory", "Inventory", "rbxassetid://2169843985");
-		quickButton.LayoutOrder = 2;
-		interface:ConnectQuickButton(quickButton, "KeyWindowInventory");
-	end
+	modKeyBindsHandler:SetDefaultKey("KeyWindowInventory", Enum.KeyCode.Tab);
+	local quickButton = interface:NewQuickButton("Inventory", "Inventory", "rbxassetid://2169843985");
+	quickButton.LayoutOrder = 2;
+	interface:ConnectQuickButton(quickButton, "KeyWindowInventory");
 
 	local titleLabel = invFrame:WaitForChild("Title");
 	local dropUIGradient = titleLabel:WaitForChild("DropUIGradient");
@@ -239,7 +256,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		newSlot.LayoutOrder = 6+a;
 		newSlot:SetAttribute("Index", newSlot.LayoutOrder);
 		newSlot.Name = newSlot.LayoutOrder;
-		newSlot.Parent = invList;
+		newSlot.Parent = genInvFrame;
 	end
 
 	local defaultSlots = {};
@@ -248,7 +265,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             table.insert(defaultSlots, value) 
         end 
     end;
-	for _,value in pairs(invList:GetChildren()) do 
+	for _,value in pairs(genInvFrame:GetChildren()) do 
         if value:IsA("GuiObject") and value.LayoutOrder > 0 then 
             table.insert(defaultSlots, value) 
         end 
@@ -270,15 +287,29 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	clothingStorageInterface.Name = "Clothing";
 	clothingStorageInterface.DeleteEnabled = false;
 
-	interface.Properties.ActiveHotbarKeys = 5;
-	interface.Properties.HotEquip = function(index)
+	task.spawn(function()
+		modData.RequestStorage{
+			Action = "GetStorage";
+			StorageId = "Inventory";
+		};
+		modData.RequestStorage{
+			Action = "GetStorage";
+			StorageId = "Clothing";
+		};
+		defaultStorageInterface:Update();
+	end)
+
+	properties.ActiveHotbarKeys = 6;
+	properties.HotEquip = function(index)
 		if playerClass.HealthComp.IsDead then return end;
-		if modData.GetStorage("Inventory") == nil then Debugger:Warn(`No inventory storage.`); return end;
+		if modData.GetStorage("Inventory") == nil then
+			Debugger:Warn(`No inventory storage.`);
+			return;
+		end;
 		
 		local slot = defaultStorageInterface.Slots[index];
 		if slot and slot.ItemSlot then
 			defaultStorageInterface:UseItem(slot.ItemSlot);
-			
 		end
 	end
 
@@ -297,7 +328,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         if not slotInterface.WarnLabel.Visible then
             slotInterface.WarnLabel.Text = "Clothing Only!"
             slotInterface.WarnLabel.Visible = true;
-            delay(1, function()
+            task.delay(1, function()
                 slotInterface.WarnLabel.Visible = false;
             end)
         end
@@ -434,7 +465,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		local linkedStorages = modData.Storages.Inventory.LinkedStorages;
 		local slotLayoutOrder = 12;
 		
-		for _, invListSlot in pairs(invList:GetChildren()) do
+		for _, invListSlot in pairs(genInvFrame:GetChildren()) do
 			if invListSlot:IsA("ImageLabel") and invListSlot.LayoutOrder > slotLayoutOrder then
 				invListSlot.Parent = nil;
 				game.Debris:AddItem(invListSlot, 0);
@@ -456,7 +487,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 				newSlot.LayoutOrder = slotLayoutOrder+a;
 				newSlot.Name = newSlot.LayoutOrder;
 				newSlot.ImageColor3 = itemLib.SlotColor;
-				newSlot.Parent = invList;
+				newSlot.Parent = genInvFrame;
 				
 				table.insert(slotFrames, newSlot);
 			end
@@ -479,6 +510,20 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			portableStorageInterfaces[storageId]:Update();
 		end
 	end
+	
+	interface.Garbage:Tag(playerClass.WieldComp.OnWieldEvent:Connect(function(action, siid)
+		if action ~= "equip" and action ~= "unequip" then return end;
+		if siid == nil then return end;
+		
+		modStorageInterface.RefreshSiid(siid);
+	end))
+
+	interface.Garbage:Tag(interface.OnInterfaceEvent:Connect(function(action, siid)
+		if action ~= "ItemUpdate" then return end;
+		if siid == nil then return end;
+
+		modStorageInterface.RefreshSiid(siid);
+	end))
 
 	interface.Garbage:Tag(modData.OnStorageUpdate:Connect(function(storage)
 		if storage.Id == "Inventory" then
@@ -567,7 +612,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 	end)
-		
 end
 
 return interfacePackage;

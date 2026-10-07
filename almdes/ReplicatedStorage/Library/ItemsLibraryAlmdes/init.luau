@@ -12,7 +12,7 @@ function modItemsLibrary.onRequire()
 		Tradable = modItemsLibrary.Tradable.Nontradable;
 		Stackable = 200;
 	};
-    new(resourceBase, {Id="money"; Name="Money"; Icon="rbxassetid://86537766971763"; Stackable=10000; Description="$$$";});
+    new(resourceBase, {Id="money"; Name="Money"; Icon="rbxassetid://86537766971763"; Tags={"Money"}; Stackable=10000; Description="$$$";});
 
 	new(resourceBase, {Id="metal"; Name="Metal Scraps"; Icon="rbxassetid://1551792125"; Description="Metallic scraps used in crafting metal objects.";});
 	new(resourceBase, {Id="glass"; Name="Glass Shards"; Icon="rbxassetid://1551792117"; Description="Glass shards and pieces used in crafting glass objects.";});

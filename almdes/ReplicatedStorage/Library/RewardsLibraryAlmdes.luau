@@ -86,10 +86,7 @@ function library.onRequire()
 	library:Add{
 		Id="envlootcrate";
 		Rewards={
-			{Index=1; ItemId="metal"; Quantity={Min=35; Max=70}; Chance=1;};
-			{Index=1; ItemId="wood"; Quantity={Min=35; Max=70}; Chance=1;};
-			{Index=1; ItemId="cloth"; Quantity={Min=35; Max=70}; Chance=1;};
-			{Index=1; ItemId="glass"; Quantity={Min=35; Max=70}; Chance=0.5;};
+			{Index=1; ItemId="money"; Quantity={Min=10; Max=65}; Chance=1;};
 			
 			{Index=1; ItemId="metalpipes"; Quantity={Min=1; Max=3}; Chance=0.3;};
 			{Index=1; ItemId="circuitboards"; Quantity={Min=1; Max=3}; Chance=0.1;};
@@ -227,12 +224,13 @@ function library.onRequire()
 	
 
 	library:Add{
-		Id="bandit";
+		Id="t1bandit";
 		Rewards={
-			{Index=1; ItemId="metal"; Quantity={Min=60; Max=90}; Chance=1;};
-			{Index=1; ItemId="glass"; Quantity={Min=60; Max=90}; Chance=1;};
-			{Index=1; ItemId="wood"; Quantity={Min=60; Max=90}; Chance=1;};
-			{Index=1; ItemId="cloth"; Quantity={Min=60; Max=90}; Chance=1;};
+			{Index=1; ItemId="p250"; Quantity=1; Chance=0.2;};
+			{Index=1; ItemId="cz75"; Quantity=1; Chance=0.2;};
+			{Index=1; ItemId="tec9"; Quantity=1; Chance=0.2;};
+			{Index=1; ItemId="deagle"; Quantity=1; Chance=0.2;};
+			{Index=1; ItemId="t1key"; Quantity=1; Chance=0.1;};
 
 			{Index=2; ItemId="cannedbeans"; Quantity=1; Chance=0.8;};
 			{Index=2; ItemId="cannedfish"; Quantity=1; Chance=0.8;};
@@ -241,9 +239,9 @@ function library.onRequire()
 			
 			{Index=2; ItemId="medkit"; Quantity={Min=1; Max=2}; Chance=1;};
 
-			{Index=2; ItemId="lightammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
-			{Index=2; ItemId="heavyammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
-			{Index=2; ItemId="shotgunammo"; Quantity={Min=8; Max=12}; Chance=0.2;};
+			{Index=2; ItemId="lightammo"; Quantity={Min=22; Max=33}; Chance=0.2;};
+			{Index=2; ItemId="heavyammo"; Quantity={Min=22; Max=33}; Chance=0.2;};
+			{Index=2; ItemId="shotgunammo"; Quantity={Min=22; Max=33}; Chance=0.2;};
 		};
 	};
 

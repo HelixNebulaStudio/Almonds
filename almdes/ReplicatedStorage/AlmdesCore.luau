@@ -8,7 +8,7 @@ local AlmdesCore = {};
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
 modGlobalVars.GameVersion = "0.0";
-modGlobalVars.GameBuild = "7";
+modGlobalVars.GameBuild = "8";
 modGlobalVars.ModeVerLabel = `$Fps fps\t$UpTime\tAlmonds $GameVersion $BranchName $IsMobile`;
 
 --==
@@ -30,6 +30,7 @@ local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library:W
 local modCrateLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("CrateLibraryAlmdes"));
 local modStatusEffects = shared.require(game.ReplicatedStorage.Library:WaitForChild("StatusEffectsAlmdes"));
 local modWeatherLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("WeatherLibraryAlmdes"));
+local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
 local modZScripting = shared.require(game.ReplicatedStorage.Plugin.ZScript.Scripting);
 
 if RunService:IsServer() then
@@ -52,12 +53,36 @@ end
 
 function AlmdesCore.OnCharacterAdded(player, character)
     if RunService:IsServer() then
+        local playerClass: PlayerClass = shared.modPlayers.get(player);
+        local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+        local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+    
+        local isSafehomeMode = modConfigurations.SafehomeMode;
+        if isSafehomeMode ~= true then
+
+            --MARK: New RunSession
+	        Debugger:Warn(`OnCharacterAdded wipe session`);
+            local playRunSession: PlayRunSession = gameSave.Session;
+            playRunSession:Wipe();
+            playRunSession.JobId = game.JobId;
+
+        end
+
     elseif RunService:IsClient() then
     end
 end
 
 function AlmdesCore.OnPlayerRemoving(player)
     if RunService:IsServer() then
+        local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+        local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+
+        local playRunSession: PlayRunSession = gameSave.Session;
+        if playRunSession ~= nil and playRunSession.Status == "Active" then
+            playRunSession:EndRun("Failed", "Despawned");
+
+        end
+        
     elseif RunService:IsClient() then
     end
 end

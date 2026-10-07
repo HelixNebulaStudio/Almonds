@@ -61,12 +61,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			
 		local healthRatio = math.clamp(health/maxPool, 0, 1);
 		TweenService:Create(healthBar, BAR_TWEENINFO, {
-			Size = UDim2.new(healthRatio, 0, 1, 0);
+			Size = UDim2.new(healthRatio, 0, 0, 6);
 		}):Play();
 
 		local armorRatio = maxArmor > 0 and math.clamp(armor/maxPool, 0, 1) or 0;
 		TweenService:Create(armorBar, BAR_TWEENINFO, {
-			Size = UDim2.new(armorRatio, 0, 1, 0);
+			Size = UDim2.new(armorRatio, 0, 0, 6);
 		}):Play();
 	end)
 	

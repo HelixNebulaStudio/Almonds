@@ -65,11 +65,14 @@ shared.coreBind(modProfile, "_save", function(profile: ProfileAlmdes, overrideDa
 end)
 
 function modProfile.onRequire()
-    shared.modEngineCore:ConnectOnPlayerAdded(script, OnPlayerAdded);
+    shared.modEngineCore:ConnectOnPlayerAdded(script, OnPlayerAdded, 1);
 
     local remoteMainMenu = modRemotesManager:Get("MainMenuRemote");
     function remoteMainMenu.OnServerInvoke(player: Player, action, paramPacket)
         if remoteMainMenu:Debounce(player) then return end;
+
+        local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
+        local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 
         local playerClass: PlayerClass = shared.modPlayers.get(player);
         
@@ -107,6 +110,18 @@ function modProfile.onRequire()
                     LocalSearchTimeLimit=30
                 };
             };
+
+            -- Late-join pre-check: try to drop the player into an in-progress server
+            -- that is still within its grace window and has room for the party.
+            local partySize = #(partyObj.Players or {userId});
+            local accessCode = modServerCoordinator:FindJoinableServer(partyObj.Region, {}, partySize);
+            if accessCode then
+                modServerCoordinator:JoinServer(accessCode, {userId});
+                replyPacket.Success = true;
+                replyPacket.NewState = modMatchMakingService:GetPlayerState(userId);
+                return replyPacket;
+            end
+
             local sucess, partyId = modMatchMakingService:QueueParty(partyObj);
             
             if sucess then
@@ -139,9 +154,10 @@ function modProfile.onRequire()
 
         elseif action == "endrun" then
             -- run failed;
-            local playRunSession = playerClass.Properties.PlayRunSession;
-
+			local playRunSession: PlayRunSession = gameSave.Session;
+            
             playRunSession:EndRun("Failed", "Died");
+            
             replyPacket.RunSummary = playRunSession:GetSummary();
 
             replyPacket.Success = true;

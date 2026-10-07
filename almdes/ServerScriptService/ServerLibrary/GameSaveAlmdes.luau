@@ -4,20 +4,21 @@ local modGameSave = shared.require(game.ServerScriptService.ServerLibrary.GameSa
 
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
+local modPlayRunSession = shared.require(game.ReplicatedStorage.Library.PlayRunSession);
 local modStoragePresetsLibrary = shared.require(game.ReplicatedStorage.Library.StoragePresetsLibraryAlmdes);
 local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
-local modLoadoutSaves = shared.require(game.ServerScriptService.ServerLibrary.LoadoutSaves);
 local modStorage = shared.require(game.ServerScriptService.ServerLibrary.Storage);
 local modItemProcessor = shared.require(game.ServerScriptService.ServerLibrary.ItemProcessor);
 
 --==
-function modGameSave.onRequire()
-
-end
-
 shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile: ProfileAlmdes)
 	local player: Player = profile.Player;
+	local playerClass: PlayerClass = shared.modPlayers.get(player);
+
+
+	gameSave.Session = modPlayRunSession.new(player);
 	Debugger:Warn("OnNewSave", player);
 
 	local saveMeta = getmetatable(gameSave :: any);
@@ -102,10 +103,77 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 
 	gameSave.AppearanceData.UpdateReady = true;
 	gameSave.WorkbenchSeed = modSyncTime.TimeOfEndOfDay();
-	gameSave.LoadoutSaves = modLoadoutSaves.new(player, gameSave);
 
 	local storages = gameSave.Storages;
 
+
+	local weaponStashStorage: Storage = modStorage.new("CentralWeapons", "centralweapons", player);
+	weaponStashStorage:ConnectCheck(function(packet)
+		local dragStorageItem = packet.DragStorageItem;
+		local targetStorageItem = packet.TargetStorageItem;
+		
+		if packet.DragStorage == weaponStashStorage then 
+			packet.Allowed = true;
+			return packet;
+		end;
+		if targetStorageItem and dragStorageItem.ItemId == targetStorageItem.ItemId then 
+			packet.Allowed = true;
+			return packet;
+		end; -- true if swapping with item of same id
+		
+		if dragStorageItem then
+			local isGunItem = modItemsLibrary:HasTag(dragStorageItem.ItemId, "Gun");
+			local isMeleeItem = modItemsLibrary:HasTag(dragStorageItem.ItemId, "Melee");
+			if isGunItem or isMeleeItem then
+				packet.Allowed = true;
+				return packet;
+			end
+
+			packet.FailMsg = `{dragStorageItem.Library.Name} is not a weapon.`;
+		end
+		
+		packet.Allowed = false;
+		return packet;
+	end);
+	gameSave.Storages.CentralWeapons = weaponStashStorage;
+
+
+	local generalStashStorage: Storage = modStorage.new("CentralGeneral", "centralgeneral", player);
+	generalStashStorage:ConnectCheck(function(packet)
+		local dragStorageItem = packet.DragStorageItem;
+		local targetStorageItem = packet.TargetStorageItem;
+		
+		if packet.DragStorage == weaponStashStorage then 
+			packet.Allowed = true;
+			return packet;
+		end;
+		if targetStorageItem and dragStorageItem.ItemId == targetStorageItem.ItemId then 
+			packet.Allowed = true;
+			return packet;
+		end; -- true if swapping with item of same id
+		
+		if dragStorageItem then
+			local isGunItem = modItemsLibrary:HasTag(dragStorageItem.ItemId, "Gun");
+			local isMeleeItem = modItemsLibrary:HasTag(dragStorageItem.ItemId, "Melee");
+			if not isGunItem and not isMeleeItem then
+				packet.Allowed = true;
+				return packet;
+			end
+
+			packet.FailMsg = `{dragStorageItem.Library.Name} is not a weapon.`;
+		end
+		
+		packet.Allowed = false;
+		return packet;
+	end);
+	gameSave.Storages.CentralGeneral = generalStashStorage;
+
+	local isSafehomeMode = modConfigurations.SafehomeMode;
+	if isSafehomeMode ~= true then
+		weaponStashStorage.Locked = true;
+		generalStashStorage.Locked = true;
+	end
+	
 	local keychainStorage: Storage = modStorage.new("keychain", "keychain", player);
 	storages.keychain = keychainStorage;
 	keychainStorage:ConnectCheck(function(packet)
@@ -145,17 +213,56 @@ shared.coreBind(modGameSave, "_new", function(gameSave: GameSaveAlmdes, profile:
 			keychainStorage:Sync(player);
 		end
 	end)
+
 end)
+
+
+shared.coreBind(modGameSave, "_key_load", function(gameSave: GameSaveAlmdes, key: string, rawData: any)
+	local profile: ProfileAlmdes = gameSave.Profile :: ProfileAlmdes;
+	local player: Player = profile.Player;
+
+    return false;
+end)
+
 
 shared.coreBind(modGameSave, "_loaded", function(gameSave: GameSaveAlmdes)
-	local profile: ProfileAlmdes = gameSave.Profile;
+	local profile: ProfileAlmdes = gameSave.Profile :: ProfileAlmdes;
 	local player: Player = profile.Player;
-	Debugger:Warn("OnLoadedSave", player);
 
-	for storageId, storage: Storage in pairs(gameSave.Storages) do
-		storage:Wipe();
-		Debugger:Warn(`Wiped storage: {storageId}`);
+
+	local playRunSession: PlayRunSession = gameSave.Session;
+	Debugger:Warn("OnLoadedSave", player, "Session=", playRunSession);
+
+	local isSafehome = modConfigurations.SafehomeMode;
+	if not isSafehome then return end;
+	
+	if playRunSession and playRunSession.Status ~= "Success" then
+		gameSave.Inventory:Wipe();
+		gameSave.Clothing:Wipe();
+		Debugger:Warn(`Unsuccessful Session, Player ({player}) Wiped Inventory & Clothing.`, playRunSession);
 	end
+	
 end)
+
+
+shared.coreBind(modGameSave, "_load_storage", function(gameSave: GameSaveAlmdes, storageId: string, rawStorage)
+	local player = gameSave.Player;
+
+	local presetId = rawStorage.PresetId;
+	local storagePresetLib = modStoragePresetsLibrary:Find(presetId);
+
+	if storagePresetLib == nil then
+		Debugger:Warn(`Storage ({storageId}) type does not exist ({presetId})`);
+		return;
+	end
+
+	local storage: Storage = gameSave.Storages[storageId];
+	if storage == nil then
+		storage = modStorage.new(storageId, presetId, player, rawStorage.Name);
+	end
+
+	return storage;
+end)
+
 
 return modGameSave;
