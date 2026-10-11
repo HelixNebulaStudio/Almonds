@@ -1,7 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modDeconstructLibrary = require(game.ReplicatedStorage.Library.DeconstructLibrary);
 local modDropRateCalculator = shared.require(game.ReplicatedStorage.Library.DropRateCalculator);
 

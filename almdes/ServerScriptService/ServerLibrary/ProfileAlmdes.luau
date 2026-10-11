@@ -99,7 +99,7 @@ function modProfile.onRequire()
 
             replyPacket.Success = true;
             
-        elseif action == "quickplay" then
+        elseif action == "infiltration" then
 
             local userId = player.UserId;
             local partyObj = {
@@ -111,19 +111,25 @@ function modProfile.onRequire()
                 };
             };
 
+            Debugger:Warn(`Player queues infiltration ({player}) (R: {partyObj.Region})`);
+            shared.Notify(game.Players:GetPlayers(), `{player.Name} queueing infiltration.`, "Inform");
+
             -- Late-join pre-check: try to drop the player into an in-progress server
             -- that is still within its grace window and has room for the party.
             local partySize = #(partyObj.Players or {userId});
             local accessCode = modServerCoordinator:FindJoinableServer(partyObj.Region, {}, partySize);
             if accessCode then
+
+                Debugger:Warn(`Joinable server found for ({player}), attempting to join.`);
                 modServerCoordinator:JoinServer(accessCode, {userId});
+
                 replyPacket.Success = true;
                 replyPacket.NewState = modMatchMakingService:GetPlayerState(userId);
+
                 return replyPacket;
             end
 
             local sucess, partyId = modMatchMakingService:QueueParty(partyObj);
-            
             if sucess then
                 player:SetAttribute("IsInQueue", partyId);
                 replyPacket.Success = true;
@@ -134,6 +140,12 @@ function modProfile.onRequire()
                 replyPacket.Failmsg = "Failed to queue";
 
             end
+
+        elseif action == "queueupdate" then
+            local userId = player.UserId;
+
+            replyPacket.Success = true;
+            replyPacket.NewState = modMatchMakingService:GetPlayerState(userId);
 
         elseif action == "rescuerequest" then
             if playerClass.Properties.LastRescueRequest and tick() - playerClass.Properties.LastRescueRequest < 30 then
@@ -168,6 +180,7 @@ function modProfile.onRequire()
             modServerManager:Travel(player, "MainMenu");
 
         end
+
         return replyPacket;
     end
 

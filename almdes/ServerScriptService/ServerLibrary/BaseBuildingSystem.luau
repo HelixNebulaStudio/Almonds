@@ -4,7 +4,7 @@ local RunService = game:GetService("RunService");
 
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modVector = shared.require(game.ReplicatedStorage.Library.Util.Vector);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 
 local foundationRayParams = RaycastParams.new();

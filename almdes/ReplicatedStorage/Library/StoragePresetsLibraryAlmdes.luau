@@ -63,10 +63,13 @@ function inventoryStoragePreset.BindGetEmptySlotData(selfStorageInterface: Stora
 
 	for index=selfStorageInterface.StartIndex, selfStorageInterface.EndIndex do
         local slot = selfStorageInterface.Slots[index];
-        if slot.ItemSlot ~= nil or slot.Frame == nil or slot.Frame.Visible == false then continue end;
+        if slot.Frame == nil or slot.Frame.Visible == false then continue end;
 
         local designatedSlotInfo = inventoryStoragePreset.DesignatedSlots[index]
                                 or inventoryStoragePreset.DesignatedSlots["*"];
+
+        local isAllowed = false;
+
         if designatedSlotInfo then
             local checkBsFunc = designatedSlotInfo.TagBsCheckFunc;
             if checkBsFunc == nil then
@@ -74,16 +77,29 @@ function inventoryStoragePreset.BindGetEmptySlotData(selfStorageInterface: Stora
                 designatedSlotInfo.TagBsCheckFunc = checkBsFunc;
             end
 
-            local isAllowed = checkBsFunc(itemLib.Tags or {});
-            if not isAllowed then
-                continue;
+            isAllowed = checkBsFunc(itemLib.Tags or {});
+        end
+
+        if itemSlotB == nil or slot.ItemSlot == nil then
+            -- skip stack check if one is empty
+
+        elseif itemSlotB ~= nil and not itemSlotB.Library.Stackable and slot.ItemSlot then
+            isAllowed = false;
+
+        else
+            local aSelf = slot.ItemSlot;
+
+            local isStackable = aSelf ~= nil and modStorageItem.IsStackable(aSelf.Item, itemSlotB.Item) or false;
+            if not isStackable or aSelf.Item.Quantity+itemSlotB.Item.Quantity > aSelf.Library.Stackable then
+                isAllowed = false;
             end
         end
-		
+
+        if not isAllowed then continue end;
         return slot;
 	end
 
-    return;
+    return false;
 end
 
 function inventoryStoragePreset.BindInit(storage: Storage)
@@ -120,7 +136,6 @@ modStoragePresetsLibrary:Add{
     Configuration = {
         Persistent = false;
         Settings = {
-            WithdrawalOnly = true;
             DestroyOnEmpty = false;
         }
     };
@@ -134,7 +149,6 @@ modStoragePresetsLibrary:Add{
     Configuration = {
         Persistent = false;
         Settings = {
-            WithdrawalOnly = true;
             DestroyOnEmpty = false;
             ScaleByContent = true;
         }
@@ -149,7 +163,6 @@ modStoragePresetsLibrary:Add{
     Configuration = {
         Persistent = false;
         Settings = {
-            WithdrawalOnly = true;
             DestroyOnEmpty = false;
             ScaleByContent = true;
         }
@@ -164,7 +177,6 @@ modStoragePresetsLibrary:Add{
     Configuration = {
         Persistent = false;
         Settings = {
-            WithdrawalOnly = true;
             DestroyOnEmpty = false;
             ScaleByContent = true;
         }

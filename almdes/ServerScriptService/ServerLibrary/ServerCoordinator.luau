@@ -18,8 +18,11 @@ local RECENT_SERVERS_CAP = 20;
 local RECENT_SERVERS_MAX_AGE = 1200;
 local JOIN_LOOKUP_RETRY = 10;
 
+local crossServerSignal;
+local registrySignal;
 --==
 function ServerCoordinator.onRequire()
+	crossServerSignal = modCrossServerSignals.new("MatchMaking");
     serverCoordinatorMem = MemoryStoreService:GetHashMap(`GlobalServers`);
 
     local worldInfo = modBranchConfigurations.WorldInfo;
@@ -37,8 +40,7 @@ function ServerCoordinator.onRequire()
 
     ServerCoordinator.RecentServers = {};
 
-
-    local registrySignal = modCrossServerSignals.new("ServerRegistry");
+    registrySignal = modCrossServerSignals.new("ServerRegistry");
     registrySignal:Connect(function(action, info)
         if action == "newserver" then
             table.insert(ServerCoordinator.RecentServers, info);
@@ -71,7 +73,10 @@ function ServerCoordinator:SetCurrentServerInfo(serverInfo)
 end
 
 function ServerCoordinator:NewServer(privateServerId, serverInfo)
-    Debugger:Warn(`NewServer {privateServerId}`);
+    if privateServerId == nil then
+        Debugger:Warn(`NewServer skipped, no privateServerId`);
+    end
+    Debugger:Warn(`NewServer {privateServerId}`, serverInfo);
 
     local maxAttempts = 5;
     local s, e;
@@ -94,7 +99,7 @@ function ServerCoordinator:NewServer(privateServerId, serverInfo)
     if ServerCoordinator.RecentServers ~= nil then
         local trimmed = self:Shrink(serverInfo, privateServerId);
         local ok, err = pcall(function()
-            modCrossServerSignals.new("ServerRegistry"):Fire("newserver", trimmed);
+            registrySignal:Fire("newserver", trimmed);
         end);
         if not ok then
             Debugger:Warn("ServerCoordinator: failed to broadcast newserver", err);
@@ -181,7 +186,7 @@ function ServerCoordinator:SyncServerUpdate()
     if ServerCoordinator.RecentServers == nil then return end;
     
     local s, e = pcall(function()
-        modCrossServerSignals.new("ServerRegistry"):Fire("serverupdate", {
+        registrySignal:Fire("serverupdate", {
             Id = game.PrivateServerId;
             AccessCode = accessCode;
             PlayerCount = #(serverInfo.UserIds or {});
@@ -196,7 +201,7 @@ end
 
 function ServerCoordinator:JoinServer(accessCode, userIds)
     local ok, err = pcall(function()
-        modCrossServerSignals.new("MatchMaking"):Fire("joinserver", userIds, accessCode);
+        crossServerSignal:Fire("joinserver", userIds, accessCode);
     end);
     if not ok then
         Debugger:Warn("ServerCoordinator: failed to request join", err);
@@ -241,7 +246,7 @@ function ServerCoordinator:RemoveServer()
 
     if ServerCoordinator.RecentServers ~= nil then
         local ok, err = pcall(function()
-            modCrossServerSignals.new("ServerRegistry"):Fire("serverremoved", {
+            registrySignal:Fire("serverremoved", {
                 Id = privateServerId;
             });
         end);

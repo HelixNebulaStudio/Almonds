@@ -1,7 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modItemDrops = shared.require(game.ServerScriptService.ServerLibrary.ItemDrops);
 
 local PROCESSTYPE = script.Name;

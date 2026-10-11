@@ -56,7 +56,8 @@ function PlayRunSession:EndRun(runStatus: string, reason: string)
     if self.Status ~= "Active" then return end;
 
     local playerClass: PlayerClass = shared.modPlayers.get(self.Player);
-
+    if playerClass == nil then return end;
+    
     Debugger:Warn(`EndRun {runStatus} Reason: {reason}`);
     playerClass.Properties.PlayRunStatus = runStatus;
 

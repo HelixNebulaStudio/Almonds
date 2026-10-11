@@ -8,7 +8,7 @@ local AlmdesCore = {};
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
 modGlobalVars.GameVersion = "0.0";
-modGlobalVars.GameBuild = "8";
+modGlobalVars.GameBuild = "9";
 modGlobalVars.ModeVerLabel = `$Fps fps\t$UpTime\tAlmonds $GameVersion $BranchName $IsMobile`;
 
 --==
@@ -31,6 +31,7 @@ local modCrateLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChi
 local modStatusEffects = shared.require(game.ReplicatedStorage.Library:WaitForChild("StatusEffectsAlmdes"));
 local modWeatherLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("WeatherLibraryAlmdes"));
 local modPlayRunSession = shared.require(game.ReplicatedStorage.Library:WaitForChild("PlayRunSession"));
+local modMissionLibrary = shared.require(game.ReplicatedStorage.Library:WaitForChild("MissionLibraryAlmdes"));
 local modZScripting = shared.require(game.ReplicatedStorage.Plugin.ZScript.Scripting);
 
 if RunService:IsServer() then
@@ -42,6 +43,7 @@ if RunService:IsServer() then
     local modBaseBuildingSystem = shared.require(game.ServerScriptService.ServerLibrary.BaseBuildingSystem);
     local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
     local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingServiceAlmdes);
+    local modLiveLoggingService = shared.require(game.ServerScriptService.ServerLibrary.LiveLoggingServiceAlmdes);
 end
 
 function AlmdesCore.OnPlayerAdded(player)

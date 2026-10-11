@@ -4,7 +4,7 @@ local localPlayer = game.Players.LocalPlayer;
 
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
 --==
 local templateAmmoOverlay = script:WaitForChild("AmmoOverlay");
@@ -48,6 +48,9 @@ function modItemInterface:DefaultUpdateItemButton(storageItem: StorageItem)
             local activeAmmoId = storageItem.Values.AmmoId or configurations.AmmoType;
 
             local ammoItemLib = modItemsLibrary:Find(activeAmmoId);
+            if ammoItemLib == nil then
+                Debugger:Warn(`activeAmmoId={activeAmmoId}`);
+            end
             ammoOverlay.Image = ammoItemLib.Icon;
 
             local availableInvAmmo = 0;

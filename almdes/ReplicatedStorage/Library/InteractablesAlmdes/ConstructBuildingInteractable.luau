@@ -1,7 +1,7 @@
 local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modBuildingPlans = shared.require(game.ReplicatedStorage.Library.BuildingPlans);
 
 local interactablePackage = {};

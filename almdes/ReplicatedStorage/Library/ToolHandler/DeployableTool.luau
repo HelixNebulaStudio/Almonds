@@ -6,7 +6,7 @@ local CollectionService = game:GetService("CollectionService");
 local localPlayer = game.Players.LocalPlayer;
 local camera = workspace.CurrentCamera;
 
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
 local modInteractables = shared.require(game.ReplicatedStorage.Library.Interactables);

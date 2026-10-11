@@ -12,6 +12,7 @@ local modCrossServerSignals = shared.require(game.ServerScriptService.ServerLibr
 local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingService);
 local modServerManager = shared.require(game.ServerScriptService.ServerLibrary.ServerManager);
 local modServerCoordinator = shared.require(game.ServerScriptService.ServerLibrary.ServerCoordinator);
+local modLiveLoggingService = shared.require(game.ServerScriptService.ServerLibrary.LiveLoggingService);
 
 
 local SERVER_TYPES = {
@@ -33,6 +34,7 @@ function modMatchMakingService.onRequire()
 			table.insert(localPlayers, player);
 		end
 
+		Debugger:Warn(`Teleporting players ({Debugger:Stringify(localPlayers)}) to {reserveAccessCode}`);
 		modServerManager:TeleportToPrivateServer("Genesis", reserveAccessCode, localPlayers, teleportData);
 	end
 
@@ -83,6 +85,7 @@ function modMatchMakingService.onRequire()
 		modServerCoordinator:NewServer(privateServerId, gameLobby);
 
 		crossServerSignal:Fire("joinserver", gameLobby.UserIds, reserveAccessCode);
+		modLiveLoggingService.post("MMLogs", Debugger:Stringify(`MatchMaking New Server:`, gameLobby));
 	end)
 
 	shared.modEngineCore:ConnectOnPlayerAdded(script, function(player: Player)
@@ -135,10 +138,11 @@ function modMatchMakingService.onRequire()
 			Permission = shared.modCommandsLibrary.PermissionLevel.Admin;
 			Description = [[Matchmaking Admin / test harness.
 			/mmalmdes <u>t</u>est<u>j</u>oin<u>s</u>erver  -- test join server
+			/mmalmdes testlog
 			]];
 
 			RequiredArgs = 0;
-			UsageInfo = "/mm action [args]";
+			UsageInfo = "/mmalmdes action [args]";
 			Function = function(speaker: Player, args)
 				local player = speaker;
 				local actionId = args[1];
@@ -146,6 +150,9 @@ function modMatchMakingService.onRequire()
 				if actionId == "testjoinserver" or actionId == "tjs" then
 					local reserveAccessCode = modServerManager:CreatePrivateServer("Genesis");
 					crossServerSignal:Fire("joinserver", {player.UserId}, reserveAccessCode);
+
+				elseif actionId == "testlog" then
+					modLiveLoggingService.post("MMLogs", "Hello World!");
 
 				else
 					Debugger:Log("MatchMaking: unknown action", tostring(actionId));

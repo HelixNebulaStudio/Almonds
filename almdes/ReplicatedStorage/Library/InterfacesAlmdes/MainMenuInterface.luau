@@ -58,7 +58,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local navBarContent = navBar:WaitForChild("Content");
     local hudFrame;
 
-    if modConfigurations.SafehomeMode then
+    local isSafehome = modConfigurations.SafehomeMode;
+    if isSafehome then
         hudFrame = script:WaitForChild("MenuHudFrame"):Clone();
         hudFrame.Parent = interface.ScreenGui;
 
@@ -344,7 +345,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     PAGES.QueuePage.Update = function()
         local queueState = modData.QueueState;
 
-        Debugger:Warn("Queue state", queueState);
+        Debugger:Log("Queue state", queueState);
 
         local queuePageFrame = PAGES.QueuePage.Frame;
         local queueInfoDialog = queuePageFrame.QueueInfo;
@@ -398,7 +399,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             Default = "Quick Play";
         };
         queueLabel.Text = `Queueing {
-            queueState.Queue == "LOCAL" and "nearby" or "global"
+            queueState.Queue == "LOCAL" and "nearby (".. tostring(queueState.Region) ..")" or "global"
         } for {
             queueTypes[queueState.QueueType]
         }`;
@@ -488,7 +489,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             
             local serversMeta = HttpService:JSONDecode(jsonServersMeta);
             local serverTime = workspace:GetServerTimeNow();
-            print("serversMeta", serversMeta);
+            Debugger:Log("serversMeta", serversMeta);
             
             local updatedJobId = {};
             for a=1, #serversMeta.List do
@@ -575,7 +576,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             if remoteMainMenu:Debounce() then return end;
 
             if action == "playtutorial" 
-            or action == "quickplay" then
+            or action == "infiltration" then
                 playLoading.Visible = true;
                 playButton.Text = "";
             end
@@ -638,7 +639,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     
                     activePlayPage = "SpawningFrame";
                     PAGES.PlayPage.Update();
-                    deploy("quickplay");
+                    deploy("infiltration");
 
                 elseif key == "Servers" then
                     Debugger:Warn(`Clicked Server`);

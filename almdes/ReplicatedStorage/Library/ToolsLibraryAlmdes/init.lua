@@ -1,4 +1,4 @@
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modToolsLibrary = shared.require(game.ReplicatedStorage.Library.ToolsLibrary);
 
 function modToolsLibrary.loadNewToolPackage(toolPackage)

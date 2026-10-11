@@ -11,7 +11,7 @@ local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesM
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modItemInterface = shared.require(game.ReplicatedStorage.Library.UI.ItemInterface);
 
 local organizedItemsList;
@@ -127,6 +127,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             window:Update(true);
 
         else
+            interface:ToggleWindow("Inventory", false);
             codexWindow.Visible = false;
 
             if mainMenuWindow and mainMenuWindow.Visible then

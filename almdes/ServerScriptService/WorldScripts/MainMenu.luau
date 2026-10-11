@@ -13,7 +13,8 @@ function WorldCore.onRequire()
         shared.modEngineCore:ConnectOnPlayerAdded(script, function(player: Player)
             local playerClass: PlayerClass = shared.modPlayers.get(player);
 
-            if modConfigurations.SafehomeMode then
+            local isSafehome = modConfigurations.SafehomeMode;
+            if isSafehome then
                 playerClass:Spawn();
             end
 

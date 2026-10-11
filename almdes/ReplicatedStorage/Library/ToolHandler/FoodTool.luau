@@ -7,7 +7,7 @@ local localPlayer = game.Players.LocalPlayer;
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 local modToolHandler = shared.require(game.ReplicatedStorage.Library.ToolHandler);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManager);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modStatusEffects = shared.require(game.ReplicatedStorage.Library.StatusEffects);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 

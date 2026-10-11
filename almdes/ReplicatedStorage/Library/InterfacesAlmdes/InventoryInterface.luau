@@ -15,7 +15,7 @@ local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.Br
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 local modFormatNumber = shared.require(game.ReplicatedStorage.Library.FormatNumber);
 local modUsableItems = shared.require(game.ReplicatedStorage.Library.UsableItems);
 local modTableManager = shared.require(game.ReplicatedStorage.Library.TableManager);
@@ -117,6 +117,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 				hotbarWindow:Open();
 			end
 			newHotbarFrame.Parent = invFrame;
+			newHotbarFrame.Size = UDim2.new(0, 390, 0, 60);
 			hotbarUIListLayout.Parent = newHotbarFrame;
 
 			defaultStorageInterface.OnItemButton1Click = defaultStorageInterface.BeginDragItem;
@@ -124,7 +125,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             properties.CharacterInterfaceVisible = true;
             invFrame.Visible = true;
             
-            modStorageInterface.QueueRefreshStorage({"Inventory", "Clothing"});
+			modStorageInterface.QueueRefreshStorage{"Inventory"; "Clothing"};
             interface:ToggleWindow("CraftingMenu", true);
 			shared.modEventService:ClientInvoke("Interface_BindInventoryToggle", {SendBy = localPlayer}, true);
 			
@@ -140,6 +141,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 				hotbarWindow:Close();
 			end
 			newHotbarFrame.Parent = interface.ScreenGui;
+			newHotbarFrame.Size = UDim2.new(1, 0, 0, 60);
 			hotbarUIListLayout.Parent = hotbarUISizeConstraint;
 			
             properties.CharacterInterfaceVisible = false;
@@ -286,18 +288,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	clothingStorageInterface = modStorageInterface.new("Clothing", charWindow.Frame, clothingSlots);
 	clothingStorageInterface.Name = "Clothing";
 	clothingStorageInterface.DeleteEnabled = false;
-
-	task.spawn(function()
-		modData.RequestStorage{
-			Action = "GetStorage";
-			StorageId = "Inventory";
-		};
-		modData.RequestStorage{
-			Action = "GetStorage";
-			StorageId = "Clothing";
-		};
-		defaultStorageInterface:Update();
-	end)
 
 	properties.ActiveHotbarKeys = 6;
 	properties.HotEquip = function(index)
@@ -531,17 +521,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end))
 
-	task.spawn(function()
-		modData.RequestStorage{
-			Action = "GetStorage";
-			StorageId = "Inventory";
-		};
-		modData.RequestStorage{
-			Action = "GetStorage";
-			StorageId = "Clothing";
-		};
-	end)
-
 	--MARK: Deconstruction
 	interface:BindEvent("DataItemProcessorUpdate", function()
 		local itemProcessor = modData.ItemProcessor;
@@ -612,6 +591,16 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 	end)
+
+	task.spawn(function()
+		modData.RequestStorage{Action = "SyncStorages";};
+		modStorageInterface.QueueRefreshStorage{"Inventory"; "Clothing"};
+
+		if isSafehomeMode then
+			defaultStorageInterface:Update(nil, nil, true); -- force update even if not truly visible. 
+		end
+	end)
+
 end
 
 return interfacePackage;

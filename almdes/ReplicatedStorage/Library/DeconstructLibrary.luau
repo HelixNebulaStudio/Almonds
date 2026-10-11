@@ -2,7 +2,7 @@ local DeconstructLibrary = {};
 DeconstructLibrary.__index = DeconstructLibrary;
 --==
 local modLibraryManager = shared.require(game.ReplicatedStorage.Library.LibraryManager);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
 local library = modLibraryManager.new();
 

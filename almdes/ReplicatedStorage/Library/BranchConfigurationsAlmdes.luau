@@ -24,7 +24,7 @@ local WORLDS = {
         WorldType = WORLD_TYPES.MainMenu;
         CanTravelTo = true;
         TimeCycleEnabled = true;
-        MaxPlayers = 5;
+        MaxPlayers = 20;
     };
     Genesis = {
         PlaceIds = {
@@ -33,6 +33,7 @@ local WORLDS = {
         };
         
         WorldType = WORLD_TYPES.Game;
+        TimeCycleEnabled = true;
     };
 }
 
@@ -53,21 +54,24 @@ function modBranchConfigurations.onRequire()
     local curWorldName = modBranchConfigurations.WorldName;
     local curWorldInfo = modBranchConfigurations.WorldInfo;
 
+    modConfigurations.Set("DisableEmotes", false);
     modConfigurations.Set("DisableInventory", false);
+    modConfigurations.Set("DisableMissions", false);
+    modConfigurations.Set("DisableHealthbar", false);
+    modConfigurations.Set("DisableInfoBubbles", false);
+    modConfigurations.Set("SpectateEnabled", false);
+    modConfigurations.Set("CanQuickEquip", true);
+    modConfigurations.Set("PvpMode", true);
+    modConfigurations.Set("DisableSettingsMenu", false);
+    modConfigurations.Set("DisableItemDrops", false);
 
     if curWorldInfo.WorldType == WORLD_TYPES.MainMenu then
         modConfigurations.Set("SafehomeMode", true);
-        
+        modConfigurations.Set("BaseWoundedDuration", 0);
+            
     elseif curWorldInfo.WorldType == WORLD_TYPES.Game then
-        modConfigurations.Set("DisableHealthbar", false);
-        modConfigurations.Set("DisableInfoBubbles", false);
-        modConfigurations.Set("SpectateEnabled", false);
         modConfigurations.Set("BaseWoundedDuration", 150);
-        modConfigurations.Set("CanQuickEquip", true);
-        modConfigurations.Set("PvpMode", true);
-        modConfigurations.Set("DisableItemDrops", false);
         modConfigurations.Set("ForceNotifyStyle", 1);
-        modConfigurations.Set("DisableSettingsMenu", false);
         modConfigurations.Set("FogScale", 2);
 
     end

@@ -65,33 +65,43 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
 
         local statusComp: StatusComp = playerClass.StatusComp;
 
-        if shared.gameConfig.BranchName == "Dev" then
-            player:SetAttribute("DbTinkerCmds", true);
-        end
+        -- if shared.gameConfig.BranchName == "Dev" then
+        --     player:SetAttribute("DbTinkerCmds", true);
+        -- end
 
     elseif RunService:IsClient() then
     end
     
     playerClass.OnIsDeadChanged:Once(function(isDead)
         if not isDead then return end;
+        if playerClass:GetInstance() ~= localPlayer then return end;
+
         Debugger:Warn(`Dead`);
 
+        local isSafehome = modConfigurations.SafehomeMode;
+
         if RunService:IsClient() then
-            if playerClass.Properties.PlayRunStatus == "Success" then
-                modClientLighting:SetAtmosphere("Exfil");
+            if not isSafehome then
+                if playerClass.Properties.PlayRunStatus == "Success" then
+                    modClientLighting:SetAtmosphere("Exfil");
 
-            else
-                modClientLighting:SetAtmosphere("Death");
+                else
+                    modClientLighting:SetAtmosphere("Death");
 
-                local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
-                if deathScreenElement then
-                    deathScreenElement.Visible = true;
-                    modClientGuis.ActiveInterface:HideAll();
+                    local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
+                    if deathScreenElement then
+                        deathScreenElement.Visible = true;
+                        modClientGuis.ActiveInterface:HideAll();
+                    end
                 end
             end
 
         elseif RunService:IsServer() then
             --
+            if isSafehome then
+                
+            end
+
         end
     end)
 end)

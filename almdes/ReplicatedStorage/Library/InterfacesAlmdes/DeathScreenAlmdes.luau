@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService");
 local camera = workspace.CurrentCamera;
 
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesManagerAlmdes);
 local modClientGuis = shared.require(game.ReplicatedStorage.PlayerScripts.ClientGuis);
 local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
@@ -41,9 +42,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local deathFrame = script:WaitForChild("AlmdesDeath"):Clone();
     deathFrame.Parent = uiElement.Frame;
 
+    local isSafehomeMode = modConfigurations.SafehomeMode;
+
     uiElement.OnChanged:Connect(function(k, v, ov)
         if k == "Visible" then
-            deathFrame.Visible = v;
+            if isSafehomeMode ~= true then
+                deathFrame.Visible = v;
+            end
         end
     end)
     

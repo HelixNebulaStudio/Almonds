@@ -9,7 +9,7 @@ function modRemotesManager.onRequire()
         modRemotesManager:NewFunctionRemote("TestFuncRemote", 1);
 
         --== Menu
-        modRemotesManager:NewFunctionRemote("MainMenuRemote", 1);
+        modRemotesManager:NewFunctionRemote("MainMenuRemote", 0.5);
         modRemotesManager:NewFunctionRemote("LiveServersRemote", 1);
 
         --== Systmes;

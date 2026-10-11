@@ -4,7 +4,7 @@ ResourcePileLibrary.__index = ResourcePileLibrary;
 local RunService = game:GetService("RunService");
 
 local modLibraryManager = shared.require(game.ReplicatedStorage.Library.LibraryManager);
-local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibrary);
+local modItemsLibrary = shared.require(game.ReplicatedStorage.Library.ItemsLibraryAlmdes);
 
 local modDropRateCalculator = shared.require(game.ReplicatedStorage.Library.DropRateCalculator);
 local modRewardsLibrary = shared.require(game.ReplicatedStorage.Library.RewardsLibraryAlmdes);
