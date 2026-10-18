@@ -112,6 +112,13 @@ function modStorage.RequestUnlock(params, rPacket)
         return rPacket;
     end;
 
+    params.KeyItemId = keyRequired;
+
+    local unlockEvent: EventPacket = shared.modEventService:ServerInvoke("Storage_BindUnlock", {ReplicateTo={player}}, params, rPacket);
+    if unlockEvent.Cancelled then
+        return;
+    end
+
     inventory:Remove(itemList[1].ID, 1);
 
     interactable.Values.KeyRequired = nil;

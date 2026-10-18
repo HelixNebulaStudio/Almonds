@@ -44,6 +44,8 @@ if RunService:IsServer() then
     local modWorldEvents = shared.require(game.ServerScriptService.ServerLibrary.WorldEvents);
     local modMatchMakingService = shared.require(game.ServerScriptService.ServerLibrary.MatchMakingServiceAlmdes);
     local modLiveLoggingService = shared.require(game.ServerScriptService.ServerLibrary.LiveLoggingServiceAlmdes);
+
+	modMission = shared.require(game.ServerScriptService.ServerLibrary.Mission);
 end
 
 function AlmdesCore.OnPlayerAdded(player)
@@ -58,6 +60,7 @@ function AlmdesCore.OnCharacterAdded(player, character)
         local playerClass: PlayerClass = shared.modPlayers.get(player);
         local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
         local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
+        local missionsProfile: MissionsProfile = gameSave.Missions;
     
         local isSafehomeMode = modConfigurations.SafehomeMode;
         if isSafehomeMode ~= true then
@@ -68,7 +71,17 @@ function AlmdesCore.OnCharacterAdded(player, character)
             playRunSession:Wipe();
             playRunSession.JobId = game.JobId;
 
+            if shared.gameConfig.BranchName == "Dev" then
+                local mIdList = {1;2;3;4;5;6;};
+
+                for a=1, 3 do
+                    local startMId = table.remove(mIdList, math.random(1, #mIdList));
+                    modMission:StartMission(player, startMId);
+                end
+            end
         end
+
+        missionsProfile:InitObjectivesTracker();
 
     elseif RunService:IsClient() then
     end
@@ -79,10 +92,13 @@ function AlmdesCore.OnPlayerRemoving(player)
         local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
         local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
 
-        local playRunSession: PlayRunSession = gameSave.Session;
-        if playRunSession ~= nil and playRunSession.Status == "Active" then
-            playRunSession:EndRun("Failed", "Despawned");
+        local isSafehomeMode = modConfigurations.SafehomeMode;
 
+        local playRunSession: PlayRunSession = gameSave.Session;
+        if isSafehomeMode ~= true then
+            if playRunSession ~= nil and playRunSession.Status == "Active" then
+                playRunSession:EndRun("Failed", "Despawned");
+            end
         end
         
     elseif RunService:IsClient() then

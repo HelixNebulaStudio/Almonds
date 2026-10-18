@@ -34,9 +34,14 @@ local function OnPlayerAdded(player: Player)
 	player.ReplicationFocus = spawnLocations[math.random(1, #spawnLocations)];
 
 	local playerClass: PlayerClass = shared.modPlayers.get(player);
-	playerClass.OnIsDeadChanged:Connect(function(isDead, dieReason)
-		if not isDead then return end;
-		Debugger:Warn("Player died: ", dieReason);
+	playerClass.OnIsDeadChanged:Connect(function(isDead, reasonPacket)
+        if isDead then
+		    Debugger:Warn("Player died: ", reasonPacket);
+
+        else
+            Debugger:Warn("Player revived: ", reasonPacket);
+
+        end
 		
 	end)
 

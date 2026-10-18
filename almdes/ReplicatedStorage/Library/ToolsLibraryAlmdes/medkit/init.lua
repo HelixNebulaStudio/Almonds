@@ -6,7 +6,7 @@ local modEquipmentClass = shared.require(game.ReplicatedStorage.Library.Equipmen
 local toolPackage = {
 	ItemId = script.Name;
 	Class = "Tool";
-	HandlerType = "HealToolAlmdes";
+	HandlerType = "HealTool";
 
 	Animations = {
 		Core = {Id = 17076794599;};

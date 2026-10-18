@@ -9,6 +9,8 @@ local modRemotesManager = shared.require(game.ReplicatedStorage.Library.RemotesM
 
 if RunService:IsServer() then
     prefabStorage = game.ServerStorage.Prefabs;
+
+    modMission = shared.require(game.ServerScriptService.ServerLibrary.Mission);
 end
 
 local exfilScheduler: Scheduler = modScheduler.new("ExfilSystem", 1/5);
@@ -52,8 +54,22 @@ function ExfilSystem:ExfilPlayer(player: Player, exfilType: string)
 
     local profile: ProfileAlmdes = shared.modProfile:Get(player) :: ProfileAlmdes;
     local gameSave: GameSaveAlmdes = profile:GetActiveSave() :: GameSaveAlmdes;
-
     local playRunSession: PlayRunSession = gameSave.Session;
+
+
+    local missionProfile: MissionsProfile = modMission.GetMissions(player.Name);
+    local completeMissionList = missionProfile:GetTypes(1);
+    for _, mission: Mission in pairs(completeMissionList) do
+        local missionId = mission.Id;
+
+        if mission.SaveData.ExfilComplete then
+            modMission:CompleteMission(player, missionId, mission == completeMissionList[#completeMissionList]);
+
+            playRunSession:AddStat("MissionsCompleted", 1);
+        end
+    end
+
+
     playRunSession:EndRun("Success", exfilType);
 
     task.spawn(function()
@@ -63,7 +79,9 @@ function ExfilSystem:ExfilPlayer(player: Player, exfilType: string)
         Debugger:Warn(`ExfilPlayer {player.Name}`, typeof(rPacket), rPacket);
     end)
 
+
     profile:Save();
+    task.wait(0.1);
     playerClass:Despawn();
 end
 

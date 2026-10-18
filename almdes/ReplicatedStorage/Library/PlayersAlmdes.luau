@@ -73,26 +73,31 @@ shared.coreBind(modPlayers.Player, "_new", function(playerClass: PlayerClassAlmd
     end
     
     playerClass.OnIsDeadChanged:Once(function(isDead)
-        if not isDead then return end;
         if playerClass:GetInstance() ~= localPlayer then return end;
 
-        Debugger:Warn(`Dead`);
+        Debugger:Warn(`isDead=`,isDead);
 
         local isSafehome = modConfigurations.SafehomeMode;
 
         if RunService:IsClient() then
             if not isSafehome then
-                if playerClass.Properties.PlayRunStatus == "Success" then
-                    modClientLighting:SetAtmosphere("Exfil");
+                if isDead then
+                    if playerClass.Properties.PlayRunStatus == "Success" then
+                        modClientLighting:SetAtmosphere("Exfil");
+
+                    else
+                        modClientLighting:SetAtmosphere("Death");
+
+                        local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
+                        if deathScreenElement then
+                            deathScreenElement.Visible = true;
+                            modClientGuis.ActiveInterface:HideAll();
+                        end
+                    end
 
                 else
-                    modClientLighting:SetAtmosphere("Death");
+                    modClientLighting:SetAtmosphere("Spawn");
 
-                    local deathScreenElement: InterfaceElement = modClientGuis.getElement("DeathScreenElement");
-                    if deathScreenElement then
-                        deathScreenElement.Visible = true;
-                        modClientGuis.ActiveInterface:HideAll();
-                    end
                 end
             end
 

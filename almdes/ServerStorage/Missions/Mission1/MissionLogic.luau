@@ -31,6 +31,7 @@ function MissionLogic.onRequire()
 							mission.SaveData.Kills = mission.SaveData.Kills -1;
 							if mission.SaveData.Kills <= 0 then
 								mission.ProgressionPoint = 2;
+								mission.SaveData.ExfilComplete = true;
 							end
 						end;
 					end)

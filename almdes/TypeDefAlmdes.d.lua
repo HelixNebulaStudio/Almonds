@@ -1,6 +1,7 @@
 export type GAME_EVENT_KEY_ALMDES =
     | "Interface_BindInventoryToggle"
     | "Deployable_BindSpawn"
+    | "Storage_BindUnlock"
     ;
 
 export type DAMAGE_TYPE_ALMDES =

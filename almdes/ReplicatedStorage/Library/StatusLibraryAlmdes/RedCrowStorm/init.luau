@@ -107,7 +107,7 @@ function statusPackage.BindTickUpdate(statusClass: StatusClassInstance, tickData
 		end
 
 		local rootPart = characterClass.RootPart;
-		local isInDoor = modRaycastUtil.GetCeiling(rootPart.CFrame.Position, 64);
+		local isInDoor = modRaycastUtil.getCeiling(rootPart.CFrame.Position, 64);
 		local campfireStatus: StatusClassInstance = characterClass.StatusComp:GetOrDefault("Campfire");
 		
 		local damage = 2;

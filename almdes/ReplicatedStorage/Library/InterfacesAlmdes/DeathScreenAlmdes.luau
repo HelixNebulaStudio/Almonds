@@ -15,11 +15,12 @@ local modAudio = shared.require(game.ReplicatedStorage.Library.Audio);
 local FRAME_TWEENINFO = TweenInfo.new(3, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut);
 
 local STAT_KEYS = {
-    {Key="NpcKills", Name="Npc Kills"};
-    {Key="PlayerKills", Name="Player Kills"};
-    {Key="ContractsCompleted", Name="Contracts Completed"};
-    {Key="MissionsCompleted", Name="Missions Completed"};
-    {Key="StorageOpened", Name="Crates Opened"};
+    {Key="NpcKills"; Name="Npc Kills"};
+    {Key="PlayerKills"; Name="Player Kills"};
+    {Key="ContractsCompleted"; Name="Contracts Completed"};
+    {Key="MissionsCompleted"; Name="Missions Completed"};
+    {Key="StorageOpened"; Name="Crates Opened"};
+    {Key="PlayersRevived"; Name="Players Revived"}
 };
 
 local interfacePackage = {

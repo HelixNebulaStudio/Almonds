@@ -9,6 +9,7 @@ local SESSION_STATS = {
     PlayerKills = 0;
     ContractsCompleted = 0;
     MissionsCompleted = 0;
+    PlayersRevived = 0;
 };
 
 function PlayRunSession.new(player: Player)

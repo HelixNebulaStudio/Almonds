@@ -223,7 +223,7 @@ function eventPackage.newInstance(eventInstance: WorldEventInstance)
 						local fireParticle = fireAtt and fireAtt:FindFirstChild("Fire") or nil;
 						if fireParticle == nil or fireParticle.Enabled == false then continue end;
 
-						local ceilingRayResult: RaycastResult = modRaycastUtil.GetCeiling(fireAtt.WorldPosition);
+						local ceilingRayResult: RaycastResult = modRaycastUtil.getCeiling(fireAtt.WorldPosition);
 						if ceilingRayResult then continue end;
 
 						local healthComp: HealthComp = modHealthComponent.getByModel(campfireModel);

@@ -22,6 +22,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local remoteMissionRemote = modRemotesManager:Get("MissionRemote");
 
+    local templateTaskFrame = script:WaitForChild("TaskFrameTemplate");
+    local templateObjTaskLabel = script:WaitForChild("TaskObjLabel");
+
     local isDev = shared.gameConfig.BranchName == "Dev";
 
 	local windowFrame = script:WaitForChild("MissionsWindow"):Clone();
@@ -148,12 +151,75 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             local missionHudTask = taskHudWindow.Binds.getOrNewTask(HUD_TASK_ID, true);
             local missionPoint = mission.ProgressionPoint;
 
-            missionHudTask.Properties.TitleText = "";
+            missionHudTask.Properties.TitleText = `Mission {a}`;
             missionHudTask.Properties.HeaderText = missionLib.Name;
+
+            local hudTaskFrame = missionHudTask.Frame;
+            local hudTaskContentFrame = hudTaskFrame.Content;
 
             local checkpointInfo = missionLib.Checkpoint[missionPoint];
 
-            local taskStr = `{isDev and `[{missionPoint}] ` or ``}{checkpointInfo.Text}`;
+            local checkpointText = checkpointInfo.Text;
+
+            local objectives = checkpointInfo.Objectives;
+            if objectives then
+                local taskObjFrame = missionHudTask.TaskObjFrame;
+                if taskObjFrame == nil then
+                    taskObjFrame = templateTaskFrame:Clone();
+                    missionHudTask.TaskObjFrame = taskObjFrame;
+                    taskObjFrame.Parent = hudTaskContentFrame;
+                end
+
+                local isObjsComplete = true;
+
+                for _, objId in ipairs(objectives) do
+                    local isComplete = mission.ObjectivesCompleted[objId] == true;
+                    if not isComplete then
+                        isObjsComplete = false;
+                    end
+
+                    local objInfo = missionLib.Objectives and missionLib.Objectives[objId];
+                    if objInfo == nil then
+                        Debugger:StudioLog(`Missing objective info for ({objId})`);
+                        continue;
+                    end
+
+                    local taskObjLabel = taskObjFrame:FindFirstChild(objId);
+                    if objInfo.HideComplete then
+                        taskObjLabel:Destroy();
+                        continue;
+                    end
+                    if taskObjLabel == nil then
+                        taskObjLabel = templateObjTaskLabel:Clone();
+                    end
+
+                    taskObjLabel.Name = objId;
+                    taskObjLabel.LayoutOrder = objInfo.Index;
+                    taskObjLabel.Parent = taskObjFrame;
+
+                    local objStr = `• {objInfo.Description}`;
+                    objStr = formatTaskLabel(mission, objStr);
+
+                    if isComplete then
+                        objStr = objInfo.CompleteText or `<s>{objStr}</s>`;
+                    end
+                    taskObjLabel.Text = objStr;
+                end
+                
+                if isObjsComplete and checkpointInfo.CompleteText then
+                    checkpointText = checkpointInfo.CompleteText;
+                end
+
+            else
+                local taskObjFrame = missionHudTask.TaskObjFrame;
+                if taskObjFrame then
+                    taskObjFrame:Destroy();
+                    missionHudTask.TaskObjFrame = nil;
+                end
+
+            end
+
+            local taskStr = `{isDev and `[{missionPoint}] ` or ``}{checkpointText}`;
             taskStr = formatTaskLabel(mission, taskStr);
             missionHudTask.Properties.DescText = taskStr;
         end
@@ -161,7 +227,13 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
 
     --MARK: Mission update signal
+	interface:BindEvent("UpdateMissions", function()
+		if not localPlayer:IsAncestorOf(windowFrame) then return end;
+		window:Update();
+        window.Binds.UpdateMissionHudTasks();
+	end)
     interface:BindEvent("syncmission", function(mission)
+		window:Update();
         window.Binds.UpdateMissionHudTasks();
     end)
 

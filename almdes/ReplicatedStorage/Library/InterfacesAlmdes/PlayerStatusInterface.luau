@@ -114,7 +114,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		else
 			statusEffectFrame.Parent = interface.ScreenGui;
 			statusEffectFrame.AnchorPoint = Vector2.new(0.5, 1);
-			statusEffectFrame.Position = UDim2.new(0.5, 0, 1, -150);
+			statusEffectFrame.Position = UDim2.new(0.5, 0, 1, -130);
 			statusEffectFrame.Size = UDim2.new(1, 0, 0, 40);
 			statusContentList.ScrollingEnabled = false;
 			statusTitleLabel.Visible = false;
