@@ -116,6 +116,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     --MARK: Mission HudTask
     function window.Binds.UpdateMissionHudTasks()
+        local isSafehomeMode = modConfigurations.SafehomeMode;
+        if isSafehomeMode then return end;
+
         local activeMissionsList = {};
 
         local missionsList = modData:GetMissionsList();
@@ -130,8 +133,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         
 		local taskHudWindow: InterfaceWindow = interface:GetWindow("TaskListHud");
         if taskHudWindow == nil then return end;
-
-        Debugger:Log("activeMissionsList", activeMissionsList);
 
         for a=1, 3 do
             local HUD_TASK_ID = `ACTIVE_MISSION_{a}`;        

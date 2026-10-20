@@ -26,6 +26,8 @@ function interface.onRequire()
     remoteItemProcessor = modRemotesManager:Get("ItemProcessor");
     remoteMainMenuRemote = modRemotesManager:Get("MainMenuRemote");
 
+    game.ReplicatedFirst:RemoveDefaultLoadingScreen();
+    game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false);
 end
 
 function interface.clientGuisLoad()

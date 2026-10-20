@@ -404,7 +404,13 @@ elseif RunService:IsServer() then -- MARK: Server
 			if storageItem and storageItem.Quantity <= 0 then Debugger:Warn("Insufficient quantity"); return end;
 
 			properties.HealAmount = configurations.HealAmount;
-			local event = shared.modEventService:ServerInvoke("Tools_BindHealTool", {ReplicateTo=players}, "UseComplete", handler, toCharacterClass);
+			local event = shared.modEventService:ServerInvoke(
+				"Tools_BindHealTool", 
+				{ReplicateTo=players}, 
+				"UseComplete", 
+				handler, 
+				toCharacterClass
+			);
 			if event.Cancelled then return end;
 
 			local healAmount = properties.HealAmount;

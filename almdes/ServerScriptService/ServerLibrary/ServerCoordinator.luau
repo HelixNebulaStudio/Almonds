@@ -26,7 +26,7 @@ function ServerCoordinator.onRequire()
     serverCoordinatorMem = MemoryStoreService:GetHashMap(`GlobalServers`);
 
     local worldInfo = modBranchConfigurations.WorldInfo;
-    local isLobbyServer = worldInfo and worldInfo.WorldType == 1;  -- WORLD_TYPES.Game
+    local isLobbyServer = worldInfo and worldInfo.WorldType == 2;  -- WORLD_TYPES.Game
     if not isLobbyServer then
         game:BindToClose(function()
             if RunService:IsStudio() then return end;
@@ -38,10 +38,14 @@ function ServerCoordinator.onRequire()
         return;
     end;
 
+    Debugger:Warn(`ServerCoordinator: Lobby Mode`);
+
     ServerCoordinator.RecentServers = {};
 
     registrySignal = modCrossServerSignals.new("ServerRegistry");
     registrySignal:Connect(function(action, info)
+        Debugger:Warn(`Registry Msg Received:`, action, info);
+
         if action == "newserver" then
             table.insert(ServerCoordinator.RecentServers, info);
             if #ServerCoordinator.RecentServers > RECENT_SERVERS_CAP then
@@ -123,7 +127,7 @@ function ServerCoordinator:Shrink(serverInfo, privateServerId)
 end
 
 function ServerCoordinator:FindJoinableServer(region, excludeIds, partySize)
-    if ServerCoordinator.RecentServers == nil then return nil end;  -- not a lobby server
+    if ServerCoordinator.RecentServers == nil then Debugger:Warn(`No RecentServers.`); return nil end;  -- not a lobby server
 
     partySize = partySize or 1;
     local now = os.time();

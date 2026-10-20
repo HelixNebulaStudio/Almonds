@@ -27,7 +27,7 @@ local toolPackage = {
 		Type="Tool";
 
 		EquipLoadTime=0.5;
-		Damage=400;
+		Damage=60;
 
 		PrimaryAttackSpeed=0.3;
 		PrimaryAttackAnimationSpeed=0.3;

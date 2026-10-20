@@ -103,11 +103,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 }, 2);
 
                 modClientLighting:SetAtmosphere("Menu");
-
-                if menuMusic.IsPlaying == false then
-                    menuMusic.Volume = 0.5;
-                    menuMusic:Play();
-                end
             end
 
             interface:HideAll();
@@ -123,13 +118,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             modCameraGraphics:Unbind("menucamera");
             frame.Visible = false;
-            if menuMusic.IsPlaying then
-                local musicTween: Tween = TweenService:Create(menuMusic, TweenInfo.new(10), {Volume=0;});
-                musicTween.Completed:Once(function()
-                    menuMusic:Stop();
-                end)
-                musicTween:Play();
-            end
 
         end
     end)
@@ -325,7 +313,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             padding = 0;
         end
 
-        navBar.Size = UDim2.new(1.4, 0, 0, interface.Properties.TopbarInset.Height+padding);
+        navBar.Size = UDim2.new(1.4, 0, 0, math.max(interface.Properties.TopbarInset.Height+padding, 58));
         bodyFrame.Size = UDim2.new(1, 0, 1, -interface.Properties.TopbarInset.Height-padding);
 
         if hudFrame then
@@ -334,7 +322,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     end
     interface.Properties.OnChanged:Connect(onTopBarInsetChanged)
     onTopBarInsetChanged("TopBarInset");
-
 
 
     --MARK: Queue Page
@@ -346,19 +333,41 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         local queueState = modData.QueueState;
 
         Debugger:Log("Queue state", queueState);
+        if queueState then
+            if menuMusic.IsPlaying == false then
+                menuMusic.Volume = 0.5;
+                menuMusic:Play();
+            end
+            
+        else
+            if menuMusic.IsPlaying then
+                local musicTween: Tween = TweenService:Create(menuMusic, TweenInfo.new(5), {Volume=0;});
+                musicTween.Completed:Once(function()
+                    menuMusic:Stop();
+                end)
+                musicTween:Play();
+            end
+
+        end
 
         local queuePageFrame = PAGES.QueuePage.Frame;
         local queueInfoDialog = queuePageFrame.QueueInfo;
         local queueLabel = queueInfoDialog.QueueLabel;
 
-        local queueTimeDown = window.Binds.QueueTimeDown or modTimeDownUI.new();
-        window.Binds.QueueTimeDown = queueTimeDown;
+        local queueTimeDown = window.Binds.QueueTimeDown;
 
         if queueState == nil then
-            queueTimeDown.Frame.Visible = false;
+            if queueTimeDown then
+                queueTimeDown.Frame.Visible = false;
+            end
             queueLabel.Text = `You are not in a queue.`;
 
             return; 
+        end
+
+        if queueTimeDown == nil then
+            queueTimeDown = modTimeDownUI.new();
+            window.Binds.QueueTimeDown = queueTimeDown;
         end
 
         queueTimeDown.Frame.Visible = true;
@@ -379,9 +388,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
         local changeStr = nil;
         if queueState.CIndex == 1 then
-            changeStr = `Queued into nearby queue..`;
+            changeStr = `Queued into {queueState.Queue == "GLOBAL" and "global" or "nearby"} queue..`;
         elseif queueState.CIndex == 2 then
-            changeStr = `Requeued into global queue..`;
+            changeStr = `Requeued into {queueState.Queue == "GLOBAL" and "global" or "nearby"} queue..`;
         end
         queueState.CIndex = nil;
 
@@ -660,6 +669,14 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     
     interface:BindEvent("queueupdate", function()
+        if modData.QueueState == nil then
+            activePlayPage = "OptionsFrame";
+            if curPage == "QueuePage" then
+                curPage = "Root";
+            end
+
+        end
+
         PAGES.QueuePage.Update();
     end)
 end

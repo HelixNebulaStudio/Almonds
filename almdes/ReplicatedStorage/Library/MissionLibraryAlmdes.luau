@@ -69,9 +69,9 @@ MissionLibrary.New{
 	MissionId = 5;
 	MissionType = MissionLibrary.MissionTypes.Core;
 	Name = "Lethal Attitude";
-	Description = "Find and kill a player.";
+	Description = "Find and wound or kill a player.";
 	Checkpoint = {
-		{Text="Find and kill a player";};
+		{Text="Find and wound or kill a player";};
 		{Text="Exfil";};
 	};
 	SaveData = {};

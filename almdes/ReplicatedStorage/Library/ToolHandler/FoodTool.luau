@@ -166,11 +166,15 @@ elseif RunService:IsServer() then -- MARK: Server
 			if configurations.EffectType == "Food" then
 				if configurations.Calories then
 					local hungerStatus: StatusClassInstance = statusComp:GetOrDefault("Hunger");
-					hungerStatus:Func("SetValue", hungerStatus.Values.CurValue + configurations.Calories);
+					if hungerStatus then
+						hungerStatus:Func("SetValue", hungerStatus.Values.CurValue + configurations.Calories);
+					end
 				end
 				if configurations.Hydration then
 					local thirstStatus: StatusClassInstance = statusComp:GetOrDefault("Thirst");
-					thirstStatus:Func("SetValue", thirstStatus.Values.CurValue + configurations.Hydration);
+					if thirstStatus then
+						thirstStatus:Func("SetValue", thirstStatus.Values.CurValue + configurations.Hydration);
+					end
 				end
 
 			end

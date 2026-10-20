@@ -116,15 +116,18 @@ function modProfile.onRequire()
                 };
             };
 
+            local useNearbyQueue = shared.modProfile.getConfigAsync("UseNearbyQueue") ~= false;
+            if not useNearbyQueue then
+                partyObj.Region = "GLOBAL";
+            end
+
             Debugger:Warn(`Player queues infiltration ({player}) (R: {partyObj.Region})`);
             shared.Notify(game.Players:GetPlayers(), `{player.Name} queueing infiltration.`, "Inform");
 
-            -- Late-join pre-check: try to drop the player into an in-progress server
-            -- that is still within its grace window and has room for the party.
+            -- Late-join drop-in;
             local partySize = #(partyObj.Players or {userId});
             local accessCode = modServerCoordinator:FindJoinableServer(partyObj.Region, {}, partySize);
             if accessCode then
-
                 Debugger:Warn(`Joinable server found for ({player}), attempting to join.`);
                 modServerCoordinator:JoinServer(accessCode, {userId});
 
@@ -132,6 +135,8 @@ function modProfile.onRequire()
                 replyPacket.NewState = modMatchMakingService:GetPlayerState(userId);
 
                 return replyPacket;
+            else
+                Debugger:Warn(`No joinable server found for ({player})`);
             end
 
             local sucess, partyId = modMatchMakingService:QueueParty(partyObj);

@@ -263,7 +263,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	
 	binds.EventPublicData = {};
 	function binds.UpdateEvents()
-		local worldEventData = shared.WorldCore.WorldEventsData;
+		local worldEventData = shared.WorldCore and shared.WorldCore.WorldEventsData;
 		if worldEventData == nil then return end;
 
 		for eventId, eventPublicData in pairs(worldEventData) do

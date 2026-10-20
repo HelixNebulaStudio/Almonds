@@ -30,10 +30,16 @@ function modMatchMakingService.onRequire()
 
 		local localPlayers = {};
 		for _, player in ipairs(game.Players:GetPlayers()) do
-			if table.find(gameLobbyUserIds, player.UserId) == nil then continue end;
+			if table.find(gameLobbyUserIds, player.UserId) == nil then
+				continue;
+			end;
 			table.insert(localPlayers, player);
 		end
 
+		if #localPlayers <= 0 then
+			Debugger:Warn(`No players to join Server:`, gameLobbyUserIds);
+			return;
+		end
 		Debugger:Warn(`Teleporting players ({Debugger:Stringify(localPlayers)}) to {reserveAccessCode}`);
 		modServerManager:TeleportToPrivateServer("Genesis", reserveAccessCode, localPlayers, teleportData);
 	end

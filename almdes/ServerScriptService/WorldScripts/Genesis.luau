@@ -63,6 +63,7 @@ function WorldCore.onRequire()
                 return;
             end
             local gameLobby = serverInfo;
+            Debugger:Warn(`Server info:`, serverInfo);
 
             gameLobby.UserIds = gameLobby.UserIds or {};
             if table.find(gameLobby.UserIds, player.UserId) == nil then
@@ -123,10 +124,14 @@ function WorldCore.onRequire()
 
         task.spawn(function()
             local serverInfo = modServerCoordinator:GetCurrentServerInfo(30);
-            if serverInfo == nil then return end;
+            if serverInfo == nil then 
+                Debugger:Warn(`No server info?? line128`);
+                return 
+            end;
             local gameLobby = serverInfo;
 
             if gameLobby.Values == nil or gameLobby.Values.CanJoinInProgress ~= true then
+                Debugger:Warn(`Skip grace period, CanJoinInProgress = false;`);
                 return;
             end
 

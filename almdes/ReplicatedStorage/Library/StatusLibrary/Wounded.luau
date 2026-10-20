@@ -41,6 +41,8 @@ function statusPackage.BindApply(statusClass: StatusClassInstance)
 
 	healthComp:SetHealth(0);
 
+	if RunService:IsClient() then return end;
+
 	if characterClass.ClassName == "NpcClass" then
 		local npcClass: NpcClass = characterClass :: NpcClass;
 		npcClass:ToggleInteractable(false);
