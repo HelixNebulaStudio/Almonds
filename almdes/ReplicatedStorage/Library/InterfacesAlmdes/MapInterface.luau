@@ -2,14 +2,12 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
 local UserInputService = game:GetService("UserInputService");
-local HttpService = game:GetService("HttpService");
 local CollectionService = game:GetService("CollectionService");
 
 local localPlayer = game.Players.LocalPlayer;
 
 local modKeyBindsHandler = shared.require(game.ReplicatedStorage.Library.KeyBindsHandler);
 local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
-local modSyncTime = shared.require(game.ReplicatedStorage.Library.SyncTime);
 local modEventsLibrary = shared.require(game.ReplicatedStorage.Library.EventsLibrary);
 local modUIElements = shared.require(game.ReplicatedStorage.Library.UI.UIElements);
 local modMath = shared.require(game.ReplicatedStorage.Library.Util.Math);
@@ -38,11 +36,20 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local mapCenterVec = Vector2.new(-500, -1000);
     local mapScaleVec = -Vector2.new(5000, 5000);
-    local zoomScale = 4;
+    local userZoomScale = 4;
 	local isDraggingMap = false;
 	local dragStartVec;
 	local newOffsetVec = Vector2.new();
 	local mapFollowPlayer = true;
+
+	local hudFrame = script:WaitForChild("MapHud"):Clone();
+	hudFrame.Parent = interface.ScreenGui;
+
+	local hudMapContainer = hudFrame:WaitForChild("MapContainer");
+	hudFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		interface.Properties.HudMapSize = hudFrame.AbsoluteSize;
+	end)
+
 
     local windowFrame = script:WaitForChild("MapMenu"):Clone()
     windowFrame.Parent = interface.ScreenGui;
@@ -50,8 +57,18 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	local lpanel = windowFrame:WaitForChild("LPanel");
 	local legendFrame = lpanel:WaitForChild("LegendFrame");
 
-	local mapImageLabel = windowFrame:WaitForChild("mapImage");
+	local mapImageLabel = script:WaitForChild("mapImage"):Clone();
+	mapImageLabel.Parent = hudMapContainer;
 	
+	local keyId = "KeyWindowMap";
+	modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Backquote);
+	
+    if modConfigurations.SafehomeMode == true then
+		hudFrame.Visible = false;
+
+		return;
+	end
+
 	local window: InterfaceWindow = interface:NewWindow("Map", windowFrame);
     window.UseMenuBlur = true;
     window.UseTween = false;
@@ -61,15 +78,9 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     local binds = window.Binds;
 
-	local keyId = "KeyWindowMap";
-	
-    if modConfigurations.SafehomeMode ~= true then
-		modKeyBindsHandler:SetDefaultKey(keyId, Enum.KeyCode.Backquote);
-		
-		local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
-		mapQuickButton.LayoutOrder = 3;
-		interface:ConnectQuickButton(mapQuickButton, keyId);
-	end
+	local mapQuickButton = interface:NewQuickButton(window.Name, "Map", "rbxassetid://4615489625");
+	mapQuickButton.LayoutOrder = 3;
+	interface:ConnectQuickButton(mapQuickButton, keyId);
 
     --MARK: OnToggle
 	window.OnToggle:Connect(function(visible)
@@ -81,10 +92,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			binds.UpdateEvents();
 			binds.UpdateLoots();
             window:Update();
+			mapImageLabel.Parent = windowFrame;
 			
 		else
 			windowFrame.Visible = false;
 			isDraggingMap = false;
+			mapImageLabel.Parent = hudMapContainer;
 			
 		end
 	end)
@@ -129,6 +142,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	end
 	
 	local function centerOnPlayer()
+		if playerClass.RootPart == nil then return end;
+		
 		local rootPartPos = playerClass.RootPart.Position;
 		local projectPos = projectWorldPos(Vector2.new(rootPartPos.X, rootPartPos.Z));
 		
@@ -137,33 +152,35 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	end
 	
 	interface.Garbage:Tag(windowFrame.InputChanged:Connect(function(inputObject, gameProcessed)
-		if not gameProcessed then
-			if inputObject.UserInputType == Enum.UserInputType.MouseWheel then
-				local preScale = zoomScale;
-				
-				zoomScale = math.clamp(zoomScale + inputObject.Position.Z*0.5, 1, 10);
-				
-				
-				if zoomScale ~= preScale then
-					if mapFollowPlayer then
-						mapImageLabel.Size = UDim2.new(zoomScale, 0, zoomScale, 0);
-						centerOnPlayer();
-						
-					else
-						local mousePosition = UserInputService:GetMouseLocation();
-						
-						local localMousePos = mousePosition - (mapImageLabel.AbsolutePosition + Vector2.new(0, 36) + mapImageLabel.AbsoluteSize/2);
-						local rawMousePos = localMousePos/mapImageLabel.AbsoluteSize;
-						
-						mapImageLabel.Size = UDim2.new(zoomScale, 0, zoomScale, 0);
-						
-						local offset = localMousePos-(rawMousePos*mapImageLabel.AbsoluteSize);
-						setMapFramePosition(offset);
-						
-					end
+		if gameProcessed then return end;
+
+		local isInMapMenu = mapImageLabel.Parent == windowFrame;
+		if not isInMapMenu then return end;
+
+		if inputObject.UserInputType == Enum.UserInputType.MouseWheel then
+			local preScale = userZoomScale;
+			
+			userZoomScale = math.clamp(userZoomScale + inputObject.Position.Z*0.5, 1, 10);
+			
+			if userZoomScale ~= preScale then
+				if mapFollowPlayer then
+					mapImageLabel.Size = UDim2.new(userZoomScale, 0, userZoomScale, 0);
+					centerOnPlayer();
 					
-                    window:Update();
+				else
+					local mousePosition = UserInputService:GetMouseLocation();
+					
+					local localMousePos = mousePosition - (mapImageLabel.AbsolutePosition + Vector2.new(0, 36) + mapImageLabel.AbsoluteSize/2);
+					local rawMousePos = localMousePos/mapImageLabel.AbsoluteSize;
+					
+					mapImageLabel.Size = UDim2.new(userZoomScale, 0, userZoomScale, 0);
+					
+					local offset = localMousePos-(rawMousePos*mapImageLabel.AbsoluteSize);
+					setMapFramePosition(offset);
+					
 				end
+				
+				window.Binds.RefreshMap();
 			end
 		end
 	end));
@@ -348,10 +365,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 	interface.Garbage:Tag(CollectionService:GetInstanceRemovedSignal("LootCrates"):Connect(function()
 		binds.UpdateLoots()
 	end));
-	
 
-	--MARK: OnUpdate
-	window.OnUpdate:Connect(function()
+	function window.Binds.RefreshMap()
+		local isInMapMenu = mapImageLabel.Parent == windowFrame;
+
 		local showLegends = {};
 
 		for a=#binds.MapPoints, 1, -1 do
@@ -421,10 +438,10 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 					end
 				end
 
-				if zoomScale >= 5 then
+				if userZoomScale >= 5 then
 					imageButton.Size = UDim2.new(0, 50, 0, 50);
 				else
-					local size = modMath.MapNum(zoomScale, 4.5, 1, 50, 20);
+					local size = modMath.MapNum(userZoomScale, 4.5, 1, 50, 20);
 					imageButton.Size = UDim2.new(0, size, 0, size);
 				end
 
@@ -433,6 +450,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			end
 		end
 		
+		local zoomScale = userZoomScale;
+		if not isInMapMenu then
+			zoomScale = 12;
+		end
+
 		mapImageLabel.Size = UDim2.new(zoomScale, 0, zoomScale, 0);
 		centerButton.BackgroundColor3 = mapFollowPlayer and interface.Colors.Button or Color3.fromRGB(50, 50, 50);
 
@@ -459,38 +481,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 			if legendExist[obj.Name] then continue end;
 			obj:Destroy();
 		end
+	end
 
-	end)
-	
-	task.spawn(function()
-		while true do
-			if windowFrame.Visible then
-                window:Update();
-				
-				if isDraggingMap then
-					mapFollowPlayer = false;
-					
-					local mousePosition = UserInputService:GetMouseLocation();
-					if dragStartVec == nil then
-						dragStartVec = mousePosition;
-					end
-					
-					local offset = mousePosition-dragStartVec;
-					
-					setMapFramePosition(offset);
-					
-				else
-					if mapFollowPlayer then
-						centerOnPlayer();
-					end
-					
-					newOffsetVec = Vector2.new(mapImageLabel.Position.X.Offset, mapImageLabel.Position.Y.Offset);
-					dragStartVec = nil;
-					
-				end
-			end
-			task.wait();
-		end
+	--MARK: OnUpdate
+	window.OnUpdate:Connect(function()
+		binds.RefreshMap();
 	end)
 	
 	local gridCount = 10;
@@ -532,7 +527,39 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		end
 	end
 
+	task.spawn(function()
+		binds.UpdateEvents();
+		binds.UpdateLoots();
 
+		while true do
+			local isInMapMenu = mapImageLabel.Parent == windowFrame;
+			window.Binds.RefreshMap();
+
+			if isInMapMenu and isDraggingMap then
+				mapFollowPlayer = false;
+				
+				local mousePosition = UserInputService:GetMouseLocation();
+				if dragStartVec == nil then
+					dragStartVec = mousePosition;
+				end
+				
+				local offset = mousePosition-dragStartVec;
+				
+				setMapFramePosition(offset);
+				
+			else
+				if mapFollowPlayer or not isInMapMenu then
+					centerOnPlayer();
+				end
+				
+				newOffsetVec = Vector2.new(mapImageLabel.Position.X.Offset, mapImageLabel.Position.Y.Offset);
+				dragStartVec = nil;
+				
+			end
+				
+			task.wait();
+		end
+	end)
 
 end
 

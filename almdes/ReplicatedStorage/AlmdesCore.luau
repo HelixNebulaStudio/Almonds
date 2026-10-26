@@ -8,7 +8,7 @@ local AlmdesCore = {};
 local modGlobalVars = shared.require(game.ReplicatedStorage.GlobalVariables);
 modGlobalVars.DevVersion="0.0.x";
 modGlobalVars.GameVersion = "0.0";
-modGlobalVars.GameBuild = "10";
+modGlobalVars.GameBuild = "11";
 modGlobalVars.ModeVerLabel = `$Fps fps\t$UpTime\tAlmonds $GameVersion $BranchName $IsMobile`;
 
 --==
@@ -72,7 +72,7 @@ function AlmdesCore.OnCharacterAdded(player, character)
             playRunSession.JobId = game.JobId;
 
             if shared.gameConfig.BranchName == "Dev" then
-                local mIdList = {1;2;3;4;5;6;};
+                local mIdList = {1;2;3;4;5;6;7;8;};
 
                 for a=1, 3 do
                     local startMId = table.remove(mIdList, math.random(1, #mIdList));

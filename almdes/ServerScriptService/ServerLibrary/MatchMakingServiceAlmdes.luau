@@ -2,10 +2,10 @@ local Debugger = require(game.ReplicatedStorage.Library.Debugger).new(script);
 --==
 local RunService = game:GetService("RunService");
 local HttpService = game:GetService("HttpService");
-local ConfigService = game:GetService("ConfigService");
 
 local modGlobalVars = shared.require(game.ReplicatedStorage:WaitForChild("GlobalVariables"));
 
+local modConfigurations = shared.require(game.ReplicatedStorage.Library.Configurations);
 local modBranchConfigurations = shared.require(game.ReplicatedStorage.Library.BranchConfigurationsAlmdes);
 
 local modCrossServerSignals = shared.require(game.ServerScriptService.ServerLibrary.CrossServerSignals);
@@ -40,6 +40,7 @@ function modMatchMakingService.onRequire()
 			Debugger:Warn(`No players to join Server:`, gameLobbyUserIds);
 			return;
 		end
+
 		Debugger:Warn(`Teleporting players ({Debugger:Stringify(localPlayers)}) to {reserveAccessCode}`);
 		modServerManager:TeleportToPrivateServer("Genesis", reserveAccessCode, localPlayers, teleportData);
 	end
@@ -54,31 +55,22 @@ function modMatchMakingService.onRequire()
 	end)
 
 	local function GetExtractionInfilGracePeriod()
-		local graceSeconds = 300;
-		local s, e = pcall(function()
-			local config = ConfigService:GetConfigAsync();
-			local value = config:GetValue("ExtractionInfilGracePeriod");
-			if type(value) == "number" then
-				graceSeconds = value;
-			end
-		end);
-		if not s then
-			Debugger:Warn("Failed to read ExtractionInfilGracePeriod config", e);
-		end
-		return graceSeconds;
+		local graceSeconds = shared.modProfile.getConfigAsync("ExtractionInfilGracePeriod");
+		return graceSeconds or 300;
 	end
 
 	modMatchMakingService:BindLobbyFormed(function(gameLobby)
-		Debugger:Warn(`Preparing server`);
+		local queueType = gameLobby.QueueType;
+		local serverConfig = SERVER_TYPES[queueType];
+
+		Debugger:Warn(`Preparing server queueType={queueType} config=`, serverConfig);
 
 		local reserveAccessCode, privateServerId = modServerManager:CreatePrivateServer("Genesis");
 
 		gameLobby.AccessCode = reserveAccessCode;
 		gameLobby.Values = gameLobby.Values or {};
 
-		local queueType = gameLobby.QueueType;
-		local config = SERVER_TYPES[queueType];
-		if config and config.CanJoinInProgress then
+		if serverConfig and serverConfig.CanJoinInProgress then
 			gameLobby.Values.GraceUntil = os.time() + GetExtractionInfilGracePeriod();
 			gameLobby.Values.StartTime = os.time();
 			gameLobby.Values.CanJoinInProgress = true;
@@ -91,7 +83,13 @@ function modMatchMakingService.onRequire()
 		modServerCoordinator:NewServer(privateServerId, gameLobby);
 
 		crossServerSignal:Fire("joinserver", gameLobby.UserIds, reserveAccessCode);
-		modLiveLoggingService.post("MMLogs", Debugger:Stringify(`MatchMaking New Server:`, gameLobby));
+		
+		modLiveLoggingService.post("MMLogs", Debugger:Stringify(`MatchMaking New Server:`, {
+			UserIds = gameLobby.UserIds;
+			Parties = #gameLobby.Parties;
+			Players = gameLobby.Slots;
+			AccessCode = gameLobby.AccessCode;
+		}));
 	end)
 
 	shared.modEngineCore:ConnectOnPlayerAdded(script, function(player: Player)
@@ -136,6 +134,7 @@ function modMatchMakingService.onRequire()
 			Debugger:Warn(`Server missing info.`)
 			return;
 		end
+
 		modServerCoordinator:SetCurrentServerInfo(serverInfo);
 	end);
 
@@ -145,6 +144,7 @@ function modMatchMakingService.onRequire()
 			Description = [[Matchmaking Admin / test harness.
 			/mmalmdes <u>t</u>est<u>j</u>oin<u>s</u>erver  -- test join server
 			/mmalmdes testlog
+			/mmalmdes <u>p</u>rint<u>i</u>nfo
 			]];
 
 			RequiredArgs = 0;
@@ -160,6 +160,9 @@ function modMatchMakingService.onRequire()
 				elseif actionId == "testlog" then
 					modLiveLoggingService.post("MMLogs", "Hello World!");
 
+				elseif actionId == "printinfo" or actionId == "pi" then
+					Debugger:Warn(`ServerCoordinator.CurServerInfo=`, modServerCoordinator.CurServerInfo);
+
 				else
 					Debugger:Log("MatchMaking: unknown action", tostring(actionId));
 				end
@@ -168,6 +171,11 @@ function modMatchMakingService.onRequire()
 			end
 		};
     };
+
+	local isSafehomeMode = modConfigurations.SafehomeMode;
+	if isSafehomeMode then
+		modMatchMakingService:StartScheduler();
+	end
 
 end
 

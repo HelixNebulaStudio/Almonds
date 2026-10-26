@@ -46,7 +46,8 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 		playerHudWindow:Open();
 	end
 
-	local barsFrame = playerHudFrame:WaitForChild("HealthBars");
+	local botLeftAnchor = playerHudFrame:WaitForChild("BLAnchor");
+	local barsFrame = botLeftAnchor:WaitForChild("HealthBars");
 	local healthBar = barsFrame:WaitForChild("HealthBar");
 	local armorBar = barsFrame:WaitForChild("ArmorBar");
 

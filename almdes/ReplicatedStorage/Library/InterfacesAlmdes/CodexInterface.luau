@@ -56,6 +56,7 @@ local catInfoLib = {
 
 local interfacePackage = {
     Type = "Player";
+    firstFetch = false;
 };
 --==
 
@@ -95,6 +96,11 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
     --MARK: OnToggle
     window.OnToggle:Connect(function(visible)
+        if interfacePackage.firstFetch ~= true then
+            interfacePackage.firstFetch = true;
+            modData:GetFlag("ItemCodex", true);
+        end
+        
         local mainMenuWindow = interface:GetWindow("MainMenu");
         local charWindow = interface:GetWindow("CharacterWindow");
 
@@ -257,10 +263,6 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                 newItemButton.Parent = catInfo.List;
             end
         end
-    end)
-
-    task.spawn(function()
-        modData:GetFlag("ItemCodex", true);
     end)
 end
 

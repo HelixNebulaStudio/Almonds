@@ -210,7 +210,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
     local function updatePages()
         local queueState = modData.QueueState;
         if queueState ~= nil then
-            playButton.Text = "Unqueue";
+            playButton.Text = "Dequeue";
 
         else
             playButton.Text = "Play";
@@ -259,6 +259,19 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
 
             curPage = button.Name;
             window:Update();
+
+            if button.Text == "Dequeue" then
+                local rPacket = remoteMainMenu:InvokeServer("dequeue") or {FailMsg="Please retry"};
+                if rPacket.Success then
+                    modData.QueueState = nil;
+
+                    interface:FireEvent("queueupdate");
+                    window:Update();
+                else
+                    modClientGuis.promptWarning(`Error: {rPacket.FailMsg}`);
+                end
+
+            end
         end)
 
         if button:FindFirstChild("SelectedHighlight") then
@@ -313,11 +326,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             padding = 0;
         end
 
-        navBar.Size = UDim2.new(1.4, 0, 0, math.max(interface.Properties.TopbarInset.Height+padding, 58));
-        bodyFrame.Size = UDim2.new(1, 0, 1, -interface.Properties.TopbarInset.Height-padding);
+        local insetHeight = interface.Properties.TopbarInset.Height;
+        navBar.Size = UDim2.new(1.4, 0, 0, math.max(insetHeight, 58)+padding);
+        bodyFrame.Size = UDim2.new(1, 0, 1, -insetHeight-padding);
 
         if hudFrame then
-            hudFrame.Size = UDim2.new(1, 0, 1, -interface.Properties.TopbarInset.Height-padding);
+            hudFrame.Size = UDim2.new(1, 0, 1, -insetHeight-padding);
         end
     end
     interface.Properties.OnChanged:Connect(onTopBarInsetChanged)
@@ -379,12 +393,12 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
         local ftFrame = queueTimeDown.Frame.FtFrame;
         ftFrame.BackgroundColor3 = interface.Colors.ActivePrimary;
 
-        local nextQueueProccessTick = queueState.JoinTimestamp + (queueState.Values.LocalSearchTimeLimit or 30);
-        if queueState.GlobalEnteredAt then
-            nextQueueProccessTick = queueState.GlobalEnteredAt;
-        end
-        nextQueueProccessTick = math.ceil(nextQueueProccessTick / QUEUE_PROCESS_FREQ) * QUEUE_PROCESS_FREQ;
-        nextQueueProccessTick += 7;
+        -- local nextQueueProccessTick = queueState.JoinTimestamp + (queueState.Values.LocalSearchTimeLimit or 30);
+        -- if queueState.GlobalEnteredAt then
+        --     nextQueueProccessTick = queueState.GlobalEnteredAt;
+        -- end
+        -- nextQueueProccessTick = math.ceil(nextQueueProccessTick / QUEUE_PROCESS_FREQ) * QUEUE_PROCESS_FREQ;
+        -- nextQueueProccessTick += 7;
 
         local changeStr = nil;
         if queueState.CIndex == 1 then
@@ -399,7 +413,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
             queueTimeDown.Frame.Size = UDim2.new(0.15, 0, 0.15, 0);
         end;
         queueTimeDown:Set{
-            EndTime = nextQueueProccessTick;
+            EndTime = queueState.NextLobbyFormTime;
             Text = changeStr;
         };
 
@@ -598,7 +612,7 @@ function interfacePackage.newInstance(interface: InterfaceInstance)
                     modData.QueueState.CIndex = 1;
                                 
                     curPage = "QueuePage";
-                    PAGES.QueuePage.Update();
+                    interface:FireEvent("queueupdate");
                     window:Update();
                 end
 

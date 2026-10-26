@@ -92,4 +92,32 @@ MissionLibrary.New{
 	Rewards = {};
 };
 
+-- MARK: 7 - Spot Radar
+MissionLibrary.New{
+	MissionId = 7;
+	MissionType = MissionLibrary.MissionTypes.Core;
+	Name = "Spot Radar";
+	Description = "Hijack a Spot Radar.";
+	Checkpoint = {
+		{Text="Find and hijack a Spot Radar";};
+		{Text="Exfil";};
+	};
+	SaveData = {};
+	Rewards = {};
+};
+
+-- MARK: 8 - Secured Intel
+MissionLibrary.New{
+	MissionId = 8;
+	MissionType = MissionLibrary.MissionTypes.Core;
+	Name = "Secured Intel";
+	Description = "Securing the gathered intel.";
+	Checkpoint = {
+		{Text="Find and reactivate $Amount radio towers";};
+		{Text="Exfil";};
+	};
+	SaveData = {Amount = 2;};
+	Rewards = {};
+};
+
 return MissionLibrary;

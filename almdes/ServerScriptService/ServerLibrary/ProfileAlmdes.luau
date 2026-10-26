@@ -151,6 +151,19 @@ function modProfile.onRequire()
 
             end
 
+        elseif action == "dequeue" then
+            local userId = player.UserId;
+            local state = modMatchMakingService:GetPlayerState(userId);
+    
+            if state and state.PartyId then
+                modMatchMakingService:RemoveFromQueues(state.PartyId, state.JoinTimestamp);
+                replyPacket.Success = true;
+                Debugger:Log(`Player dequeue removed party ({player})`, state.PartyId);
+            else
+                replyPacket.Failmsg = "Not in queue";
+                Debugger:Log(`Player dequeue ({player}) not in queue`);
+            end
+        
         elseif action == "queueupdate" then
             local userId = player.UserId;
 

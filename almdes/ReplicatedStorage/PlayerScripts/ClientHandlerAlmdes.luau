@@ -25,17 +25,30 @@ function ClientHandler.onRequire()
     end)
 
     modSyncTime.GetClock():GetPropertyChangedSignal("Value"):Connect(function()
-        if modData.QueueState == nil then return end;
+        local queueState = modData.QueueState;
+        if queueState == nil then return end;
 
-        local rPacket = remoteMainMenu:InvokeServer("queueupdate");
-        Debugger:Warn(`Requesting for queue update=`, rPacket);
+        if queueState.NextLobbyFormTime == nil or workspace:GetServerTimeNow() > queueState.NextLobbyFormTime then
+            local lastNextFormTime = queueState.NextLobbyFormTime;
+            local rPacket = remoteMainMenu:InvokeServer("queueupdate");
+            Debugger:Warn(`Requesting for queue update=`, rPacket);
 
-        if rPacket then
-            if rPacket.NewState == nil then
-                modData.QueueState = nil;
-                modClientGuis.fireEvent("queueupdate");
+            if rPacket then
+                if rPacket.NewState then
+                    modData.QueueState = rPacket.NewState;
+                    queueState = modData.QueueState;
+
+                    if queueState.NextLobbyFormTime == lastNextFormTime then
+                        queueState.NextLobbyFormTime += 15;
+                    end
+
+                else
+                    modData.QueueState = nil;
+                    modClientGuis.fireEvent("queueupdate");
+                end
             end
         end
+
     end)
 end
 
